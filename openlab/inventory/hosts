@@ -1,0 +1,15 @@
+[zuul-misc]
+zuul-web ansible_host=127.0.0.1
+zookeeper ansible_host=127.0.0.1
+statsd ansible_host=127.0.0.1
+gear ansible_host=127.0.0.1
+
+[zuul]
+zuul-executor ansible_host=127.0.0.1
+zuul-fingergw ansible_host=127.0.0.1
+zuul-merger ansible_host=127.0.0.1
+zuul-scheduler ansible_host=127.0.0.1
+
+[nodepool]
+nodepool-builder  ansible_host=127.0.0.1
+nodepool-launcher  ansible_host=127.0.0.1

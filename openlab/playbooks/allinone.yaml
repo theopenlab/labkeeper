@@ -15,14 +15,19 @@
 - hosts: localhost
   become: yes
   tasks:
+    - name: Set source dir of project
+      set_fact:
+        windmill_src_dir: '{{ playbook_dir }}/../../'
+
     - name: Disable extra wheels mirror
       lineinfile:
         dest: /etc/pip.conf
         regexp: ^extra-index-url
         state: absent
+
     - name: Install ansible roles via galaxy
       args:
-        chdir: '{{playbook_dir}}/../../'
+        chdir: '{{ windmill_src_dir }}'
         executable: /bin/bash
       shell: ./tools/install_roles.sh
 
