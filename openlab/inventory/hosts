@@ -1,3 +1,5 @@
+bastion ansible_connection=local
+
 [zuul-misc]
 zuul-web ansible_host=127.0.0.1
 zookeeper ansible_host=127.0.0.1
