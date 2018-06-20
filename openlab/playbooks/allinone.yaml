@@ -13,9 +13,9 @@
 # under the License.
 ---
 - hosts: all
+  become: yes
   tasks:
     - name: Disable extra wheels mirror
-      become: yes
       lineinfile:
         dest: /etc/pip.conf
         regexp: ^extra-index-url
