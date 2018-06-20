@@ -22,7 +22,7 @@
         state: absent
     - name: Install ansible roles via galaxy
       args:
-        chdir: "{{ windmill_src_dir }}"
+        chdir: '{{playbook_dir}}/../../'
         executable: /bin/bash
       shell: ./tools/install_roles.sh
 
