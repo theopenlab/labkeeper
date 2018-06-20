@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: all
+- hosts: localhost
   become: yes
   tasks:
     - name: Disable extra wheels mirror
