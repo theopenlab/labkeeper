@@ -35,9 +35,9 @@
 - import_playbook: statsd.yaml
 - import_playbook: gear.yaml
 - import_playbook: zookeeper.yaml
-#- import_playbook: nodepool.yaml
-#- import_playbook: nodepool-builder.yaml
-#- import_playbook: nodepool-launcher.yaml
+- import_playbook: nodepool.yaml
+- import_playbook: nodepool-builder.yaml
+- import_playbook: nodepool-launcher.yaml
 #- import_playbook: zuul.yaml
 #- import_playbook: zuul-scheduler.yaml
 #- import_playbook: zuul-executor.yaml
