@@ -17,19 +17,27 @@ labels:
     min-ready: 1
 
 providers:
-  - name: openstackzuul
-    cloud: openstackzuul
+  - name: otcallinone
+    cloud: otc
+    driver: openstack
+    launch-timeout: 1200
+    boot-timeout: 1200
+    image-name-format: 'allinone-{image_name}-{timestamp}'
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
     pools:
-      - name: main
-        max-servers: 10
+      - name: otcallinone
+        auto-floating-ip: False
+        max-servers: 4
+        networks:
+          - openlab-net
         labels:
           - name: ubuntu-xenial
             diskimage: ubuntu-xenial
-            min-ram: 8192
-            console-log: true
+            # flavor-name: 'c2.4xlarge'
+            flavor-name: 's2.2xlarge.1'
+            key-name: openlab-cicd
 
 diskimages:
   - name: ubuntu-xenial
