@@ -12,16 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- name: Register /opt/venv/nodepool
-  stat:
-    path: /opt/venv/nodepool
-  register: test_nodepool_pip_virtualenv_stat
-
-- name: Assert /opt/venv/nodepool tests
-  assert:
-    that:
-      - test_nodepool_pip_virtualenv_stat.stat.exists
-      - test_nodepool_pip_virtualenv_stat.stat.isdir
 
 - name: Validate /etc/nodepool/nodepool.yaml
   become: yes
