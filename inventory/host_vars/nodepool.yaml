@@ -12,9 +12,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-# windmill.virtualenv
-virtualenv_install_method: pip
-
-# windmill-config
-# TODO(pabelanger): Create windmill-config project on git.o.o.
-windmill_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/config"
+# windmill.nodepool
+nodepool_file_nodepool_yaml_src: "{{ windmill_config_git_dest }}/nodepool/nodepool.yaml.j2"
