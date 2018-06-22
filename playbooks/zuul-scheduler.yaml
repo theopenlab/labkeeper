@@ -23,6 +23,8 @@
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul
+      vars:
+        zuul_install_method: git
 
     - name: Setup openstack.logrotate role.
       include_role:
