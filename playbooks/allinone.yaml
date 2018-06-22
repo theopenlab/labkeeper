@@ -26,6 +26,16 @@
       set_fact:
         windmill_src_dir: '{{ playbook_dir }}/../'
 
+    - name: Install bindep
+      pip:
+        name: bindep
+
+    - name: Install bindep packages
+      args:
+        chdir: '{{ windmill_src_dir }}'
+        executable: /bin/bash
+      shell: ./tools/install_bindep.sh
+
     - name: Disable extra wheels mirror
       lineinfile:
         dest: /etc/pip.conf
