@@ -36,6 +36,11 @@
         executable: /bin/bash
       shell: ./tools/install_bindep.sh
 
+    - name: Install pip requirement packages
+      pip:
+        requirements: requiremets.txt
+        chdir: '{{ windmill_src_dir }}'
+
     - name: Disable extra wheels mirror
       lineinfile:
         dest: /etc/pip.conf
