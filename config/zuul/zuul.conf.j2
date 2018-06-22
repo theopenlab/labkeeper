@@ -53,3 +53,21 @@ driver = gerrit
 server = 127.0.0.1
 sshkey = {{ zuul_user_home }}/.ssh/gerrit_id_rsa
 user = windmill
+
+[connection github]
+driver=github
+server=github.com
+user=zuul
+sshkey={{ zuul_user_home }}/.ssh/gerrit_id_rsa
+app_id=7102
+app_key=/home/zuul/liu-openlab-ci.pem
+webhook_token=liuopenlab
+verify_ssl=false
+
+[connection git]
+driver=git
+baseurl=https://git.openstack.org/
+
+[connection mysql]
+driver=sql
+dburi=mysql+pymysql://zuul:zuul@127.0.0.1/zuul
