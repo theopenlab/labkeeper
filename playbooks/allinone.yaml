@@ -15,6 +15,13 @@
 - hosts: bastion
   become: yes
   tasks:
+    - name: Copy sources.list into place.
+      become: yes
+      copy:
+        dest: /etc/apt/sources.list
+        mode: 0644
+        src: "{{ windmill_config_git_dest }}/sources.list"
+
     - name: Set source dir of project
       set_fact:
         windmill_src_dir: '{{ playbook_dir }}/../'
