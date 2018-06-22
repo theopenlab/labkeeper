@@ -35,6 +35,8 @@
     - name: Setup openstack.nodepool role
       include_role:
         name: openstack.nodepool
+      vars:
+        nodepool_install_method: git
 
     - name: Install nodepool elements directory
       become: yes

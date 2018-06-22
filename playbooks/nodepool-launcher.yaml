@@ -27,6 +27,8 @@
     - name: Setup openstack.logrotate role
       include_role:
         name: openstack.logrotate
+      vars:
+        nodepool_install_method: git
 
   post_tasks:
     - name: Run nodepool-launcher validation.

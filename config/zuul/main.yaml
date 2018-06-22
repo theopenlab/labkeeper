@@ -31,7 +31,7 @@
           - liu-sheng/terraform-provider-openstack:
               exclude-unprotected-branches: true
           - liu-sheng/ansible
-      git:
+      openstack-git:
         untrusted-projects:
           - include: []
             projects:
