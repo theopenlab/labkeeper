@@ -17,7 +17,7 @@
   tasks:
     - name: Install mysql packages
       apt:
-        name: {{ item }}
+        name: "{{ item }}"
         update_cache: yes
       with_items:
         - mariadb-server
