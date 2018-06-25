@@ -23,6 +23,7 @@
         - mariadb-server
         - mariadb-client
         - python-pymysql
+        - libmysqlclient-dev
 
     - pip: name=pymysql executable=pip3
     - pip: name=pymysql executable=pip3
