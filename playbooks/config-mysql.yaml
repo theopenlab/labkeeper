@@ -33,6 +33,7 @@
         state: import
         name: all
         target: "{{ windmill_config_git_dest }}/zuul/mysql_secure_installation.sql"
+      ignore_errors: yes
     - mysql_user:
         name: zuul
         host: "{{ hostvars[zuul-web].ansible_host }}"
