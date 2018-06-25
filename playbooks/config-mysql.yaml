@@ -15,10 +15,17 @@
 - name: Install and config mysql
   hosts: mysql
   tasks:
-    - apt: name=mariadb-server update_cache=yes
-    - apt: name=mariadb-client
-    - apt: name=python-pymysql
+    - name: Install mysql packages
+      apt: name={{ item }}
+      update_cache: yes
+      with_items:
+        - mariadb-server
+        - mariadb-client
+        - python-pymysql
+
     - pip: name=pymysql executable=pip3
+    - pip: name=MySQL-python
+
     - mysql_db:
         state: import
         name: all
