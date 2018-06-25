@@ -1,4 +1,6 @@
 bastion ansible_connection=local
+[mysql]
+sql01 ansible_host=127.0.0.1
 
 [gear]
 gear01 ansible_host=127.0.0.1
