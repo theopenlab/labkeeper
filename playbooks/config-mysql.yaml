@@ -19,5 +19,10 @@
     - apt: name=mariadb-client
     - apt: name=python-pymysql
     - pip: name=pymysql executable=pip3
-    - mysql_db: state=import name=all target="{{ windmill_config_git_dest }}/zuul/mysql_secure_installation.sql"
-    - msyql_user: name=zuul host="{{ hostvars[zuul-web].ansible_host }}" state=present priv='*.*:ALL'
+    - mysql_db:
+        state: import name=all
+        target: "{{ windmill_config_git_dest }}/zuul/mysql_secure_installation.sql"
+    - mysql_user:
+        name: zuul
+        host: "{{ hostvars[zw01].ansible_host }}"
+        state: present priv='*.*:ALL'
