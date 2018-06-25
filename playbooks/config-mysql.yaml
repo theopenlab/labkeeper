@@ -35,5 +35,5 @@
         target: "{{ windmill_config_git_dest }}/zuul/mysql_secure_installation.sql"
     - mysql_user:
         name: zuul
-        host: "{{ hostvars[zw01].ansible_host }}"
+        host: "{{ hostvars[zuul-web].ansible_host }}"
         state: present priv='*.*:ALL'
