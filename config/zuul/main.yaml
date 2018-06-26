@@ -20,8 +20,6 @@
               exclude-unprotected-branches: true
           - liu-sheng/misty:
               exclude-unprotected-branches: true
-          - liu-sheng/cloud-provider-openstack:
-              exclude-unprotected-branches: true
           - liu-sheng/cf-openstack-validator:
               exclude-unprotected-branches: true
           - liu-sheng/cf-acceptance-tests:
