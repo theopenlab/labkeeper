@@ -15,7 +15,6 @@
 - import_playbook: pre-deployment.yaml
 - import_playbook: bootstrap.yaml
 - import_playbook: statsd.yaml
-# - import_playbook: gear.yaml
 - import_playbook: gearman-apt.yaml
 - import_playbook: zookeeper.yaml
 - import_playbook: config-mysql.yaml
