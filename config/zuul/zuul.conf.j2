@@ -25,7 +25,7 @@ server = {{ hostvars['statsd01'].ansible_host }}
 [executor]
 finger_port = 17979
 log_config = /etc/zuul/executor-logging.conf
-private_key_file = {{ zuul_user_home }}/.ssh/nodepool_id_rsa
+private_key_file = {{ zuul_user_home }}/.ssh/github_id_rsa
 workspace_root = {{ zuul_user_home }}/workspace
 
 [fingergw]
