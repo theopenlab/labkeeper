@@ -42,15 +42,46 @@ providers:
 diskimages:
   - name: ubuntu-xenial
     elements:
-      - ubuntu-minimal
-      - growroot
-      - openssh-server
-      - simple-init
+      - ubuntu
       - vm
-      - zuul-worker
+      - simple-init
+      - nodepool-base
+      - cache-devstack
+      - initialize-urandom
+      - growroot
+      - infra-package-needs
     release: xenial
     env-vars:
-      TMPDIR: /opt/nodepool/tmp
+      TMPDIR: /opt/dib_tmp
       DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_GRUB_TIMEOUT: '0'
       DIB_DEBIAN_COMPONENTS: 'main,universe'
-      DIB_IMAGE_CACHE: /opt/nodepool/cache
+      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
+      DIB_DEV_USER_PWDLESS_SUDO: '1'
+      DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
+      ZUUL_USER_SSH_PUBLIC_KEY: '{{ zuul_user_home }}/.ssh/id_rsa.pub'
+  - name: ubuntu-trusty
+    elements:
+      - ubuntu
+      - vm
+      - simple-init
+      - nodepool-base
+      - cache-devstack
+      - growroot
+      - infra-package-needs
+    release: trusty
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_GRUB_TIMEOUT: '0'
+      DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
+      DIB_DEV_USER_PWDLESS_SUDO: '1'
+      DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
+      ZUUL_USER_SSH_PUBLIC_KEY: '{{ zuul_user_home }}/.ssh/id_rsa.pub'

@@ -25,7 +25,7 @@ server = {{ hostvars['statsd01'].ansible_host }}
 [executor]
 finger_port = 17979
 log_config = /etc/zuul/executor-logging.conf
-private_key_file = {{ zuul_user_home }}/.ssh/github_id_rsa
+private_key_file = {{ zuul_user_home }}/.ssh/id_rsa
 workspace_root = {{ zuul_user_home }}/workspace
 
 [fingergw]
@@ -52,7 +52,7 @@ hosts = {{ hostvars['zk01'].ansible_host | ipwrap }}
 driver=github
 server=github.com
 user=zuul
-sshkey={{ zuul_user_home }}/.ssh/github_id_rsa
+sshkey={{ zuul_user_home }}/.ssh/id_rsa
 app_id=7102
 app_key={{ zuul_user_home }}/liu-openlab-ci.pem
 webhook_token=liuopenlab

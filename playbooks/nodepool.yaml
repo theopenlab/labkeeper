@@ -47,3 +47,25 @@
         mode: 0400
         owner: nodepool
         src: "{{ windmill_config_git_dest }}/nodepool/clouds.yaml"
+
+    - name: Copy repos.yaml into place.
+      become: yes
+      copy:
+        dest: /etc/nodepool/repos.yaml
+        group: nodepool
+        mode: 0400
+        owner: nodepool
+        src: "{{ windmill_config_git_dest }}/nodepool/repos.yaml"
+
+    - name: Clone project-config
+      git:
+        repo: 'https://github.com/openstack-infra/project-config.git'
+        dest: '{{ nodepool_user_home }}'
+
+    - name: Copy elements from project-config into plance
+      become: yes
+      copy:
+        dest: /etc/nodepool/elements/
+        group: nodepool
+        owner: nodepool
+        src: '{{ nodepool_user_home }}/nodepool/elements/'
