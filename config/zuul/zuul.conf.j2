@@ -48,19 +48,13 @@ listen_address = {{ hostvars['zw01'].ansible_host }}
 [zookeeper]
 hosts = {{ hostvars['zk01'].ansible_host | ipwrap }}
 
-[connection gerrit]
-driver = gerrit
-server = 127.0.0.1
-sshkey = {{ zuul_user_home }}/.ssh/gerrit_id_rsa
-user = windmill
-
 [connection github]
 driver=github
 server=github.com
 user=zuul
-sshkey={{ zuul_user_home }}/.ssh/gerrit_id_rsa
+sshkey={{ zuul_user_home }}/.ssh/github_id_rsa
 app_id=7102
-app_key=/home/zuul/liu-openlab-ci.pem
+app_key={{ zuul_user_home }}/liu-openlab-ci.pem
 webhook_token=liuopenlab
 verify_ssl=false
 
