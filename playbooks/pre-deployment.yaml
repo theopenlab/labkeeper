@@ -11,7 +11,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: bastion
+- hosts: all,!bastion
   become: yes
   tasks:
     - name: Copy sources.list into place.
