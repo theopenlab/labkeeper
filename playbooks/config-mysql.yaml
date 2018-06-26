@@ -36,5 +36,6 @@
       ignore_errors: yes
     - mysql_user:
         name: zuul
-        host: "{{ hostvars[zuul-web].ansible_host }}"
-        state: present priv='*.*:ALL'
+        host: "{{ hostvars.zw01.ansible_host }}"
+        state: present
+        priv: 'zuul.*:ALL'
