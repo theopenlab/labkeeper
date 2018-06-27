@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- import_playbook: pre-deployment.yaml
+- import_playbook: prerequisites.yaml
+- import_playbook: bastion.yaml
 - import_playbook: bootstrap.yaml
 - import_playbook: statsd.yaml
 - import_playbook: gearman-apt.yaml

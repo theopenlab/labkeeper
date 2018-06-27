@@ -11,7 +11,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: all,!bastion
+- hosts: all
   become: yes
   tasks:
     - name: Copy sources.list into place.
@@ -21,38 +21,15 @@
         mode: 0644
         src: "{{ windmill_config_git_dest }}/sources.list"
 
-    - name: Set source dir of project
-      set_fact:
-        windmill_src_dir: '{{ playbook_dir }}/../'
-
-    - name: Install bindep
-      pip:
-        name: bindep
-
-    - name: Install bindep packages
-      args:
-        chdir: '{{ windmill_src_dir }}'
-        executable: /bin/bash
-      shell: ./tools/install_bindep.sh
+    - name: Install pip packages
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+      with_items:
+        - python-pip
+        - python3-pip
 
     - name: Upgrade pip
       pip:
         name: pip
         state: latest
-
-    - name: Install pip requirement packages
-      pip:
-        requirements: requiremets.txt
-        chdir: '{{ windmill_src_dir }}'
-
-    - name: Disable extra wheels mirror
-      lineinfile:
-        dest: /etc/pip.conf
-        regexp: ^extra-index-url
-        state: absent
-
-    - name: Install ansible roles via galaxy
-      args:
-        chdir: '{{ windmill_src_dir }}'
-        executable: /bin/bash
-      shell: ./tools/install_roles.sh
