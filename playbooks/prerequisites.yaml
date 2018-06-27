@@ -11,7 +11,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: nodepool,zuul,bastion
+- hosts: nodepool,zuul
   become: yes
   serial: 1
   tasks:
@@ -20,17 +20,13 @@
       copy:
         dest: /etc/apt/sources.list
         mode: 0644
-        src: "{{ windmill_config_git_dest }}/sources.list"
+        src: "{{ windmill_config_git_dest }}/apt/sources.list"
 
     - name: Install pip packages
       apt:
         name: "{{ item }}"
         update_cache: yes
+        state: latest
       with_items:
         - python-pip
         - python3-pip
-
-    - name: Upgrade pip
-      pip:
-        name: pip
-        state: latest
