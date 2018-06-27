@@ -24,9 +24,6 @@
 
     - name: Install pip packages
       apt:
-        name: "{{ item }}"
+        name: ['python-pip', 'python3-pip']
         update_cache: yes
         state: latest
-      with_items:
-        - python-pip
-        - python3-pip
