@@ -15,27 +15,11 @@
 - name: Bootstrap bastion node.
   hosts: bastion
 
-  pre_tasks:
-    - name: Create SSH keys (if missing).
-      command: ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ""
-      args:
-        creates: ~/.ssh/id_rsa
-
-    - name: Ensure SSH public key is authorized.
-      authorized_key:
-        user: "{{ lookup('env', 'USER') }}"
-        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
-
-    - name: Ensure remote SSH host keys are known.
-      known_hosts:
-        name: "{{ hostvars[item].ansible_host }}"
-        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa {{ hostvars[item].ansible_host }}') }}"
-      with_inventory_hostnames: all:!bastion
-
   tasks:
-    - name: Set source dir of project
-      set_fact:
-        windmill_src_dir: '{{ playbook_dir }}/..'
+    - name: Install pip requirement packages
+      pip:
+        requirements: requirements.txt
+        chdir: '{{ windmill_src_dir }}'
 
     - name: Install bindep
       pip:
@@ -46,16 +30,6 @@
         chdir: '{{ windmill_src_dir }}'
         executable: /bin/bash
       shell: ./tools/install_bindep.sh
-
-    - name: Install pip requirement packages
-      pip:
-        requirements: '{{ windmill_src_dir }}/requirements.txt'
-
-    - name: Disable extra wheels mirror
-      lineinfile:
-        dest: /etc/pip.conf
-        regexp: ^extra-index-url
-        state: absent
 
     - name: Install ansible roles via galaxy
       args:
