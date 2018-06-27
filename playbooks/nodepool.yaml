@@ -68,12 +68,12 @@
     - name: Clone project-config
       git:
         repo: 'https://github.com/openstack-infra/project-config.git'
-        dest: '{{ nodepool_user_home }}'
+        dest: /tmp/project-config
 
-    - name: Copy elements from project-config into plance
+    - name: Copy elements from project-config into place
       become: yes
       copy:
         dest: /etc/nodepool/elements/
         group: nodepool
         owner: nodepool
-        src: '{{ nodepool_user_home }}/nodepool/elements/'
+        src: /tmp/project-config/nodepool/elements/
