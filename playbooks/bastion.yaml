@@ -35,7 +35,7 @@
   tasks:
     - name: Set source dir of project
       set_fact:
-        windmill_src_dir: '{{ playbook_dir }}/../'
+        windmill_src_dir: '{{ playbook_dir }}/..'
 
     - name: Install bindep
       pip:
@@ -49,8 +49,7 @@
 
     - name: Install pip requirement packages
       pip:
-        requirements: requiremets.txt
-        chdir: '{{ windmill_src_dir }}'
+        requirements: '{{ windmill_src_dir }}/requirements.txt'
 
     - name: Disable extra wheels mirror
       lineinfile:
