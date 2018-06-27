@@ -11,8 +11,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: all
+- hosts: nodepool,zuul,bastion
   become: yes
+  serial: 1
   tasks:
     - name: Copy sources.list into place.
       become: yes
