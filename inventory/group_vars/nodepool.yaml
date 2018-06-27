@@ -14,3 +14,4 @@
 ---
 # windmill.nodepool
 nodepool_file_nodepool_yaml_src: "{{ windmill_config_git_dest }}/nodepool/nodepool.yaml.j2"
+ssh_user_home: "{{ nodepool_user_home|default('/var/lib/nodepool') }}"

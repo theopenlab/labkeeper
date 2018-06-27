@@ -39,6 +39,14 @@
         path: /var/lib/nodepool/.config/openstack
         state: directory
 
+    - name: Create nodepool config directory.
+      become: yes
+      file:
+        group: nodepool
+        owner: nodepool
+        path: /etc/nodepool/
+        state: directory
+
     - name: Copy clouds.yaml into place.
       become: yes
       copy:
