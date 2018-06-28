@@ -61,8 +61,10 @@ diskimages:
       DIB_DEBIAN_COMPONENTS: 'main,universe'
       DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
       DIB_DEV_USER_PWDLESS_SUDO: '1'
-      DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
-      ZUUL_USER_SSH_PUBLIC_KEY: '{{ zuul_user_home }}/.ssh/id_rsa.pub'
+      DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
+      GIT_HTTP_LOW_SPEED_TIME: '300'
+      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
+
   - name: ubuntu-trusty
     elements:
       - ubuntu
@@ -83,5 +85,6 @@ diskimages:
       DIB_DEBIAN_COMPONENTS: 'main,universe'
       DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
       DIB_DEV_USER_PWDLESS_SUDO: '1'
-      DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
-      ZUUL_USER_SSH_PUBLIC_KEY: '{{ zuul_user_home }}/.ssh/id_rsa.pub'
+      DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
+      GIT_HTTP_LOW_SPEED_TIME: '300'
+      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
