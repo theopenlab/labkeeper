@@ -25,7 +25,15 @@
 
     - name: Install apt packages
       apt:
-        name: ['python-pip', 'python3-pip']
+        name:
+          - dbus
+          - libffi-dev
+          - libssl-dev
+          - build-essential
+          - python3-dev
+          - python-dev
+          - python3-pip
+          - python-pip
         update_cache: yes
         state: latest
 
