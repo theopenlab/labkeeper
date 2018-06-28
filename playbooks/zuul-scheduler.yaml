@@ -16,6 +16,11 @@
   hosts: zuul-scheduler
 
   tasks:
+    - name: Upgrade the version of six(workaround)
+      pip:
+        name: six
+        version: 1.11.0
+
     - name: Setup openstack.ssh role.
       include_role:
         name: openstack.ssh
