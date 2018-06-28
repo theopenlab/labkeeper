@@ -17,6 +17,29 @@
   hosts: nodepool-builder
 
   tasks:
+    - name: Copy repos.yaml into place.
+      become: yes
+      copy:
+        dest: /etc/nodepool/repos.yaml
+        group: nodepool
+        mode: 0400
+        owner: nodepool
+        src: "{{ windmill_config_git_dest }}/nodepool/repos.yaml"
+
+    - name: Clone project-config
+      git:
+        repo: 'https://github.com/openstack-infra/project-config.git'
+        dest: /tmp/project-config
+
+    - name: Copy elements from project-config into place
+      become: yes
+      synchronize:
+        dest: /etc/nodepool/elements/
+        src: /tmp/project-config/nodepool/elements/
+        recursive: yes
+        rsync_opts: '--chown={{ nodepool_user_group }}:{{ nodepool_user_name }}'
+      delegate_to: "{{ hostvars.nb01.ansible_host }}"
+
     - name: Setup openstack.ssh role
       include_role:
         name: openstack.ssh
