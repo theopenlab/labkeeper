@@ -21,6 +21,7 @@
       pip:
         name: six
         version: 1.11.0
+        executable: pip3
 
     - name: Setup openstack.ssh role.
       include_role:
