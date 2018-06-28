@@ -17,6 +17,7 @@
 
   tasks:
     - name: Upgrade the version of six(workaround)
+      become: yes
       pip:
         name: six
         version: 1.11.0
