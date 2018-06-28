@@ -77,3 +77,4 @@
         group: nodepool
         owner: nodepool
         src: /tmp/project-config/nodepool/elements/
+        remote_src: yes
