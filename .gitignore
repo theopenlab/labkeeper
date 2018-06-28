@@ -5,3 +5,6 @@ doc/build/
 inventory/production
 # Roles installed from galaxy
 .tox/
+
+openlab.pem
+vault-password.txt
