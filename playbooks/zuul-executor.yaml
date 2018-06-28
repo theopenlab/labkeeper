@@ -39,10 +39,6 @@
         name: bubblewrap
         state: installed
 
-    - name: Setup openstack.ssh role
-      include_role:
-        name: openstack.ssh
-
     - name: Setup openstack.logrotate role
       include_role:
         name: openstack.logrotate

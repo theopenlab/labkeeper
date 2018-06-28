@@ -30,3 +30,8 @@
         zuul_task_manager:
           - pre
 
+    - name: Create zuul user SSH keys (if missing).
+      become: yes
+      command: ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ""
+      args:
+        creates: ~/.ssh/id_rsa
