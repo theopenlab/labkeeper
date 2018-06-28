@@ -37,7 +37,7 @@
         dest: /etc/nodepool/elements/
         src: /tmp/project-config/nodepool/elements/
         recursive: yes
-        rsync_opts: '--chown={{ nodepool_user_group }}:{{ nodepool_user_name }}'
+        rsync_opts: '--chown=nodepool:nodepool'
       delegate_to: "{{ hostvars.nb01.ansible_host }}"
 
     - name: Setup openstack.ssh role
