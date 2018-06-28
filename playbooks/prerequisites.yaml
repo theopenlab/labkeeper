@@ -23,8 +23,12 @@
         mode: 0644
         src: "{{ windmill_config_git_dest }}/apt/sources.list"
 
-    - name: Install pip packages
+    - name: Install apt packages
       apt:
-        name: ['python-pip', 'python3-pip', 'setuptools']
+        name: ['python-pip', 'python3-pip']
         update_cache: yes
         state: latest
+
+    - name: Install pip packages
+      pip:
+        name: setuptools
