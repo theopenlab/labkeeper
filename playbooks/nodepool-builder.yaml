@@ -26,6 +26,17 @@
         owner: nodepool
         src: "{{ windmill_config_git_dest }}/nodepool/repos.yaml"
 
+    - name: create dib cache and tmp directories
+      become: yes
+      file:
+        group: nodepool
+        owner: nodepool
+        path: '{{ item }}'
+        state: directory
+      with_items:
+        - /opt/dib_cache
+        - /opt/dib_tmp
+
     - name: Clone project-config
       git:
         repo: 'https://github.com/openstack-infra/project-config.git'
