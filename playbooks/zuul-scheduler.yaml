@@ -23,10 +23,6 @@
         version: 1.11.0
         executable: pip3
 
-    - name: Setup openstack.ssh role.
-      include_role:
-        name: openstack.ssh
-
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul

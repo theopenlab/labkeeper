@@ -16,3 +16,4 @@
 # TODO(pabelanger): Create windmill-config project on git.o.o.
 windmill_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/config"
 windmill_src_dir: "{{ lookup('pipe', 'pwd') | dirname }}"
+
