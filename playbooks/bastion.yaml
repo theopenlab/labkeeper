@@ -21,16 +21,6 @@
       pip:
         requirements: '{{ windmill_src_dir }}/requirements.txt'
 
-    - name: Install bindep
-      pip:
-        name: bindep
-
-    - name: Install bindep packages
-      args:
-        chdir: '{{ windmill_src_dir }}'
-        executable: /bin/bash
-      shell: ./tools/install_bindep.sh
-
     - name: Install ansible roles via galaxy
       args:
         chdir: '{{ windmill_src_dir }}'
