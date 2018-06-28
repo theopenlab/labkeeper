@@ -1,7 +1,7 @@
 - hosts: gear
   become: yes
   tasks:
-    - name: Run ansible zuul job check tests for openlab-zuul-jobs
+    - name: Install gearman by apt install
       shell:
         cmd: |
           set -e
