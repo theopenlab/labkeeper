@@ -14,3 +14,4 @@
 ---
 # windmill.nodepool
 nodepool_file_nodepool_yaml_src: "{{ windmill_config_git_dest }}/nodepool/nodepool.yaml.j2"
+zuul_user_home: /var/lib/zuul
