@@ -18,14 +18,6 @@
   # operation to be serial. When we switch to multi-host, this can be removed.
   serial: 1
 
-  pre_tasks:
-    - name: Update apt cache
-      become: yes
-      apt:
-        update_cache: yes
-        upgrade: dist
-      when: ansible_os_family == 'Debian'
-
   tasks:
     - name: Setup openstack.sudoers role
       include_role:

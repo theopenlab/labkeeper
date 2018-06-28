@@ -14,6 +14,7 @@
 - hosts: bastion,nodepool,zuul
   become: yes
   serial: 1
+
   tasks:
     - name: Copy sources.list into place.
       become: yes
@@ -24,6 +25,6 @@
 
     - name: Install pip packages
       apt:
-        name: ['python-pip', 'python3-pip']
+        name: ['python-pip', 'python3-pip', 'setuptools']
         update_cache: yes
         state: latest
