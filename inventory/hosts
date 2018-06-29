@@ -1,41 +1,45 @@
 bastion ansible_connection=local
 
+nodepool01  ansible_host=127.0.0.1
+zuul01  ansible_host=127.0.0.1
+misc01  ansible_host=127.0.0.1
+
 [gear]
-misc01 ansible_host=127.0.0.1
+misc01
 
 [statsd]
-misc01 ansible_host=127.0.0.1
+misc01
 
 [zookeeper]
-misc01 ansible_host=127.0.0.1
+misc01
 
 [nodepool-builder]
-nodepool01 ansible_host=127.0.0.1
+nodepool01
 
 [nodepool-launcher]
-nodepool01 ansible_host=127.0.0.1
+nodepool01
 
 [nodepool:children]
 nodepool-builder
 nodepool-launcher
 
 [zuul-executor]
-zuul01 ansible_host=127.0.0.1
+zuul01
 
 [mysql]
-zuul01 ansible_host=127.0.0.1
+zuul01
 
 [zuul-fingergw]
-zuul01 ansible_host=127.0.0.1
+zuul01
 
 [zuul-merger]
-zuul01 ansible_host=127.0.0.1
+zuul01
 
 [zuul-scheduler]
-zuul01 ansible_host=127.0.0.1
+zuul01
 
 [zuul-web]
-zuul01 ansible_host=127.0.0.1
+zuul01
 
 [zuul:children]
 zuul-executor
