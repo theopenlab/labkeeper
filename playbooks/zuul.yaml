@@ -14,7 +14,7 @@
 ---
 - name: Install zuul
   hosts: zuul
-
+  become: yes
   tasks:
     # NOTE(pabelanger): Because of ordering issues create the required home
     # directory first.
@@ -26,7 +26,6 @@
           - pre
 
     - name: Copy github app key file into place.
-      become: yes
       copy:
         dest: /var/lib/zuul/openlab-app-key.pem
         group: zuul
@@ -36,7 +35,6 @@
       when: github_app_key_file is defined
 
     - name: Create zuul SSH directory.
-      become: yes
       file:
         dest: "/var/lib/zuul/.ssh/"
         group: "zuul"
@@ -45,13 +43,11 @@
         state: directory
 
     - name: Create zuul user SSH keys (if missing).
-      become: yes
       command: ssh-keygen -t rsa -f /var/lib/zuul/.ssh/id_rsa -N ""
       args:
         creates: /var/lib/zuul/.ssh/id_rsa
 
     - name: Change permissions for SSH keys.
-      become: yes
       file:
         path: "/var/lib/zuul/.ssh/{{ item }}"
         group: "zuul"
@@ -62,7 +58,6 @@
         - id_rsa.pub
 
     - name: ensure github.com is a known host
-      become: yes
       lineinfile:
         dest: /var/lib/zuul/.ssh/known_hosts
         group: "zuul"
@@ -71,3 +66,13 @@
         state: present
         line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
         regexp: "^github\\.com"
+
+    - name: Read zuul SSH public key.
+      shell: cat /var/lib/zuul/.ssh/id_rsa.pub
+      register: ssh_pub_key
+
+    - name: add zuul SSH public key to github
+      github_key:
+        name: pub key from allinone otc
+        pubkey: '{{ ssh_pub_key.stdout }}'
+        token: 24e93fa0561b261f680067fa3a9238808439060f
