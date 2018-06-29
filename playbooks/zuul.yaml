@@ -71,8 +71,12 @@
       shell: cat /var/lib/zuul/.ssh/id_rsa.pub
       register: ssh_pub_key
 
+    - name: Read github access token.
+      shell: cat "{{ github_access_token }}"
+      register: github_acc_token
+
     - name: add zuul SSH public key to github
       github_key:
         name: pub key from allinone otc
         pubkey: '{{ ssh_pub_key.stdout }}'
-        token: '{{ github_access_token }}'
+        token: '{{ github_acc_token.stdout }}'
