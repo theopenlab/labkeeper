@@ -14,11 +14,6 @@
 ---
 - name: Install zuul
   hosts: zuul
-  # TODO(pabelanger): We really don't want to use serial here, but this allows
-  # us to still support a single node install.  What we should do here is expose
-  # some sort of variable to only toggle this when we are doing a single node
-  # install. Otherwise, we just slow down multinode deployments.
-  serial: 1
 
   tasks:
     # NOTE(pabelanger): Because of ordering issues create the required home
@@ -30,8 +25,18 @@
         zuul_task_manager:
           - pre
 
+    - name: Copy github key file into place.
+      become: yes
+      copy:
+        dest: /var/lib/zuul/openlab-ci.pem
+        group: zuul
+        mode: 0600
+        owner: zuul
+        src: "{{ github_app_key_file }}"
+      when: {{ github_app_key_file }}
+
     - name: Create zuul user SSH keys (if missing).
       become: zuul
-      command: ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ""
+      command: ssh-keygen -t rsa -f /var/lib/zuul/.ssh/id_rsa -N ""
       args:
-        creates: ~/.ssh/id_rsa
+        creates: /var/lib/zuul/.ssh/id_rsa
