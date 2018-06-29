@@ -51,9 +51,9 @@ driver=github
 server=github.com
 user=zuul
 sshkey={{ zuul_user_home }}/.ssh/id_rsa
-app_id=7102
-app_key={{ zuul_user_home }}/liu-openlab-ci.pem
-webhook_token=liuopenlab
+app_id={{ github_app_id }}
+app_key={{ zuul_user_home }}/openlab-ci.pem
+webhook_token={{ github_webhook_token }}
 verify_ssl=false
 
 [connection openstack-git]

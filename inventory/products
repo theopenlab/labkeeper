@@ -47,3 +47,8 @@ zuul-fingergw
 zuul-merger
 zuul-scheduler
 zuul-web
+
+[zuul:vars]
+github_app_id=7102
+github_app_key_file={{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem
+github_webhook_token=liuopenlab
