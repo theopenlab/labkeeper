@@ -51,4 +51,4 @@ github_app_id=7102
 github_app_key_file={{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem
 github_webhook_token=liuopenlab
 zuul_file_main_yaml_src="{{ windmill_config_git_dest }}/zuul/main.yaml"
-github_access_token="{{ windmill_config_git_dest }}/zuul/github_access_token_file"
+github_acc_token="{{ liu_github_acc_token }}"
