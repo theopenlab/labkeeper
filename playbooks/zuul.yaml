@@ -60,3 +60,14 @@
       with_items:
         - id_rsa
         - id_rsa.pub
+
+    - name: ensure github.com is a known host
+      become: yes
+      lineinfile:
+        dest: /var/lib/zuul/.ssh/known_hosts
+        group: "zuul"
+        owner: "zuul"
+        create: yes
+        state: present
+        line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+        regexp: "^github\\.com"
