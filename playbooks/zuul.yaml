@@ -25,7 +25,6 @@
         zuul_task_manager:
           - pre
 
-
     - name: Copy github app key file into place.
       become: yes
       copy:
