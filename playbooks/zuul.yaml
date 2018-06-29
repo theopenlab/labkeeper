@@ -33,7 +33,7 @@
         mode: 0600
         owner: zuul
         src: "{{ github_app_key_file }}"
-      when: {{ github_app_key_file }}
+      when: github_app_key_file is defined
 
     - name: Create zuul user SSH keys (if missing).
       become: zuul
