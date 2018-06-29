@@ -75,4 +75,4 @@
       github_key:
         name: pub key from allinone otc
         pubkey: '{{ ssh_pub_key.stdout }}'
-        token: 24e93fa0561b261f680067fa3a9238808439060f
+        token: '{{ github_access_token }}'
