@@ -3,7 +3,7 @@
 #
 [gearman]
 port = 4730
-server = {{ hostvars['gear01'].ansible_host }}
+server = {{ hostvars[groups["gear"][0]].ansible_host }}
 check_job_registration=true
 
 [gearman_server]
@@ -17,7 +17,7 @@ state_dir = {{ zuul_user_home }}
 
 {% if ansible_host | ipv4 %}
 [statsd]
-server = {{ hostvars['statsd01'].ansible_host }}
+server = {{ hostvars[groups["statsd"][0]].ansible_host }}
 {% endif %}
 
 [executor]
@@ -27,7 +27,7 @@ private_key_file = {{ zuul_user_home }}/.ssh/id_rsa
 workspace_root = {{ zuul_user_home }}/workspace
 
 [fingergw]
-listen_address = {{ hostvars['zf01'].ansible_host }}
+listen_address = {{ hostvars[groups["zuul-fingergw"][0]].ansible_host }}
 log_config = /etc/zuul/fingergw-logging.conf
 user = {{ zuul_user_name }}
 
@@ -37,14 +37,14 @@ git_user_email = theopenlab.ci@gmail.com
 git_user_name = theopenlab-ci
 log_config = /etc/zuul/merger-logging.conf
 pidfile = /var/run/zuul-merger/zuul-merger.pid
-zuul_url = {{ hostvars['zs01'].ansible_host }}
+zuul_url = {{ hostvars[groups["zuul-scheduler"][0]].ansible_host }}
 
 [web]
 log_config = /etc/zuul/web-logging.conf
-listen_address = {{ hostvars['zw01'].ansible_host }}
+listen_address = {{ hostvars[groups["zuul-web"][0]].ansible_host }}
 
 [zookeeper]
-hosts = {{ hostvars['zk01'].ansible_host | ipwrap }}
+hosts = {{ hostvars[groups["zookeeper"][0]].ansible_host | ipwrap }}
 
 [connection github]
 driver=github
