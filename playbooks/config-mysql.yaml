@@ -39,6 +39,6 @@
 
     - mysql_user:
         name: zuul
-        host: "{{ hostvars.zw01.ansible_host }}"
+        host: "{{ hostvars[groups['zuul-web'][0]].ansible_host }}"
         state: present
         priv: 'zuul.*:ALL'
