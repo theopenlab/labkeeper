@@ -25,7 +25,8 @@
         zuul_task_manager:
           - pre
 
-    - name: Copy github key file into place.
+
+    - name: Copy github app key file into place.
       become: yes
       copy:
         dest: /var/lib/zuul/openlab-app-key.pem
@@ -35,8 +36,17 @@
         src: "{{ github_app_key_file }}"
       when: github_app_key_file is defined
 
-    - name: Create zuul user SSH keys (if missing).
+    - name: Create zuul ssh directory.
       become: yes
+      file:
+        dest: "/var/lib/zuul/.ssh/"
+        group: "zuul"
+        mode: 0700
+        owner: "zuul"
+        state: directory
+
+    - name: Create zuul user SSH keys (if missing).
+      become: zuul
       command: ssh-keygen -t rsa -f /var/lib/zuul/.ssh/id_rsa -N ""
       args:
         creates: /var/lib/zuul/.ssh/id_rsa
