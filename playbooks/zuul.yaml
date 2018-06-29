@@ -28,7 +28,7 @@
     - name: Copy github key file into place.
       become: yes
       copy:
-        dest: /var/lib/zuul/openlab-ci.pem
+        dest: /var/lib/zuul/openlab-app-key.pem
         group: zuul
         mode: 0600
         owner: zuul
@@ -36,7 +36,7 @@
       when: github_app_key_file is defined
 
     - name: Create zuul user SSH keys (if missing).
-      become: zuul
+      become: yes
       command: ssh-keygen -t rsa -f /var/lib/zuul/.ssh/id_rsa -N ""
       args:
         creates: /var/lib/zuul/.ssh/id_rsa
