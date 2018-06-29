@@ -54,7 +54,8 @@
     - name: Change permissions for SSH keys.
       become: yes
       file:
-        path: /var/lib/zuul/.ssh/*
+        recurse: yes
+        path: /var/lib/zuul/.ssh/
         group: "zuul"
         owner: "zuul"
         mode: 0600
