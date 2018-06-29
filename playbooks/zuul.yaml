@@ -36,7 +36,7 @@
         src: "{{ github_app_key_file }}"
       when: github_app_key_file is defined
 
-    - name: Create zuul ssh directory.
+    - name: Create zuul SSH directory.
       become: yes
       file:
         dest: "/var/lib/zuul/.ssh/"
@@ -46,7 +46,15 @@
         state: directory
 
     - name: Create zuul user SSH keys (if missing).
-      become: zuul
+      become: yes
       command: ssh-keygen -t rsa -f /var/lib/zuul/.ssh/id_rsa -N ""
       args:
         creates: /var/lib/zuul/.ssh/id_rsa
+
+    - name: Change permissions for SSH keys.
+      become: yes
+      file:
+        path: /var/lib/zuul/.ssh/*
+        group: "zuul"
+        owner: "zuul"
+        mode: 0600
