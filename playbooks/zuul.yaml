@@ -54,7 +54,10 @@
       become: yes
       file:
         recurse: yes
-        path: /var/lib/zuul/.ssh/
+        path: "/var/lib/zuul/.ssh/{{ item }}"
         group: "zuul"
         owner: "zuul"
         mode: 0600
+      with_items:
+        - id_rsa
+        - id_rsa.pub
