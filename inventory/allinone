@@ -1,41 +1,43 @@
 bastion ansible_connection=local
 
-[gear]
 allinone ansible_host=127.0.0.1
+
+[gear]
+allinone
 
 [statsd]
-allinone ansible_host=127.0.0.1
+allinone
 
 [zookeeper]
-allinone ansible_host=127.0.0.1
+allinone
 
 [nodepool-builder]
-allinone ansible_host=127.0.0.1
+allinone
 
 [nodepool-launcher]
-allinone ansible_host=127.0.0.1
+allinone
 
 [nodepool:children]
 nodepool-builder
 nodepool-launcher
 
 [zuul-executor]
-allinone ansible_host=127.0.0.1
+allinone
 
 [mysql]
-allinone ansible_host=127.0.0.1
+allinone
 
 [zuul-fingergw]
-allinone ansible_host=127.0.0.1
+allinone
 
 [zuul-merger]
-allinone ansible_host=127.0.0.1
+allinone
 
 [zuul-scheduler]
-allinone ansible_host=127.0.0.1
+allinone
 
 [zuul-web]
-allinone ansible_host=127.0.0.1
+allinone
 
 [zuul:children]
 zuul-executor
