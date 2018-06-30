@@ -18,14 +18,3 @@ nodepool_file_nodepool_launcher_service_config_src: nodepool-launcher/etc/system
 nodepool_file_nodepool_builder_service_config_manage: false
 nodepool_file_nodepool_builder_service_manage: false
 nodepool_service_nodepool_builder_manage: false
-
-# openstack.logrotate
-logrotate_configs:
-  - name: nodepool-launcher
-    log: /var/log/nodepool/launcher-debug.log /var/log/nodepool/nodepool-launcher.log
-    options:
-      - compress
-      - missingok
-      - rotate 7
-      - daily
-      - notifempty

@@ -23,12 +23,22 @@
     - name: Setup openstack.nodepool role
       include_role:
         name: openstack.nodepool
+      vars:
+        nodepool_install_method: git
 
     - name: Setup openstack.logrotate role
       include_role:
         name: openstack.logrotate
       vars:
-        nodepool_install_method: git
+        logrotate_configs:
+          - name: nodepool-launcher
+            log: /var/log/nodepool/launcher-debug.log /var/log/nodepool/nodepool-launcher.log
+            options:
+              - compress
+              - missingok
+              - rotate 7
+              - daily
+              - notifempty
 
   post_tasks:
     - name: Run nodepool-launcher validation.

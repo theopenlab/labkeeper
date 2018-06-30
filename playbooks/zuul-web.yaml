@@ -21,10 +21,23 @@
         name: openstack.zuul
       vars:
         zuul_install_method: git
+        zuul_service_zuul_web_enabled: yes
+        zuul_service_zuul_web_manage: true
+        zuul_service_zuul_web_state: started
 
     - name: Setup openstack.logrotate role.
       include_role:
         name: openstack.logrotate
+      vars:
+        logrotate_configs:
+          - name: zuul-web
+            log: /var/log/zuul/web-debug.log /var/log/zuul/web.log
+            options:
+              - compress
+              - missingok
+              - rotate 7
+              - daily
+              - notifempty
 
   post_tasks:
     - name: Run zuul-web validation.

@@ -23,17 +23,6 @@ nodepool_file_nodepool_launcher_service_config_manage: false
 nodepool_file_nodepool_launcher_service_manage: false
 nodepool_service_nodepool_launcher_manage: false
 
-# openstack.logrotate
-logrotate_configs:
-  - name: nodepool-builder
-    log: /var/log/nodepool/builder-debug.log /var/log/nodepool/nodepool-builder.log
-    options:
-      - compress
-      - missingok
-      - rotate 7
-      - daily
-      - notifempty
-
 # openstack.sudoers
 sudoers_task_manager:
   - config

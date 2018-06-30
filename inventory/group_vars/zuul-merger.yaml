@@ -42,14 +42,3 @@ zuul_service_zuul_scheduler_state: stopped
 zuul_service_zuul_web_enabled: no
 zuul_service_zuul_web_manage: false
 zuul_service_zuul_web_state: stopped
-
-# openstack.logrotate
-logrotate_configs:
-  - name: zuul-merger
-    log: /var/log/zuul/merger-debug.log /var/log/zuul/merger.log
-    options:
-      - compress
-      - missingok
-      - rotate 7
-      - daily
-      - notifempty
