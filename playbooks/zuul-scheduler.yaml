@@ -28,6 +28,11 @@
         name: openstack.zuul
       vars:
         zuul_install_method: git
+        zuul_file_zuul_scheduler_service_config_manage: true
+        zuul_file_zuul_scheduler_service_manage: true
+        zuul_service_zuul_scheduler_enabled: yes
+        zuul_service_zuul_scheduler_manage: true
+        zuul_service_zuul_scheduler_state: started
 
     - name: Setup openstack.logrotate role.
       include_role:
