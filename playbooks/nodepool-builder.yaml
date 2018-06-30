@@ -51,9 +51,20 @@
         rsync_opts: '--chown=nodepool:nodepool'
       delegate_to: "{{ ansible_host }}"
 
-    - name: Setup openstack.ssh role
-      include_role:
-        name: openstack.ssh
+    - name: Create nodepool user SSH keys (if missing).
+      command: ssh-keygen -t rsa -f /var/lib/nodepool/.ssh/id_rsa -N ""
+      args:
+        creates: /var/lib/nodepool/.ssh/id_rsa
+
+    - name: Change permissions for SSH keys.
+      file:
+        path: "/var/lib/nodepool/.ssh/{{ item }}"
+        group: "nodepool"
+        owner: "nodepool"
+        mode: 0600
+      with_items:
+        - id_rsa
+        - id_rsa.pub
 
     - name: Setup openstack.sudoers role
       include_role:
