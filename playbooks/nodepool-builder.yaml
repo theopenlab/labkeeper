@@ -51,6 +51,14 @@
         rsync_opts: '--chown=nodepool:nodepool'
       delegate_to: "{{ ansible_host }}"
 
+    - name: Create nodepool SSH directory.
+      file:
+        dest: "/var/lib/nodepool/.ssh/"
+        group: "nodepool"
+        mode: 0700
+        owner: "nodepool"
+        state: directory
+
     - name: Create nodepool user SSH keys (if missing).
       command: ssh-keygen -t rsa -f /var/lib/nodepool/.ssh/id_rsa -N ""
       args:
