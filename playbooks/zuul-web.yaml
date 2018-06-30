@@ -21,6 +21,8 @@
         name: openstack.zuul
       vars:
         zuul_install_method: git
+        zuul_file_zuul_web_service_config_manage: true
+        zuul_file_zuul_web_service_manage: true
         zuul_service_zuul_web_enabled: yes
         zuul_service_zuul_web_manage: true
         zuul_service_zuul_web_state: started
