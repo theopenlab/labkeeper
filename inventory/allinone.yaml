@@ -1,0 +1,50 @@
+all:
+  hosts:
+    allinone:
+      ansible_host: 127.0.0.1
+    bastion:
+      ansible_connection: local
+  children:
+    nodepool:
+      children:
+        nodepool-builder:
+          hosts:
+            allinone:
+        nodepool-launcher:
+          hosts:
+            allinone:
+    zuul:
+      children:
+        zuul-scheduler:
+          hosts:
+            allinone:
+        zuul-executor:
+          hosts:
+            allinone:
+        zuul-web:
+          hosts:
+            allinone:
+        zuul-merger:
+          hosts:
+            allinone:
+        zuul-fingergw:
+          hosts:
+            allinone:
+      vars:
+        github_app_id: 7102
+        github_app_key_file: {{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem
+        github_webhook_token: liuopenlab
+        zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
+        github_acc_token: d1b84b86cb33e2b49eec3da88ff4938fb7f441f8
+    gear:
+      hosts:
+        allinone:
+    statsd:
+      hosts:
+        allinone:
+    zookeeper:
+      hosts:
+        allinone:
+    mysql:
+      hosts:
+        allinone:
