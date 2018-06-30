@@ -71,7 +71,6 @@
       include_role:
         name: openstack.nodepool
       vars:
-        nodepool_install_method: git
         nodepool_file_nodepool_builder_service_config_manage: true
         nodepool_file_nodepool_builder_service_manage: true
         nodepool_service_nodepool_builder_manage: true

@@ -20,7 +20,6 @@
       include_role:
         name: openstack.zuul
       vars:
-        zuul_install_method: git
         zuul_file_zuul_fingergw_service_config_manage: true
         zuul_file_zuul_fingergw_service_manage: true
         zuul_service_zuul_fingergw_enabled: yes
