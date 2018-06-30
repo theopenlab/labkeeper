@@ -30,7 +30,6 @@
         nodepool_task_manager:
           - pre
 
-    # TODO(pabelanger): This should be moved into ansible-role-os-client-config.
     - name: Create os-client-config directories.
       become: yes
       file:

@@ -26,7 +26,13 @@ all:
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem"
-        github_webhook_token: liuopenlab
+        github_webhook_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          35353637626332663562663964363936346533326332626366633965333164306366656635323835
+          3730623134613431613461303638346564616538643863660a343764653761393062366130616362
+          36616236643135623465643538653764373635623766366263323639643033306661373736653766
+          3838656339306637660a363762343431633061643364633932336565313632643539656565383034
+          6162
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token: d1b84b86cb33e2b49eec3da88ff4938fb7f441f8
     gear:
