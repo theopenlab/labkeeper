@@ -2,27 +2,29 @@ all:
   hosts:
     bastion:
       ansible_connection: local
-    allinone:
+    nodepool01:
+      ansible_host: 127.0.0.1
+    zuul01:
       ansible_host: 127.0.0.1
   children:
     nodepool:
       children:
         nodepool-builder:
-          hosts: allinone
+          hosts: nodepool01
         nodepool-launcher:
-          hosts: allinone
+          hosts: nodepool01
     zuul:
       children:
         zuul-scheduler:
-          hosts: allinone
+          hosts: zuul01
         zuul-executor:
-          hosts: allinone
+          hosts: zuul01
         zuul-web:
-          hosts: allinone
+          hosts: zuul01
         zuul-merger:
-          hosts: allinone
+          hosts: zuul01
         zuul-fingergw:
-          hosts: allinone
+          hosts: zuul01
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem"
@@ -30,10 +32,10 @@ all:
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token: d1b84b86cb33e2b49eec3da88ff4938fb7f441f8
     gear:
-      hosts: allinone
+      hosts: zuul01
     statsd:
-      hosts: allinone
+      hosts: zuul01
     zookeeper:
-      hosts: allinone
+      hosts: zuul01
     mysql:
-      hosts: allinone
+      hosts: zuul01
