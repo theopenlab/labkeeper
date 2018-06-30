@@ -25,6 +25,16 @@
     - name: Setup openstack.logrotate role.
       include_role:
         name: openstack.logrotate
+      vars:
+        logrotate_configs:
+          - name: zuul-merger
+            log: /var/log/zuul/merger-debug.log /var/log/zuul/merger.log
+            options:
+              - compress
+              - missingok
+              - rotate 7
+              - daily
+              - notifempty
 
   post_tasks:
     - name: Run zuul-merger validation.

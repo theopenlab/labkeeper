@@ -14,14 +14,3 @@
 ---
 # windmill.statsd
 statsd_file_config_js_src: statsd/etc/statsd/config.js.j2
-
-# openstack.logrotate
-logrotate_configs:
-  - name: statsd
-    log: /var/log/statsd/statsd.log
-    options:
-      - compress
-      - missingok
-      - rotate 7
-      - daily
-      - notifempty

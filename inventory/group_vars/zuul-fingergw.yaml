@@ -40,14 +40,3 @@ zuul_service_zuul_scheduler_state: stopped
 zuul_service_zuul_web_enabled: no
 zuul_service_zuul_web_manage: false
 zuul_service_zuul_web_state: stopped
-
-# openstack.logrotate
-logrotate_configs:
-  - name: zuul-fingergw
-    log: /var/log/zuul/fingergw-debug.log /var/log/zuul/fingergw.log
-    options:
-      - compress
-      - missingok
-      - rotate 7
-      - daily
-      - notifempty

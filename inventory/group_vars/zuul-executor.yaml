@@ -42,14 +42,3 @@ zuul_service_zuul_scheduler_state: stopped
 zuul_service_zuul_web_enabled: no
 zuul_service_zuul_web_manage: false
 zuul_service_zuul_web_state: stopped
-
-# openstack.logrotate
-logrotate_configs:
-  - name: zuul-executor
-    log: /var/log/zuul/executor-debug.log /var/log/zuul/executor.log
-    options:
-      - compress
-      - missingok
-      - rotate 7
-      - daily
-      - notifempty

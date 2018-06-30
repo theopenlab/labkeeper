@@ -42,6 +42,16 @@
     - name: Setup openstack.logrotate role
       include_role:
         name: openstack.logrotate
+      vars:
+        logrotate_configs:
+          - name: zuul-executor
+            log: /var/log/zuul/executor-debug.log /var/log/zuul/executor.log
+            options:
+              - compress
+              - missingok
+              - rotate 7
+              - daily
+              - notifempty
 
   post_tasks:
     - name: Run zuul-executor validation
