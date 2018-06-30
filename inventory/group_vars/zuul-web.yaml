@@ -43,10 +43,6 @@ zuul_service_zuul_scheduler_enabled: no
 zuul_service_zuul_scheduler_manage: false
 zuul_service_zuul_scheduler_state: stopped
 
-zuul_service_zuul_web_enabled: yes
-zuul_service_zuul_web_manage: true
-zuul_service_zuul_web_state: started
-
 
 # openstack.logrotate
 logrotate_configs:
