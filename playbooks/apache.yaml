@@ -54,7 +54,7 @@
 
     - name: Modify modsecurity config file
       linefile:
-        dest: /etc/dhcp/interface-br0.conf
+        dest: /etc/modsecurity/modsecurity.conf
         regexp: '^SecRuleEngine DetectionOnly'
         line: 'SecRuleEngine On'
 
