@@ -11,11 +11,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+# TODO: support editable for ansible-role-zuul
 ---
 - name: Install zuul-web.
+  become: yes
   hosts: zuul-web
 
   tasks:
+    - name: Git clone zuul (workaround).
+      git:
+        dest: "{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul"
+        repo: https://git.openstack.org/openstack-infra/zuul
+
+    - name: Install zuul using pip.
+      become: yes
+      pip:
+        executable: pip3
+        name: "file://{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul"
+        editable: yes
+
     - name: Config zuul web javascript
       shell: |
         ./tools/install-js-tools.sh
@@ -34,6 +48,10 @@
         zuul_service_zuul_web_enabled: yes
         zuul_service_zuul_web_manage: true
         zuul_service_zuul_web_state: started
+        zuul_task_manager:
+          - pre
+          - config
+          - service
 
     - name: Setup openstack.logrotate role.
       include_role:
