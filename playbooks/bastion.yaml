@@ -31,4 +31,4 @@
     - name: Prepare zuul user SSH keys (if missing).
       command: ssh-keygen -t rsa -f {{ windmill_config_git_dest }}/zuul/id_rsa -N ""
       args:
-        creates: {{ windmill_config_git_dest }}/zuul/id_rsa
+        creates: "{{ windmill_config_git_dest }}/zuul/id_rsa"
