@@ -16,6 +16,15 @@
   hosts: zuul-web
 
   tasks:
+    - name: Config zuul web javascript
+      shell: |
+        ./tools/install-js-tools.sh
+        yarn install
+        npm run build:dev
+      args:
+        chdir: '{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul'
+        executable: /bin/bash
+
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul
