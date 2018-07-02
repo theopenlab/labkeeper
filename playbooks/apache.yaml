@@ -19,6 +19,9 @@
         name:
           - apache2
           - libapache2-mod-wsgi
+          - libapache2-mod-evasive
+          - libapache2-modsecurity
+          - fail2ban
         update_cache: yes
         state: latest
 
@@ -36,10 +39,30 @@
         mode: "{{ apache_zuul_status_page_config_mode }}"
         src: "{{ apache_zuul_status_page_config_src }}"
 
+    - name: Create evasive log directory
+      file:
+        path: /var/log/mod_evasive
+        state: directory
+
+    - name: Copy evasive config file into place
+      copy:
+        src: '{{ apache_mod_evasive_conf_file_src }}'
+        dest: '{{ apache_mod_evasive_conf_file_dest }}'
+
+    - name: Copy modsecurity config files into place
+      copy:
+        src: '{{ apache_mod_evasive_conf_file_src }}'
+        dest: '{{ apache_mod_evasive_conf_file_dest }}'
+      copy:
+        src: '{{ fail2ban_jail_file_src }}'
+        dest: '{{ fail2ban_jail_file_dest }}'
+
     - name: Enable dependent apache modules
       apache2_module:
         name: '{{ item }}'
       with_items:
+        - evasive
+        - security2
         - proxy
         - proxy_http
         - ssl
@@ -50,6 +73,7 @@
 
     - name: Enable zuul status page
       shell: |
+        service fail2ban restart
         a2dissite 000-default
         a2ensite zuul-web
         service apache2 restart
