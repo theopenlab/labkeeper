@@ -19,10 +19,12 @@
         state: present
 
     - name: Copy openlab-zuul-jobs key into place
-      synchronize:
-        dest: "{{ openlab_zuul_jobs_key_dest }}"
+      copy:
+        dest:  "{{ openlab_zuul_jobs_key_dest }}"
+        group: zuul
+        mode: 0600
+        owner: zuul
         src: "{{ openlab_zuul_jobs_key_src }}"
-        rsync_opts: '--chown=zuul:zuul'
 
     - name: Restart zuul services
       service:
