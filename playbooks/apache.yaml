@@ -53,7 +53,7 @@
       command: mv /etc/modsecurity/modsecurity.conf{-recommended,}
 
     - name: Modify modsecurity config file
-      linefile:
+      lineinfile:
         dest: /etc/modsecurity/modsecurity.conf
         regexp: '^SecRuleEngine DetectionOnly'
         line: 'SecRuleEngine On'
