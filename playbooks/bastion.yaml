@@ -35,3 +35,11 @@
       command: ssh-keygen -t rsa -f {{ windmill_config_git_dest }}/zuul/id_rsa -N ""
       args:
         creates: "{{ windmill_config_git_dest }}/zuul/id_rsa"
+
+    - name: Change zuul user SSH keys permissions
+      file:
+        path: "{{ windmill_config_git_dest }}/zuul/{{ item }}"
+        mode: 0644
+      with_items:
+        - id_rsa
+        - id_rsa.pub
