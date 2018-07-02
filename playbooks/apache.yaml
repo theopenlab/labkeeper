@@ -49,6 +49,15 @@
         src: '{{ apache_mod_evasive_conf_file_src }}'
         dest: '{{ apache_mod_evasive_conf_file_dest }}'
 
+    - name: Create modsecurity config file
+      command: mv /etc/modsecurity/modsecurity.conf{-recommended,}
+
+    - name: Modify modsecurity config file
+      linefile:
+        dest: /etc/dhcp/interface-br0.conf
+        regexp: '^SecRuleEngine DetectionOnly'
+        line: 'SecRuleEngine On'
+
     - name: Copy fail2ban config files into place
       copy:
         src: "{{ item.src }}"
