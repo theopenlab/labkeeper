@@ -22,7 +22,7 @@ Steps to use
 
 2. Install pip by apt command::
 
-   $ apt-get update python-pip -y
+   $ apt-get install python-pip -y
 
 3. Install ansible by pip command::
 
@@ -38,8 +38,10 @@ Steps to use
    need to modify some fields:
 
    - Replace the `github_acc_token` field with github personal access token, which need to be
-     manually generated in [this page](https://github.com/settings/tokens)
+     manually generated in `Github token`_
    - etc.
+
+.. _Github token: https://github.com/settings/tokens
 
 7. Run ansible playbooks with specific inventory and enjoy, for an example::
 
