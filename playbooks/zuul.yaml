@@ -42,17 +42,13 @@
         owner: "zuul"
         state: directory
 
-    - name: Create zuul user SSH keys (if missing).
-      command: ssh-keygen -t rsa -f /var/lib/zuul/.ssh/id_rsa -N ""
-      args:
-        creates: /var/lib/zuul/.ssh/id_rsa
-
-    - name: Change permissions for SSH keys.
-      file:
-        path: "/var/lib/zuul/.ssh/{{ item }}"
-        group: "zuul"
-        owner: "zuul"
+    - name: Copy zuul user SSH keys to zuul home
+      copy:
+        dest: "/var/lib/zuul/.ssh/{{ item }}"
+        group: zuul
         mode: 0600
+        owner: zuul
+        src: "{{ windmill_config_git_dest }}/zuul/{{ item }}"
       with_items:
         - id_rsa
         - id_rsa.pub

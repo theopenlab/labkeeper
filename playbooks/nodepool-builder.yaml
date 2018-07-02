@@ -18,7 +18,6 @@
 
   tasks:
     - name: Copy repos.yaml into place.
-      become: yes
       copy:
         dest: /etc/nodepool/repos.yaml
         group: nodepool
@@ -27,7 +26,6 @@
         src: "{{ windmill_config_git_dest }}/nodepool/repos.yaml"
 
     - name: create dib cache and tmp directories
-      become: yes
       file:
         group: nodepool
         owner: nodepool
@@ -43,7 +41,6 @@
         dest: /tmp/project-config
 
     - name: Copy elements from project-config into place
-      become: yes
       synchronize:
         dest: /etc/nodepool/elements/
         src: /tmp/project-config/nodepool/elements/
@@ -59,17 +56,13 @@
         owner: "nodepool"
         state: directory
 
-    - name: Create nodepool user SSH keys (if missing).
-      command: ssh-keygen -t rsa -f /var/lib/nodepool/.ssh/id_rsa -N ""
-      args:
-        creates: /var/lib/nodepool/.ssh/id_rsa
-
-    - name: Change permissions for SSH keys.
-      file:
-        path: "/var/lib/nodepool/.ssh/{{ item }}"
-        group: "nodepool"
-        owner: "nodepool"
+    - name: Copy zuul user SSH keys to nodepool home
+      copy:
+        dest: "/var/lib/nodepool/.ssh/{{ item }}"
+        group: nodepool
         mode: 0600
+        owner: nodepool
+        src: "{{ windmill_config_git_dest }}/zuul/{{ item }}"
       with_items:
         - id_rsa
         - id_rsa.pub
