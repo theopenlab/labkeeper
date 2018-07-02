@@ -37,13 +37,11 @@ Steps to use
 6. Check the configuration files under the `config/` directory and the inventory files, maybe
    need to modify some fields:
 
-   - the `github_acc_token` need to be a github personal access token, need manually generate
-     the ``github_token``.
-   - TODO
+   - Replace the `github_acc_token` field with github personal access token, which need to be
+     manually generated in [this page](https://github.com/settings/tokens)
+   - etc.
 
-7. Run ansible playbooks with specific inventory and enjoy::
+7. Run ansible playbooks with specific inventory and enjoy, for an example::
 
-  $ ansible-playbook playbooks/allinone.yaml -i inventory/allinone.yaml
+    $ ansible-playbook playbooks/allinone.yaml -i inventory/allinone.yaml
 
-
-.. _github_token: https://github.com/settings/tokens
