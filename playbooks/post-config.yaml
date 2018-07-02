@@ -14,14 +14,9 @@
   become: yes
   tasks:
     - name: Ensure openlab-zuul-jobs key has been generated
-      stat:
+      wait_for:
         path: "{{ openlab_zuul_jobs_key_dest }}"
-      register: openlab_job_key
-
-    - name: Assert openlab-zuul-jobs key existed
-      assert:
-        that:
-          - openlab_job_key.stat.exists
+        state: present
 
     - name: Copy openlab-zuul-jobs key into place
       synchronize:
