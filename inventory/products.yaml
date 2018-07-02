@@ -34,6 +34,8 @@ all:
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token:
         zuul_tenant_name: openlab
+        openlab_zuul_jobs_key_src: "{{ windmill_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/liu-sheng/openlab-zuul-jobs.pem"
     gear:
       hosts: zuul01
     statsd:
