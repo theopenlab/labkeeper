@@ -38,14 +38,15 @@
 
     - name: Enable dependent apache modules
       apache2_module:
-        name:
-          - proxy
-          - proxy_http
-          - ssl
-          - xml2enc
-          - rewrite
-          - headers
-          - proxy_wstunnel
+        name: '{{ item }}'
+      with_items:
+        - proxy
+        - proxy_http
+        - ssl
+        - xml2enc
+        - rewrite
+        - headers
+        - proxy_wstunnel
 
     - name: Enable zuul status page
       shell: |
