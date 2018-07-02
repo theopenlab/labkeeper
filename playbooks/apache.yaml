@@ -49,13 +49,14 @@
         src: '{{ apache_mod_evasive_conf_file_src }}'
         dest: '{{ apache_mod_evasive_conf_file_dest }}'
 
-    - name: Copy modsecurity config files into place
+    - name: Copy fail2ban config files into place
       copy:
-        src: '{{ apache_mod_evasive_conf_file_src }}'
-        dest: '{{ apache_mod_evasive_conf_file_dest }}'
-      copy:
-        src: '{{ fail2ban_jail_file_src }}'
-        dest: '{{ fail2ban_jail_file_dest }}'
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: "{{ apache_mod_evasive_conf_file_src }}", dest: "{{ apache_mod_evasive_conf_file_dest }}" }
+        - { src: "{{ fail2ban_jail_file_src }}", dest: "{{ fail2ban_jail_file_dest }}" }
+      notify: restart fail2ban
 
     - name: Enable dependent apache modules
       apache2_module:
@@ -71,9 +72,14 @@
         - headers
         - proxy_wstunnel
 
-    - name: Enable zuul status page
+    - name: Enable zuul site page
       shell: |
-        service fail2ban restart
         a2dissite 000-default
         a2ensite zuul-web
-        service apache2 restart
+      notify: restart apache2
+
+  handlers:
+    - name: restart fail2ban
+      service: name=fail2ban state=restarted
+    - name: restart apache2
+      service: name=apache2 state=restarted
