@@ -23,6 +23,8 @@ all:
           hosts: allinone
         zuul-fingergw:
           hosts: allinone
+        zuul-log-server:
+          hosts: allinone
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem"
@@ -35,6 +37,7 @@ all:
           6162
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token: d1b84b86cb33e2b49eec3da88ff4938fb7f441f8
+        zuul_tenant_name: openlaballinone
     gear:
       hosts: allinone
     statsd:
@@ -42,4 +45,6 @@ all:
     zookeeper:
       hosts: allinone
     mysql:
+      hosts: allinone
+    apache:
       hosts: allinone
