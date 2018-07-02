@@ -30,4 +30,4 @@
 - import_playbook: zuul-web.yaml
 - import_playbook: zuul-log-server.yaml
 - import_playbook: apache.yaml
-- import_playbook: post.yaml
+- import_playbook: post-config.yaml
