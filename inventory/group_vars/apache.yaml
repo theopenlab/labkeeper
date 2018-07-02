@@ -21,4 +21,11 @@ apache_zuul_status_page_config_mode: 644
 apache_zuul_status_page_config_src: "{{ windmill_config_git_dest }}/apache/zuul-web.conf.j2"
 
 zuul_web_port: 9000
-zuul_tenant_name: openlab
+
+apache_mod_evasive_conf_file_src: "{{ windmill_config_git_dest }}/mod_evasive/evasive.conf"
+apache_mod_evasive_conf_file_dest: /etc/apache2/mods-available/evasive.conf
+
+fail2ban_apache_modsecurity_conf_file_src: "{{ windmill_config_git_dest }}/fail2ban/apache-modsecurity.conf"
+fail2ban_apache_modsecurity_conf_file_dest: /etc/fail2ban/filter.d/apache-modsecurity.conf
+fail2ban_jail_file_src: "{{ windmill_config_git_dest }}/fail2ban/jail.local"
+fail2ban_jail_file_dest: /etc/fail2ban/jail.local

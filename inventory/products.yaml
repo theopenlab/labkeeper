@@ -33,6 +33,7 @@ all:
         github_webhook_token:
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token:
+        zuul_tenant_name: openlab
     gear:
       hosts: zuul01
     statsd:
