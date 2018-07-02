@@ -18,11 +18,11 @@
 
   </Directory>
   RewriteEngine on
-  RewriteRule ^/api/tenant/(.*)/console-stream ws://localhost:9000/api/tenant/$1/console-stream [P]
-  RewriteRule ^/api/connection/(.*)$ http://localhost:9000/api/connection/$1 [P]
-  RewriteRule ^/api/(.*)$ http://localhost:9000/api/$1 [P]
-  RewriteRule ^/t/openlaballinone/(.*)$ http://localhost:9000/t/openlaballinone/$1 [P]
-  RewriteRule ^/$ http://80.158.23.49/t/openlaballinone/ [R]
+  RewriteRule ^/api/tenant/(.*)/console-stream ws://localhost:{{ zuul_web_port }}/api/tenant/$1/console-stream [P]
+  RewriteRule ^/api/connection/(.*)$ http://localhost:{{ zuul_web_port }}/api/connection/$1 [P]
+  RewriteRule ^/api/(.*)$ http://localhost:{{ zuul_web_port }}/api/$1 [P]
+  RewriteRule ^/t/{{ zuul_tenant_name }}/(.*)$ http://localhost:{{ zuul_web_port }}/t/{{ zuul_tenant_name }}/$1 [P]
+  RewriteRule ^/$ http://{{ hostvars[groups["zuul-web"][0]].ansible_host }}/t/{{ zuul_tenant_name }}/ [R]
 
   # <Location "/grafana">
   #   ProxyPass http://127.0.0.1:3000

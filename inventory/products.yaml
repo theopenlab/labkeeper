@@ -25,6 +25,8 @@ all:
           hosts: zuul01
         zuul-fingergw:
           hosts: zuul01
+        zuul-log-server:
+          hosts: zuul01
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem"
@@ -38,4 +40,6 @@ all:
     zookeeper:
       hosts: zuul01
     mysql:
+      hosts: zuul01
+    apache:
       hosts: zuul01

@@ -1,0 +1,24 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+# windmill.nodepool
+
+apache_ports_config_src: "{{ windmill_config_git_dest }}/apache/ports.conf"
+apache_ports_config_mode: 644
+apache_ports_config_dest: /etc/apache2/ports.conf
+
+apache_zuul_status_page_config_dest: /etc/apache2/sites-available/zuul-web.conf
+apache_zuul_status_page_config_mode: 644
+apache_zuul_status_page_config_src: "{{ windmill_config_git_dest }}/apache/zuul-web.conf.j2"
+
+zuul_web_port: 9000
+zuul_tenant_name: openlab
