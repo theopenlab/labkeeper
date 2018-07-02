@@ -22,8 +22,10 @@
       pip:
         requirements: '{{ windmill_src_dir }}/requirements.txt'
 
-    - name: Install python-netaddr pckage by apt
-      apt: name=python-netaddr
+    - name: Install python-netaddr
+      package:
+        name: python-netaddr
+        state: present
 
     - name: Install ansible roles via galaxy
       args:
