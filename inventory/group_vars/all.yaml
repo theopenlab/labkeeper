@@ -15,3 +15,4 @@
 # windmill-config
 windmill_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/config"
 windmill_src_dir: "{{ lookup('pipe', 'pwd') | dirname }}"
+ansible_python_interpreter: /usr/bin/python3
