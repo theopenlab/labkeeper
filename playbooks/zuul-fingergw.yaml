@@ -16,6 +16,18 @@
   hosts: zuul-fingergw
 
   tasks:
+    - name: Git clone zuul (workaround).
+      git:
+        dest: "{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul"
+        repo: https://git.openstack.org/openstack-infra/zuul
+
+    - name: Install zuul using pip (workaround).
+      become: yes
+      pip:
+        executable: pip3
+        name: "file://{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul"
+        editable: yes
+
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul
@@ -25,6 +37,10 @@
         zuul_service_zuul_fingergw_enabled: yes
         zuul_service_zuul_fingergw_manage: true
         zuul_service_zuul_fingergw_state: started
+        zuul_task_manager:
+          - pre
+          - config
+          - service
 
     - name: Setup openstack.logrotate role.
       include_role:
