@@ -14,7 +14,6 @@
 # TODO: support editable for ansible-role-zuul
 ---
 - name: Install zuul-web.
-  become: yes
   hosts: zuul-web
 
   tasks:
