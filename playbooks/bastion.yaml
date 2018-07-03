@@ -22,11 +22,6 @@
       pip:
         requirements: '{{ windmill_src_dir }}/requirements.txt'
 
-    - name: Install python-netaddr
-      package:
-        name: python-netaddr
-        state: present
-
     - name: Install ansible roles via galaxy
       args:
         chdir: '{{ windmill_src_dir }}'
