@@ -34,7 +34,9 @@
       shell: |
         ./tools/install-js-tools.sh
         yarn install
-        npm run build:dev
+        npm run install
+        npm pack
+        npm run  build:dist
       args:
         chdir: '{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul'
         executable: /bin/bash
