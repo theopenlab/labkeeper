@@ -29,8 +29,14 @@ all:
           hosts: zuul01
       vars:
         github_app_id: 6778
-        github_app_key_file: "{{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem"
-        github_webhook_token:
+        github_app_key_file: "{{ windmill_config_git_dest }}/zuul/theopenlab-ci.pem"
+        github_webhook_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30356661666163386666323533383535386331393038363663336461626532313434643766343631
+          3133643663333561313138656261396537633135663235340a323430656333643535626339353862
+          31626530343133356561633064353731373832633532653632626636346562313238383062303364
+          3365623735313233310a663535303038646530636631346539656663636437613264383865356339
+          3734
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token:
         zuul_tenant_name: openlab
