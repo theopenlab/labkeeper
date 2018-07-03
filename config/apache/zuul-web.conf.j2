@@ -1,5 +1,4 @@
 <VirtualHost *:80>
-  DocumentRoot /var/www/zuul-web
   ServerName status.openlabtesting.org
   ServerAdmin root@status.openlabtesting.org
 
@@ -7,16 +6,6 @@
   ErrorLog ${APACHE_LOG_DIR}/zuul-web_error.log
   CustomLog ${APACHE_LOG_DIR}/zuul-web_access.log combined
 
-  <Directory /var/www/zuul-web>
-      <IfVersion >= 2.4>
-          Require all granted
-      </IfVersion>
-      <IfVersion < 2.4>
-          Order allow,deny
-          Allow from all
-      </IfVersion>
-
-  </Directory>
   RewriteEngine on
   RewriteRule ^/api/tenant/(.*)/console-stream ws://localhost:{{ zuul_web_port }}/api/tenant/$1/console-stream [P]
   RewriteRule ^/api/connection/(.*)$ http://localhost:{{ zuul_web_port }}/api/connection/$1 [P]

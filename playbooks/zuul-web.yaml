@@ -23,7 +23,7 @@
         dest: "{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul"
         repo: https://git.openstack.org/openstack-infra/zuul
 
-    - name: Install zuul using pip.
+    - name: Install zuul using pip (workaround).
       become: yes
       pip:
         executable: pip3
