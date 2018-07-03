@@ -23,9 +23,6 @@
         mode: 0644
         src: "{{ windmill_config_git_dest }}/apt/sources.list"
 
-    - name: update apt list
-      apt: update_cache=yes
-
     - name: Install apt packages
       apt:
         name:
