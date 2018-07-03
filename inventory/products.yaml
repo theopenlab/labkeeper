@@ -3,9 +3,9 @@ all:
     bastion:
       ansible_connection: local
     nodepool01:
-      ansible_host: 127.0.0.1
+      ansible_host: 192.168.200.211
     zuul01:
-      ansible_host: 127.0.0.1
+      ansible_host: 192.168.200.147
   children:
     nodepool:
       children:
@@ -28,14 +28,14 @@ all:
         zuul-log-server:
           hosts: zuul01
       vars:
-        github_app_id: 7102
+        github_app_id: 6778
         github_app_key_file: "{{ windmill_config_git_dest }}/zuul/liu-openlab-ci.pem"
         github_webhook_token:
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token:
         zuul_tenant_name: openlab
         openlab_zuul_jobs_key_src: "{{ windmill_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
-        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/liu-sheng/openlab-zuul-jobs.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/theopenlab/openlab-zuul-jobs.pem"
     gear:
       hosts: zuul01
     statsd:
