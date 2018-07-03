@@ -48,3 +48,6 @@ Steps to use
 
     $ ansible-playbook playbooks/allinone.yaml -i inventory/allinone.yaml
 
+8. Change the github app webhook URL, e.g. modify the `allinoneopenlab app`_ webhook URL.
+
+.. _allinoneopenlab app: https://github.com/settings/apps/liu-openlab-ci
