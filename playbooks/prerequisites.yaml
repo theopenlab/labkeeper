@@ -14,10 +14,6 @@
 - hosts: bastion,nodepool,zuul
   become: yes
   serial: 1
-  gather_facts: no
-  pre_tasks:
-    - name: install python2 for ansible running
-      raw: sudo apt-get -y install python-simplejson
 
   tasks:
     - name: Copy sources.list into place.
