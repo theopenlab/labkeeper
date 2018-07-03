@@ -37,6 +37,7 @@ all:
           6162
         zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
         github_acc_token: 148e971bdc364b820bbf97ca3f73c7600177d789
+        github_zuul_ssh_key_name: "pub key for openlaballinone"
         zuul_tenant_name: openlaballinone
         openlab_zuul_jobs_key_src: "{{ windmill_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/liu-sheng/openlab-zuul-jobs.pem"

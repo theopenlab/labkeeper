@@ -69,7 +69,7 @@
 
     - name: add zuul SSH public key to github
       github_key:
-        name: pub key from openlab CI
+        name: '{{ github_zuul_ssh_key_name }}'
         force: yes
         pubkey: '{{ ssh_pub_key.stdout }}'
         token: '{{ github_acc_token }}'
