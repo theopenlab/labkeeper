@@ -46,7 +46,7 @@ Steps to use
 
 7. Run ansible playbooks with specific inventory and enjoy, for an example::
 
-    $ ansible-playbook playbooks/allinone.yaml -i inventory/allinone.yaml
+    $ ansible-playbook playbooks/site.yaml -i inventory/allinone.yaml
 
 8. Change the github app webhook URL, e.g. modify the `allinoneopenlab app`_ webhook URL.
 
