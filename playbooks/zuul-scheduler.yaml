@@ -16,6 +16,18 @@
   hosts: zuul-scheduler
 
   tasks:
+    - name: Ensure zuul build dependencies are installed (workaround).
+      become: yes
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - build-essential
+        - libffi-dev
+        - libre2-dev
+        - libssl-dev
+        - python3-dev
+
     - name: Upgrade the version of six(workaround)
       become: yes
       pip:

@@ -28,7 +28,8 @@ Steps to use
 
    $ pip install ansible
 
-4. Create a `vault-password.txt` file with ansible vault password as content.
+4. Create a `vault-password.txt` file with ansible vault password as content under this project
+   root directory.
 
 5. Create an `openlab.pem` file with SSH private key to access servers to deploy CI services,
    the key file should have right `600` permission, and the owner should be the user to run
