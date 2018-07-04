@@ -11,7 +11,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: bastion,nodepool,zuul
+- hosts: nodepool,zuul
   become: yes
   serial: 1
 
@@ -23,19 +23,21 @@
         mode: 0644
         src: "{{ windmill_config_git_dest }}/apt/sources.list"
 
+    - name: Update apt list
+      apt: update_cache=yes
+
     - name: Install apt packages
       apt:
-        name:
-          - dbus
-          - libffi-dev
-          - libssl-dev
-          - build-essential
-          - python3-dev
-          - python-dev
-          - python3-pip
-          - python-pip
-        update_cache: yes
-        state: latest
+        name: "{{ item }}"
+      with_items:
+        - dbus
+        - libffi-dev
+        - libssl-dev
+        - build-essential
+        - python3-dev
+        - python-dev
+        - python3-pip
+        - python-pip
 
     - name: Install pip packages
       pip:
