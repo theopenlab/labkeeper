@@ -35,7 +35,7 @@ all:
           36616236643135623465643538653764373635623766366263323639643033306661373736653766
           3838656339306637660a363762343431633061643364633932336565313632643539656565383034
           6162
-        zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
+        zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/allinone-main.yaml"
         github_acc_token: 148e971bdc364b820bbf97ca3f73c7600177d789
         github_zuul_ssh_key_name: "pub key for openlaballinone"
         zuul_tenant_name: openlaballinone

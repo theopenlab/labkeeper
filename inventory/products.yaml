@@ -37,7 +37,7 @@ all:
           31626530343133356561633064353731373832633532653632626636346562313238383062303364
           3365623735313233310a663535303038646530636631346539656663636437613264383865356339
           3734
-        zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/main.yaml"
+        zuul_file_main_yaml_src: "{{ windmill_config_git_dest }}/zuul/openlab-main.yaml"
         github_acc_token:
         github_zuul_ssh_key_name: "pub key for openlab"
         zuul_tenant_name: openlab

@@ -1,0 +1,33 @@
+- tenant:
+    name: openlab
+    source:
+      github:
+        config-projects:
+          - theopenlab/openlab-zuul-jobs:
+              exclude-unprotected-branches: true
+          - theopenlab/project-config:
+              shadow: theopenlab/openlab-zuul-jobs
+              exclude-unprotected-branches: true
+        untrusted-projects:
+          # Order matters, load common job repos first
+          - theopenlab/zuul-jobs:
+              shadow: theopenlab/project-config
+              exclude-unprotected-branches: true
+
+          # Offical
+          # NOTE gophercloud and terraform master are not
+          # protected branches
+          - gophercloud/gophercloud
+          - terraform-providers/terraform-provider-openstack
+          - flystack/misty
+          - fog/fog-openstack
+          - dtantsur/rust-openstack
+          - kubernetes/cloud-provider-openstack:
+              exclude-unprotected-branches: true
+
+      openstack-git:
+        untrusted-projects:
+          - include: []
+            projects:
+              - openstack/openstacksdk
+              - openstack-infra/shade
