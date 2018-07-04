@@ -14,7 +14,6 @@
 ---
 - import_playbook: prerequisites.yaml
 - import_playbook: bastion.yaml
-- import_playbook: bootstrap.yaml
 - import_playbook: statsd.yaml
 - import_playbook: gearman-apt.yaml
 - import_playbook: zookeeper.yaml
