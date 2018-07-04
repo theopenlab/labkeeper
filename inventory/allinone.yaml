@@ -39,6 +39,7 @@ all:
         github_acc_token: 148e971bdc364b820bbf97ca3f73c7600177d789
         github_zuul_ssh_key_name: "pub key for openlaballinone"
         zuul_tenant_name: openlaballinone
+        zuul_public_ip: 80.158.7.77
         openlab_zuul_jobs_key_src: "{{ windmill_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/liu-sheng/openlab-zuul-jobs.pem"
     gear:
