@@ -22,7 +22,8 @@
         update_cache: yes
 
     - pip: name=pymysql executable=pip3
-    - pip: name=MySQL-python
+    # - pip: name=MySQL-python
+    - pip: name=PyMySQL
 
     - name: Copy mysql_secure_installation.sql into place.
       become: yes

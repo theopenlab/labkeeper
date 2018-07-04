@@ -27,7 +27,7 @@
       apt: update_cache=yes
 
     - name: Install apt packages
-      apt:
+      package:
         name: "{{ item }}"
       with_items:
         - dbus
