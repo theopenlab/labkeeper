@@ -41,6 +41,7 @@ all:
         github_acc_token:
         github_zuul_ssh_key_name: "pub key for openlab"
         zuul_tenant_name: openlab
+        zuul_public_ip: 80.158.7.173
         openlab_zuul_jobs_key_src: "{{ windmill_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/theopenlab/openlab-zuul-jobs.pem"
     gear:
