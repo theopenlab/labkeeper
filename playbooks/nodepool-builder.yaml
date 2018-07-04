@@ -48,6 +48,9 @@
         rsync_opts: '--chown=nodepool:nodepool'
       delegate_to: "{{ hostvars[groups['nodepool-builder'][0]].ansible_host }}"
 
+    - name: install pyyaml for elements (workaround)
+      pip: name=pyyaml
+
     - name: Create nodepool SSH directory.
       file:
         dest: "/var/lib/nodepool/.ssh/"
