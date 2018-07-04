@@ -6,6 +6,8 @@ all:
       ansible_host: 192.168.200.211
     zuul01:
       ansible_host: 192.168.200.147
+  vars:
+    zuul_tenant_name: openlab
   children:
     nodepool:
       children:

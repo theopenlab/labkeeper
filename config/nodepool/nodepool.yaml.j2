@@ -17,17 +17,17 @@ labels:
     min-ready: 1
 
 providers:
-  - name: otcallinone
+  - name: otc-{{ zuul_tenant_name }}
     cloud: otc
     driver: openstack
     launch-timeout: 1200
     boot-timeout: 1200
-    image-name-format: 'allinone-{image_name}-{timestamp}'
+    image-name-format: '{{ zuul_tenant_name }}-{image_name}-{timestamp}'
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
     pools:
-      - name: otcallinone
+      - name: otc-{{ zuul_tenant_name }}
         auto-floating-ip: False
         max-servers: 4
         networks:
