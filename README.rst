@@ -10,8 +10,14 @@ A tool developed by Ansible used to deploy OpenLab CI environment.
 Description
 -----------
 
-Windmill is a collection of Ansible playbooks and roles used to deploy OpenLab
-Continuous Integration (CI) tools.
+Windmill is a collection of Ansible playbooks and roles used to deploy and operate
+OpenLab Continuous Integration (CI) tools.
+
+This project is initially forked from the `OpenStack Windmill project`_, and
+modified for specific `OpenLab`_ CI system deployment.
+
+.. _OpenStack Windmill project: http://git.openstack.org/cgit/openstack/windmill/
+.. _OpenLab: https://github.com/theopenlab
 
 Steps to use
 ------------
@@ -57,3 +63,10 @@ Steps to use
 .. _allinoneopenlab app: https://github.com/settings/apps/liu-openlab-ci
 
 10. Update the log server `fqdn` and host key in the jobs config repo (`openlab-zuul-jobs`).
+
+TODO items
+----------
+
+* Fix some workaround approaches and make more variables in playbooks configurable.
+
+* Add support for monitoring and heath check functions.
