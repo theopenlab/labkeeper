@@ -18,14 +18,26 @@
   become: yes
 
   tasks:
+    - name: Update apt list
+      apt: update_cache=yes
+
+    - name: Install apt packages
+      package:
+        name: "{{ item }}"
+      with_items:
+        - dbus
+        - libffi-dev
+        - libssl-dev
+        - build-essential
+        - python3-dev
+        - python-dev
+        - python3-pip
+        - python-pip
+        - python-netaddr
+
     - name: Install pip requirement packages
       pip:
         requirements: '{{ windmill_src_dir }}/requirements.txt'
-
-    - name: Install python-netaddr
-      package:
-        name: python-netaddr
-        state: present
 
     - name: Install ansible roles via galaxy
       args:
