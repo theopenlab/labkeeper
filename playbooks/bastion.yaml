@@ -18,9 +18,6 @@
   become: yes
 
   tasks:
-    - name: Update apt list
-      apt: update_cache=yes
-
     - name: Install apt packages
       package:
         name: "{{ item }}"

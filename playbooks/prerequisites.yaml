@@ -11,11 +11,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- hosts: nodepool,zuul
+- hosts: all,!bastion
   become: yes
   serial: 1
+  gather_facts: no
 
   tasks:
+    - name: Install python2
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
     - name: Copy sources.list into place.
       become: yes
       copy:
@@ -42,3 +46,11 @@
     - name: Install pip packages
       pip:
         name: setuptools
+
+    - name: Setup openstack.sudoers role
+      include_role:
+        name: openstack.sudoers
+
+    - name: Setup openstack.virtualenv role
+      include_role:
+        name: openstack.virtualenv
