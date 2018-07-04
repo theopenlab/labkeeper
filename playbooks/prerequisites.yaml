@@ -47,6 +47,9 @@
       pip:
         name: setuptools
 
+- hosts: all,!bastion
+  become: yes
+  tasks:
     - name: Setup openstack.sudoers role
       include_role:
         name: openstack.sudoers

@@ -69,7 +69,7 @@
       become: yes
       package:
         name: bubblewrap
-        state: installed
+        state: present
 
     - name: Setup openstack.logrotate role
       include_role:
