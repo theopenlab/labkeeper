@@ -53,6 +53,12 @@
         - id_rsa
         - id_rsa.pub
 
+    - name: Set authorized key taken from file
+      authorized_key:
+        user: zuul
+        state: present
+        key: "{{ lookup('file', windmill_config_git_dest + '/zuul/id_rsa.pub') }}"
+
     - name: ensure github.com is a known host
       lineinfile:
         dest: /var/lib/zuul/.ssh/known_hosts

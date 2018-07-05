@@ -41,7 +41,7 @@ zuul_url = {{ hostvars[groups["zuul-scheduler"][0]].ansible_host }}
 log_config = /etc/zuul/web-logging.conf
 listen_address=0.0.0.0
 sql_connection_name=mysql
-status_url=http://{{ hostvars[groups["zuul-web"][0]].ansible_host }}/
+status_url=http://{{ zuul_public_ip }}/
 
 [zookeeper]
 hosts = {{ hostvars[groups["zookeeper"][0]].ansible_host | ipwrap }}
