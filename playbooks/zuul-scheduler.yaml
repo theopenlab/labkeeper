@@ -44,8 +44,6 @@
         zuul_service_zuul_scheduler_enabled: yes
         zuul_service_zuul_scheduler_manage: true
         zuul_service_zuul_scheduler_state: started
-        zuul_install_method: git
-        zuul_pip_editable: yes
 
     - name: Setup openstack.logrotate role.
       include_role:

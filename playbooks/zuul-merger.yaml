@@ -37,8 +37,6 @@
         zuul_service_zuul_merger_enabled: yes
         zuul_service_zuul_merger_manage: true
         zuul_service_zuul_merger_state: started
-        zuul_install_method: git
-        zuul_pip_editable: yes
 
     - name: Setup openstack.logrotate role.
       include_role:
