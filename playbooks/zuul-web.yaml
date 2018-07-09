@@ -38,8 +38,6 @@
         zuul_service_zuul_web_enabled: yes
         zuul_service_zuul_web_manage: true
         zuul_service_zuul_web_state: started
-        zuul_install_method: git
-        zuul_pip_editable: yes
 
     - name: Config zuul web javascript
       shell: |
