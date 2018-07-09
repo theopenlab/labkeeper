@@ -19,8 +19,8 @@ modified for specific `OpenLab`_ CI system deployment.
 .. _OpenStack Windmill project: http://git.openstack.org/cgit/openstack/windmill/
 .. _OpenLab: https://github.com/theopenlab
 
-Steps to use
-------------
+Steps to deploy a CI system by this tool
+----------------------------------------
 
 1. Update the packages list and upgrade on the ansible running server::
 
