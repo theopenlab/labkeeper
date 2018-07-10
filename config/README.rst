@@ -1,3 +1,3 @@
 ===============
-windmill-config
+labkeeper-config
 ===============

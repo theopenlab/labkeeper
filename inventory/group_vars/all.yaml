@@ -12,6 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-# windmill-config
-windmill_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/config"
-windmill_src_dir: "{{ lookup('pipe', 'pwd') | dirname }}"
+# labkeeper-config
+labkeeper_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/config"
+labkeeper_src_dir: "{{ lookup('pipe', 'pwd') | dirname }}"

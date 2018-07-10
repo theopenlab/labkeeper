@@ -48,7 +48,7 @@
         group: zuul
         mode: 0600
         owner: zuul
-        src: "{{ windmill_config_git_dest }}/zuul/{{ item }}"
+        src: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
       with_items:
         - id_rsa
         - id_rsa.pub
@@ -57,7 +57,7 @@
       authorized_key:
         user: zuul
         state: present
-        key: "{{ lookup('file', windmill_config_git_dest + '/zuul/id_rsa.pub') }}"
+        key: "{{ lookup('file', labkeeper_config_git_dest + '/zuul/id_rsa.pub') }}"
 
     - name: ensure github.com is a known host
       lineinfile:

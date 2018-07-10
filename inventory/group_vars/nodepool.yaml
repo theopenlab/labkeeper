@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-# windmill.nodepool
-nodepool_file_nodepool_yaml_src: "{{ windmill_config_git_dest }}/nodepool/nodepool.yaml.j2"
+# labkeeper.nodepool
+nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/nodepool.yaml.j2"
 
 nodepool_install_method: git
 nodepool_pip_editable: yes

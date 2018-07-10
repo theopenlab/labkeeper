@@ -23,7 +23,7 @@
         group: nodepool
         mode: 0400
         owner: nodepool
-        src: "{{ windmill_config_git_dest }}/nodepool/repos.yaml"
+        src: "{{ labkeeper_config_git_dest }}/nodepool/repos.yaml"
 
     - name: create dib cache and tmp directories
       file:
@@ -65,7 +65,7 @@
         group: nodepool
         mode: 0600
         owner: nodepool
-        src: "{{ windmill_config_git_dest }}/zuul/{{ item }}"
+        src: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
       with_items:
         - id_rsa
         - id_rsa.pub

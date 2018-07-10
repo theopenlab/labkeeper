@@ -10,22 +10,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-# windmill.nodepool
+# labkeeper.nodepool
 
-apache_ports_config_src: "{{ windmill_config_git_dest }}/apache/ports.conf"
+apache_ports_config_src: "{{ labkeeper_config_git_dest }}/apache/ports.conf"
 apache_ports_config_mode: 644
 apache_ports_config_dest: /etc/apache2/ports.conf
 
 apache_zuul_status_page_config_dest: /etc/apache2/sites-available/zuul-web.conf
 apache_zuul_status_page_config_mode: 644
-apache_zuul_status_page_config_src: "{{ windmill_config_git_dest }}/apache/zuul-web.conf.j2"
+apache_zuul_status_page_config_src: "{{ labkeeper_config_git_dest }}/apache/zuul-web.conf.j2"
 
 zuul_web_port: 9000
 
-apache_mod_evasive_conf_file_src: "{{ windmill_config_git_dest }}/mod_evasive/evasive.conf"
+apache_mod_evasive_conf_file_src: "{{ labkeeper_config_git_dest }}/mod_evasive/evasive.conf"
 apache_mod_evasive_conf_file_dest: /etc/apache2/mods-available/evasive.conf
 
-fail2ban_apache_modsecurity_conf_file_src: "{{ windmill_config_git_dest }}/fail2ban/apache-modsecurity.conf"
+fail2ban_apache_modsecurity_conf_file_src: "{{ labkeeper_config_git_dest }}/fail2ban/apache-modsecurity.conf"
 fail2ban_apache_modsecurity_conf_file_dest: /etc/fail2ban/filter.d/apache-modsecurity.conf
-fail2ban_jail_file_src: "{{ windmill_config_git_dest }}/fail2ban/jail.local"
+fail2ban_jail_file_src: "{{ labkeeper_config_git_dest }}/fail2ban/jail.local"
 fail2ban_jail_file_dest: /etc/fail2ban/jail.local

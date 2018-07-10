@@ -27,7 +27,7 @@
     - name: Copy mysql_secure_installation.sql into place.
       become: yes
       copy:
-        src: "{{ windmill_config_git_dest }}/zuul/mysql_secure_installation.sql"
+        src: "{{ labkeeper_config_git_dest }}/zuul/mysql_secure_installation.sql"
         dest: /tmp/mysql_secure_installation.sql
         mode: 0400
 
