@@ -25,7 +25,7 @@
       copy:
         dest: /etc/apt/sources.list
         mode: 0644
-        src: "{{ windmill_config_git_dest }}/apt/sources.list"
+        src: "{{ labkeeper_config_git_dest }}/apt/sources.list"
 
     - name: Update apt list
       apt: update_cache=yes

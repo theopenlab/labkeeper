@@ -17,13 +17,13 @@
   file:
     group: root
     owner: root
-    path: /opt/windmill/test.prove
+    path: /opt/labkeeper/test.prove
     state: directory
 
 - name: Install dib-image-list.sh wrapper.
   become: yes
   copy:
-    dest: /opt/windmill/test.prove
+    dest: /opt/labkeeper/test.prove
     group: root
     mode: 0755
     owner: root
@@ -35,7 +35,7 @@
   delay: 10
   register: task_result
   retries: 360
-  shell: /opt/windmill/test.prove/test_dib_image_list.sh ubuntu-xenial ready
+  shell: /opt/labkeeper/test.prove/test_dib_image_list.sh ubuntu-xenial ready
   tags: skip_ansible_lint
   until: task_result.rc == 0
   delegate_to: "{{ item }}"

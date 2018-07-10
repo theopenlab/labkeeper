@@ -12,5 +12,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-# windmill.statsd
+# labkeeper.statsd
 statsd_file_config_js_src: statsd/etc/statsd/config.js.j2

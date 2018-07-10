@@ -34,22 +34,22 @@
 
     - name: Install pip requirement packages
       pip:
-        requirements: '{{ windmill_src_dir }}/requirements.txt'
+        requirements: '{{ labkeeper_src_dir }}/requirements.txt'
 
     - name: Install ansible roles via galaxy
       args:
-        chdir: '{{ windmill_src_dir }}'
+        chdir: '{{ labkeeper_src_dir }}'
         executable: /bin/bash
       shell: ./tools/install_roles.sh
 
     - name: Prepare zuul user SSH keys (if missing).
-      command: ssh-keygen -t rsa -f {{ windmill_config_git_dest }}/zuul/id_rsa -N ""
+      command: ssh-keygen -t rsa -f {{ labkeeper_config_git_dest }}/zuul/id_rsa -N ""
       args:
-        creates: "{{ windmill_config_git_dest }}/zuul/id_rsa"
+        creates: "{{ labkeeper_config_git_dest }}/zuul/id_rsa"
 
     - name: Change zuul user SSH keys permissions
       file:
-        path: "{{ windmill_config_git_dest }}/zuul/{{ item }}"
+        path: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
         mode: 0644
       with_items:
         - id_rsa

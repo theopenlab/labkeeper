@@ -1,22 +1,22 @@
-========
-windmill
-========
+=========
+labkeeper
+=========
 
-A tool developed by Ansible used to deploy OpenLab CI environment.
+A tool developed by Ansible for deploying and managing OpenLab CI infrastructures
 
 * License: Apache License, Version 2.0
-* Source: https://github.com/liu-sheng/windmill
+* Source: https://github.com/liu-sheng/labkeeper
 
 Description
 -----------
 
-Windmill is a collection of Ansible playbooks and roles used to deploy and operate
-OpenLab Continuous Integration (CI) tools.
+Labkeeper is a collection of Ansible playbooks and roles used to deploy and manager
+OpenLab CI infrastructures.
 
 This project is initially forked from the `OpenStack Windmill project`_, and
 modified for specific `OpenLab`_ CI system deployment.
 
-.. _OpenStack Windmill project: http://git.openstack.org/cgit/openstack/windmill/
+.. _OpenStack Windmill project: http://git.openstack.org/cgit/openstack/labkeeper/
 .. _OpenLab: https://github.com/theopenlab
 
 Steps to deploy a CI system by this tool
