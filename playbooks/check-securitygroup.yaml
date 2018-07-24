@@ -36,7 +36,7 @@
             port_max=${port_range##*:}
             [ ${port_min} -le 22 -a ${port_max} -ge 22 ] && validated_ret=1
         done
-        if [[ validated_ret == 1 ]];then
+        if [[ "$validated_ret" -eq "1" ]];then
             echo "Validate security group of provider: {{ item.name }} secussfully :)"
         else
             echo "Validate security group of provider: {{ item.name }} Failed :("
