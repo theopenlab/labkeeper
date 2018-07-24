@@ -13,6 +13,7 @@
 ---
 - name: Check nodepool security group
   hosts: nodepool-launcher
+  become: yes
 
   tasks:
     - name: Read nodepool.yaml
