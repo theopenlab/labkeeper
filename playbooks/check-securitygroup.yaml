@@ -40,4 +40,5 @@
         else
             echo "Validate security group of provider: {{ item.name }} Failed :("
             exit 1
+        fi
       loop: "{{ nodepool_cfg['providers'] }}"
