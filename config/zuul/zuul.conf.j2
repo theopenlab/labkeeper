@@ -23,7 +23,6 @@ finger_port = 17979
 log_config = /etc/zuul/executor-logging.conf
 private_key_file = {{ zuul_user_home }}/.ssh/id_rsa
 workspace_root = {{ zuul_user_home }}/workspace
-job_dir=/var/lib/zuul/builds
 
 [fingergw]
 listen_address = {{ hostvars[groups["zuul-fingergw"][0]].ansible_host }}
