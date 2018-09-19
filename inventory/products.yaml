@@ -15,6 +15,9 @@ all:
           hosts: nodepool01
         nodepool-launcher:
           hosts: nodepool01
+      vars:
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml"
     zuul:
       children:
         zuul-scheduler:
