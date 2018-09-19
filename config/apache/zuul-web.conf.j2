@@ -12,7 +12,7 @@
   RewriteRule ^/api/(.*)$ http://localhost:{{ zuul_web_port }}/api/$1 [P]
   RewriteRule ^/t/{{ zuul_tenant_name }}/(.*)$ http://localhost:{{ zuul_web_port }}/t/{{ zuul_tenant_name }}/$1 [P]
   RewriteRule ^/(.*).png$ http://localhost:{{ zuul_web_port }}/$1.png [P]
-  RewriteRule ^/$ http://{{ zuul_public_ip }}/t/openlab/status.html [R]
+  RewriteRule ^/$ http://{{ zuul_public_ip }}/t/{{ zuul_tenant_name }}/status.html [R]
 
   # <Location "/grafana">
   #   ProxyPass http://127.0.0.1:3000
