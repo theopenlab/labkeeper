@@ -24,6 +24,21 @@
           - dtantsur/rust-openstack
           - kubernetes/cloud-provider-openstack:
               exclude-unprotected-branches: true
+          - theopenlab/ansible:
+              exclude-unprotected-branches: true
+          - theopenlab/packer:
+              exclude-unprotected-branches: true
+          - theopenlab/machine:
+              exclude-unprotected-branches: true
+          - zhongjun2/bosh-huaweicloud-cpi-release:
+              exclude-unprotected-branches: false
+          - zhongjun2/cf-huaweicloud-validator:
+              exclude-unprotected-branches: true
+          - liu-sheng/bosh-acceptance-tests:
+              exclude-unprotected-branches: true
+          - huaweicloud/huaweicloud-service-broker:
+              exclude-unprotected-branches: true
+          - openservicebrokerapi/osb-checker
 
       openstack-git:
         untrusted-projects:

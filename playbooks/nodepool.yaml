@@ -53,4 +53,4 @@
         group: nodepool
         mode: 0400
         owner: nodepool
-        src: "{{ labkeeper_config_git_dest }}/nodepool/clouds.yaml"
+        src: "{{ nodepool_clouds_src }}"
