@@ -54,10 +54,14 @@
     - name: Config zuul web javascript
       shell: |
         ./tools/install-js-tools.sh
+        cd web/
+        sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
         yarn install
-        npm run install
-        npm pack
-        npm run  build:dist
+        npm install
+        yarn build
+        # npm run install
+        # npm pack
+        # npm run  build:dist
       args:
         chdir: '{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul'
         executable: /bin/bash

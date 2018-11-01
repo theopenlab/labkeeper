@@ -12,7 +12,6 @@ start = false
 [scheduler]
 tenant_config = {{ zuul_file_main_yaml_dest }}
 log_config = /etc/zuul/scheduler-logging.conf
-pidfile = /var/run/zuul-scheduler/zuul-scheduler.pid
 state_dir = {{ zuul_user_home }}
 
 [statsd]
@@ -34,7 +33,6 @@ git_dir = {{ zuul_user_home }}/git
 git_user_email = theopenlab.ci@gmail.com
 git_user_name = theopenlab-ci
 log_config = /etc/zuul/merger-logging.conf
-pidfile = /var/run/zuul-merger/zuul-merger.pid
 zuul_url = {{ hostvars[groups["zuul-scheduler"][0]].ansible_host }}
 
 [web]
