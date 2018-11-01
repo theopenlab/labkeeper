@@ -42,6 +42,14 @@
         owner: "zuul"
         state: directory
 
+    - name: Create zuul services pid directory.
+      file:
+        dest: "/var/run/zuul/"
+        group: "zuul"
+        mode: 0700
+        owner: "zuul"
+        state: directory
+
     - name: Copy zuul user SSH keys to zuul home
       copy:
         dest: "/var/lib/zuul/.ssh/{{ item }}"
