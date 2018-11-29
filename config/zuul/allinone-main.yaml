@@ -14,8 +14,8 @@
               shadow: liu-sheng/project-config
               exclude-unprotected-branches: true
           # For testing purpose
-          - liu-sheng/gophercloud:
-              exclude-unprotected-branches: true
+          #- liu-sheng/gophercloud:
+          #    exclude-unprotected-branches: true
           - liu-sheng/misty:
               exclude-unprotected-branches: true
           - liu-sheng/cf-openstack-validator:
@@ -27,6 +27,20 @@
           - liu-sheng/terraform-provider-openstack:
               exclude-unprotected-branches: true
           - liu-sheng/ansible
+          - liu-sheng/bosh-openstack-cpi-release:
+              exclude-unprotected-branches: true
+          - liu-sheng/packer
+          - liu-sheng/machine
+          - zhongjun2/bosh-huaweicloud-cpi-release
+          - zhongjun2/cf-huaweicloud-validator
+          - liu-sheng/huaweicloud-service-broker
+          - openservicebrokerapi/osb-checker
+          - h00130372/huaweicloud-service-broker
+          - liu-sheng/bosh-huaweicloud-cpi-release
+          - liu-sheng/manageiq
+          - liu-sheng/integration_tests
+          - liu-sheng/manageiq-providers-openstack
+          - h00130372/integration_tests
       openstack-git:
         untrusted-projects:
           - include: []
