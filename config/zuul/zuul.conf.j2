@@ -12,9 +12,11 @@ start = false
 [scheduler]
 tenant_config = {{ zuul_file_main_yaml_dest }}
 log_config = /etc/zuul/scheduler-logging.conf
+pidfile = /var/run/zuul-merger/zuul-merger.pid
 state_dir = {{ zuul_user_home }}
 
 [statsd]
+pidfile = /var/run/zuul-merger/zuul-merger.pid
 server = {{ hostvars[groups["statsd"][0]].ansible_host }}
 
 [executor]
