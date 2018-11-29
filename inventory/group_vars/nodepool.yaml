@@ -13,7 +13,6 @@
 # under the License.
 ---
 # labkeeper.nodepool
-nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/nodepool.yaml.j2"
 
 nodepool_install_method: git
 nodepool_pip_editable: yes

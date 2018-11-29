@@ -13,6 +13,9 @@ all:
           hosts: allinone
         nodepool-launcher:
           hosts: allinone
+      vars:
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-clouds.yaml"
     zuul:
       children:
         zuul-scheduler:
