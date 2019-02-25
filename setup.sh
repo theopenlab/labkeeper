@@ -22,5 +22,5 @@ fi
 
 sudo apt update -y
 sudo apt install python python-pip python3 python3-pip kpartx qemu-utils curl python-yaml debootstrap libffi-dev libssl-dev -y
-sodu pip install ansible
+sudo pip install ansible
 ansible-playbook playbooks/site.yaml -i inventory/allinone.yaml
