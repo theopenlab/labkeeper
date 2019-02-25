@@ -6,12 +6,12 @@ if [ -f openlab.pem ]; then
     sudo chmod 600 openlab.pem
 else
     echo "Please add 'openlab.pem' private key file to access ansible target hosts!"
-    eixt 1
+    exit 1
 fi
 
 if [ ! -f vault-password.txt ]; then
     echo "Please add 'vault-password.txt' with ansible vault password as content!"
-    eixt 1
+    exit 1
 fi
 
 echo "Checking private key and user, here we assume localhost is also one of the ansible target host, otherwise, please modify here!"
@@ -22,5 +22,5 @@ fi
 
 sudo apt update -y
 sudo apt install python python-pip python3 python3-pip kpartx qemu-utils curl python-yaml debootstrap libffi-dev libssl-dev -y
-sodu pip install ansible
+sudo pip install ansible
 ansible-playbook playbooks/site.yaml -i inventory/allinone.yaml
