@@ -16,12 +16,4 @@
 
 nodepool_install_method: git
 nodepool_pip_editable: yes
-nodepool_git_dest: /home/nodepool
-
-nodepool_file_nodepool_builder_service_config_manage: false
-nodepool_file_nodepool_builder_service_manage: false
-nodepool_service_nodepool_builder_manage: false
-
-nodepool_file_nodepool_launcher_service_config_manage: false
-nodepool_file_nodepool_launcher_service_manage: false
-nodepool_service_nodepool_launcher_manage: false
+nodepool_git_dest: "{{ ansible_user_dir }}/nodepool"

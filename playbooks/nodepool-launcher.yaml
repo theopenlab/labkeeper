@@ -16,17 +16,17 @@
   hosts: nodepool-launcher
 
   tasks:
-    - name: Setup openstack.shade role
+    - name: Setup openstack.openstacksdk role
       include_role:
-        name: openstack.shade
+        name: openstack.openstacksdk
 
     - name: Setup openstack.nodepool role
       include_role:
         name: openstack.nodepool
-      vars:
-        nodepool_file_nodepool_launcher_service_config_manage: true
-        nodepool_file_nodepool_launcher_service_manage: true
-        nodepool_service_nodepool_launcher_manage: true
+
+    - name: Setup openstack.logrotate role
+      include_role:
+        name: openstack.logrotate
 
     - name: Setup openstack.logrotate role
       include_role:
@@ -41,8 +41,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run nodepool-launcher validation.
-      include_role:
-        name: test.nodepool-launcher
