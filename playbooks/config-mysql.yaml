@@ -32,12 +32,14 @@
         mode: 0400
 
     - mysql_db:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
         state: import
         name: all
         target: /tmp/mysql_secure_installation.sql
       ignore_errors: yes
 
     - mysql_user:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
         name: zuul
         host: "{{ hostvars[groups['zuul-web'][0]].ansible_host }}"
         state: present
