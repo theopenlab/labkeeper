@@ -17,3 +17,18 @@
 nodepool_install_method: git
 nodepool_pip_editable: yes
 nodepool_git_dest: "{{ ansible_user_dir }}/nodepool"
+
+# labkeeper.diskimage-builder
+diskimage_builder_pip_virtualenv_python: python3
+diskimage_builder_pip_virtualenv: /opt/venv/nodepool
+
+# labkeeper.nodepool
+nodepool_file_nodepool_builder_service_config_src: nodepool-builder/etc/systemd/system/nodepool-builder.service.d/override.conf.j2
+
+# openstack.sudoers
+sudoers_task_manager:
+  - config
+sudoers_file_includes_dest: /etc/sudoers.d/nodepool
+sudoers_file_includes_src: nodepool-builder/etc/sudoers.d/nodepool.j2
+
+nodepool_file_nodepool_launcher_service_config_src: nodepool-launcher/etc/systemd/system/nodepool-launcher.service.d/override.conf.j2
