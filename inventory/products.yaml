@@ -3,9 +3,9 @@ all:
     bastion:
       ansible_connection: local
     nodepool01:
-      ansible_host: 192.168.200.211
+      ansible_host: 10.3.0.17
     zuul01:
-      ansible_host: 192.168.200.147
+      ansible_host: 10.3.0.15
   vars:
     zuul_tenant_name: openlab
   children:
@@ -34,21 +34,22 @@ all:
           hosts: zuul01
       vars:
         github_app_id: 6778
-        github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-ci.pem"
+        github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-theopenlab-ci.pem"
+        # Github app secret
         github_webhook_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256
-          30356661666163386666323533383535386331393038363663336461626532313434643766343631
-          3133643663333561313138656261396537633135663235340a323430656333643535626339353862
-          31626530343133356561633064353731373832633532653632626636346562313238383062303364
-          3365623735313233310a663535303038646530636631346539656663636437613264383865356339
-          3734
+          34643064363763383230646565373133623731383636343530613435653838333839353662383763
+          6232353530383536386334313065313139306262643863310a363763323930623264343064393738
+          65636463363364353532303535653038383536396631333061336632313330656433333035396239
+          3332623934616533350a313565646363356261313134353035646663373333383030656137653237
+          3133
         zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/openlab-main.yaml"
         github_acc_token:
         github_zuul_ssh_key_name: "pub key for openlab"
         zuul_tenant_name: openlab
         zuul_public_ip: 80.158.7.173
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
-        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/github/theopenlab/openlab-zuul-jobs.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
     gear:
       hosts: zuul01
     statsd:
