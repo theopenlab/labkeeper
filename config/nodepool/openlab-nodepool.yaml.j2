@@ -14,17 +14,17 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 33 #33
+    min-ready: 35
+    max-ready-age: 432000
   - name: ubuntu-trusty
-    min-ready: 3 #5
+    min-ready: 4
+    max-ready-age: 432000
   - name: ubuntu-xenial-ut
-    min-ready: 3 #3
+    min-ready: 3
+    max-ready-age: 432000
   - name: ubuntu-xenial-vexxhost
-    min-ready: 7 #11
-  - name: ubuntu-bionic-vxh-arm64
-    min-ready: -1 #-1
-  - name: ubuntu-xenial-otc
-    min-ready: 0 #1
+    min-ready: 7
+    max-ready-age: 432000
   - name: ubuntu-xenial-huaweicloud
     min-ready: -1
 
@@ -41,8 +41,10 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
+        pause: true
       - name: ubuntu-trusty
         config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
         auto-floating-ip: False
@@ -62,12 +64,6 @@ providers:
             flavor-name: 's2.2xlarge.1'
             boot-from-volume: True
             volume-size: 100
-          - name: ubuntu-xenial-otc
-            diskimage: ubuntu-xenial
-            # 8C-16G-0G
-            flavor-name: 's2.2xlarge.2'
-            boot-from-volume: True
-            volume-size: 100
 
 #VEXXHOST
   # limits: -1 vms, -1 Cores, 163840 M Ram
@@ -81,14 +77,12 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
+        pause: true
       - name: ubuntu-trusty
         config-drive: true
-    cloud-images:
-      - name: ubuntu-bionic-vxh-arm64
-        image-name: 'dc5d4e03-c46c-4877-bf19-c0c3bdbaffa0'
+        pause: true
     pools:
       - name: ubuntu-xenial
-#        max-servers: 22
         max-ram: 163840
         networks:
           - int-net
@@ -105,14 +99,6 @@ providers:
             diskimage: ubuntu-trusty
             # 8C-8G-200G
             flavor-name: 'v1-standard-8'
-          - name: ubuntu-bionic-vxh-arm64
-            cloud-image: ubuntu-bionic-vxh-arm64
-            # 8C-8G-0G
-            flavor-name: 'v2-highcpu-8'
-#          - name: ubuntu-xenial-ut
-#            diskimage: ubuntu-xenial
-#            # 2C-2G-0G
-#            flavor-name: 'v2-highcpu-2'
 
 #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
@@ -126,9 +112,9 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
-#        max-servers: 15
         max-ram: 80000
         networks:
           - openlab-net
@@ -159,13 +145,14 @@ providers:
     max-concurrency: 10
     diskimages:
       - name: ubuntu-xenial
-        #config-drive: true
+        config-drive: true
+        pause: true
       - name: ubuntu-trusty
-        #config-drive: true
+        config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
-#        max-servers: 25
-        max-cores: 100
+        max-cores: 60
         networks:
           - openlab-net
         labels:
@@ -190,7 +177,8 @@ providers:
     max-concurrency: 10
     diskimages:
       - name: ubuntu-xenial
-        #config-drive: true
+        config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
         max-servers: 8
@@ -201,37 +189,80 @@ providers:
             diskimage: ubuntu-xenial
             # 4C-8G-80G
             flavor-name: 'm1.large' #m1.xlarge 8C-16G-160G
-            boot-from-volume: True
-            volume-size: 100
+
+#PACKET
+  # limits: 10 vms, 80 Cores, 81920M Ram
+  - name: packet-openlab
+    cloud: packet
+    driver: openstack
+    image-name-format: 'openlab-{image_name}-{timestamp}'
+    launch-timeout: 900
+    boot-timeout: 600
+    max-concurrency: 10
+    diskimages:
+      - name: ubuntu-xenial
+        config-drive: true
+        pause: true
+      - name: ubuntu-trusty
+        pause: true
+        config-drive: true
+    pools:
+      - name: ubuntu-xenial
+        max-cores: 80
+        networks:
+          - openlabzuul-net
+        labels:
+          - name: ubuntu-xenial
+            diskimage: ubuntu-xenial
+            # 8C-8G-80G
+            flavor-name: 'zuul-flavor'
+          - name: ubuntu-trusty
+            diskimage: ubuntu-trusty
+            flavor-name: 'zuul-flavor'
 
 #HuaweiCloud
-  # limits: 5 vms, 20 Cores, 40960 M Ram
+  # limits: 500 vms, 4000 Cores, 8000G Ram
   - name: huaweicloud-openlab
     cloud: huaweicloud
     driver: openstack
     launch-timeout: 1200
     boot-timeout: 1200
     image-name-format: 'openlab-{image_name}-{timestamp}'
-#    diskimages:
-#      - name: ubuntu-xenial
-#        config-drive: true
+    diskimages:
+      - name: ubuntu-xenial
+        pause: true
+        config-drive: true
+      - name: ubuntu-trusty
+        pause: true
+        config-drive: true
     pools:
       - name: ubuntu-xenial
-        max-servers: -1
+        max-cores: 24
         networks:
           - openlab-net
         security-groups:
           - openlab-sg
-#        labels:
-#          - name: ubuntu-xenial-huaweicloud
-#            diskimage: ubuntu-xenial
-#            # 4C-8G-0G
-#            flavor-name: 's2.xlarge.2'
-#            boot-from-volume: True
-#            volume-size: 100
+        labels:
+          - name: ubuntu-xenial
+            diskimage: ubuntu-xenial
+            # 4C-8G
+            flavor-name: 's2.xlarge.2'
+            boot-from-volume: True
+            volume-size: 100
+          - name: ubuntu-trusty
+            diskimage: ubuntu-trusty
+            flavor-name: 's2.xlarge.2'
+            boot-from-volume: True
+            volume-size: 100
+          - name: ubuntu-xenial-huaweicloud
+            diskimage: ubuntu-xenial
+            flavor-name: 's2.xlarge.2'
+            boot-from-volume: True
+            volume-size: 100
 
 diskimages:
   - name: ubuntu-xenial
+    rebuild-age: 172800 # 2 days
     pause: true
     elements:
       - ubuntu
@@ -259,6 +290,7 @@ diskimages:
       ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
 
   - name: ubuntu-trusty
+    rebuild-age: 172800 # 2 days
     pause: true
     elements:
       - ubuntu
