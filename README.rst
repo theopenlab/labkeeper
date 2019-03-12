@@ -24,6 +24,7 @@ Steps to deploy a CI system by this tool
 1. Check the configuration files under the `config/` directory and the `inventory` files, maybe
    need to modify some fields:
 
+   - Modify the `nodepool` and `zuul` servers IP address if needed
    - Replace the `github_acc_token` field with github personal access token, which need to be
      manually generated in `Github token`_
    - And the `github_app_key_file`, `zuul_tenant_name`, `zuul_public_ip`, etc.
@@ -37,11 +38,12 @@ Steps to deploy a CI system by this tool
 
     $ bash setup.sh
 
-4. Change the github app webhook URL, e.g. modify the `allinoneopenlab app`_ webhook URL.
+4. Change the github app webhook URL, e.g. modify the `allinoneopenlab app`_ or `theopenlab app`_ webhook URL.
 
 .. _allinoneopenlab app: https://github.com/settings/apps/liu-openlab-ci
+.. _theopenlab app: https://github.com/organizations/theopenlab/settings/apps/theopenlab-ci
 
-5. Update the log server `fqdn` and host key in the jobs config repo (`openlab-zuul-jobs`).
+5. Update the log server `fqdn` and host key(`secrets.yaml`) in the jobs config repo (`openlab-zuul-jobs`).
 
 TODO items
 ----------
