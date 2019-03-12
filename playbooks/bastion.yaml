@@ -42,6 +42,15 @@
         executable: /bin/bash
       shell: ./tools/install_roles.sh
 
+    - name: Copy zuul user SSH keys to place
+      copy:
+        dest: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
+        mode: 0644
+        src: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
+      with_items:
+        - id_rsa
+        - id_rsa.pub
+
     - name: Prepare zuul user SSH keys (if missing).
       command: ssh-keygen -t rsa -f {{ labkeeper_config_git_dest }}/zuul/id_rsa -N ""
       args:
