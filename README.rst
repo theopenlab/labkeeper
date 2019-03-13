@@ -34,9 +34,11 @@ Steps to deploy a CI system by this tool
 2. Create an `openlab.pem` file with SSH private key to access servers to deploy CI services,
    and `vault-password.txt`  file with ansible vault password as content.
 
-3. Run following script to start deployment::
+3. Select one type of deployment: `allinone`, `openlab`(refer to the inventory in `/inventory`),
+   the `allinone` is default choice. Then run following script to start deployment::
 
-    $ bash setup.sh
+    $ export DPLOY_TYPE=openlab
+    $ ./deploy.sh
 
 4. After finishing deploying Change the github app webhook URL, e.g. modify the `allinoneopenlab app`_
    or `theopenlab app`_ webhook URL.
