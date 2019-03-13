@@ -36,6 +36,8 @@
       pip:
         requirements: '{{ labkeeper_src_dir }}/requirements.txt'
 
+    - pip: name=netaddr executable=pip3
+
     - name: Install ansible roles via galaxy
       args:
         chdir: '{{ labkeeper_src_dir }}'
