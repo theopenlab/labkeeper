@@ -1,0 +1,14 @@
+clouds:
+  otc:
+    auth:
+      username: '{{ otc_username }}'
+      password: '{{ otc_password }}'
+      auth_url: 'https://iam.eu-de.otc.t-systems.com/v3'
+      project_name: 'otc_iam'
+      project_domain_name: 'OTC00000000001000010507'
+      user_domain_name: 'OTC00000000001000010507'
+    identity_api_version: '3'
+    network_api_version: '2.0'
+    volume_api_version: '2'
+    region_name: eu-de
+    floating_ip_source: 'neutron'

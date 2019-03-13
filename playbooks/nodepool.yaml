@@ -15,6 +15,8 @@
 - name: Install nodepool
   hosts: nodepool
   serial: 1
+  vars_files:
+     - "{{ labkeeper_config_git_dest }}/nodepool/clouds-secrets.yaml"
   tasks:
     # NOTE(pabelanger): Because of ordering issues create the required home
     # directory first.
@@ -50,10 +52,10 @@
 
     - name: Copy clouds.yaml into place.
       become: yes
-      copy:
+      template:
         dest: /etc/openstack/clouds.yaml
         mode: 0755
-        src: "{{ nodepool_clouds_src }}"
+        src: "{{ labkeeper_config_git_dest }}/nodepool/clouds-secrets.yaml"
 
     - name: Create nodepool SSH directory.
       file:
