@@ -39,7 +39,7 @@
           - cloudfoundry-incubator/bosh-huaweicloud-cpi-release:
               exclude-unprotected-branches: true
           - terraform-providers/terraform-provider-huaweicloud:
-              exclude-unprotected-branches: true
+              exclude-unprotected-branches: false
           - kubernetes-sigs/cluster-api-provider-openstack:
               exclude-unprotected-branches: true
           - docker/machine:
