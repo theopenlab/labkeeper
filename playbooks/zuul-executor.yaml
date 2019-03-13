@@ -14,10 +14,10 @@
 ---
 - name: Install zuul-executor
   hosts: zuul-executor
+  become: yes
 
   tasks:
     - name: Ensure zuul build dependencies are installed (workaround).
-      become: yes
       package:
         name: "{{ item }}"
         state: present
@@ -29,7 +29,6 @@
         - python3-dev
 
     - name: Setup openstack.zuul role
-      become: yes
       include_role:
         name: openstack.zuul
       vars:
@@ -42,7 +41,6 @@
     # TODO(pabelanger): If we want to support xenial, we'll need to use this ppa
     # since bubblewrap doesn't exist.
     - name: Add openstack-infra PPA for bubblewrap
-      become: yes
       apt_repository:
         repo: ppa:openstack-ci-core/bubblewrap
       when:
@@ -51,7 +49,6 @@
     # TODO(pabelanger): I'm thinking we should likely create
     # ansible-role-bubblewrap to allow user to better manage this dependency.
     - name: Ensure bubblewrap is installed
-      become: yes
       package:
         name: bubblewrap
         state: present
