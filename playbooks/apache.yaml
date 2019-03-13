@@ -11,7 +11,7 @@
 # under the License.
 ---
 - name: Install and config apache2
-  hosts: zuul
+  hosts: apache
   become: yes
   tasks:
     - name: Install apache2 packages
