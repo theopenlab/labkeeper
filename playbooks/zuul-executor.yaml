@@ -29,6 +29,7 @@
         - python3-dev
 
     - name: Setup openstack.zuul role
+      become: yes
       include_role:
         name: openstack.zuul
       vars:
