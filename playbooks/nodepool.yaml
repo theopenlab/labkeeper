@@ -14,6 +14,7 @@
 ---
 - name: Install nodepool
   hosts: nodepool
+  become: yes
   serial: 1
   vars_files:
      - "{{ labkeeper_config_git_dest }}/nodepool/clouds-secrets.yaml"
@@ -45,14 +46,12 @@
 #        src: "{{ nodepool_clouds_src }}"
 
     - name: Create openstack config directory
-      become: yes
       file:
         dest: "/etc/openstack/"
         mode: 0755
         state: directory
 
     - name: Copy clouds.yaml into place.
-      become: yes
       template:
         dest: /etc/openstack/clouds.yaml
         mode: 0755
