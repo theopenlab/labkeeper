@@ -51,11 +51,11 @@
         mode: 0755
         state: directory
 
-    - name: Copy clouds.yaml into place.
+    - name: Create clouds.yaml into place.
       template:
         dest: /etc/openstack/clouds.yaml
         mode: 0755
-        src: "{{ labkeeper_config_git_dest }}/nodepool/clouds-secrets.yaml"
+        src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-clouds.yaml.j2"
 
     - name: Create nodepool SSH directory.
       file:
