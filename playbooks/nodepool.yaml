@@ -38,7 +38,7 @@
       template:
         dest: /etc/openstack/clouds.yaml
         mode: 0755
-        src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-clouds.yaml.j2"
+        src: "{{ nodepool_clouds_src }}"
 
     - name: Create nodepool SSH directory.
       file:
