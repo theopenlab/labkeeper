@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-# TODO: support editable for ansible-role-zuul
 ---
 - name: Install zuul-web.
   hosts: zuul-web
@@ -47,9 +46,6 @@
         yarn install
         npm install
         yarn build
-        # npm run install
-        # npm pack
-        # npm run  build:dist
       args:
         chdir: '{{ zuul_git_dest }}'
         executable: /bin/bash

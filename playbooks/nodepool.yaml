@@ -14,6 +14,7 @@
 ---
 - name: Install nodepool
   hosts: nodepool
+  serial: 1
   tasks:
     # NOTE(pabelanger): Because of ordering issues create the required home
     # directory first.
@@ -24,27 +25,59 @@
         nodepool_task_manager:
           - pre
 
-    - name: Create os-client-config directories.
-      become: yes
-      file:
-        group: nodepool
-        owner: nodepool
-        path: /var/lib/nodepool/.config/openstack
-        state: directory
+#    - name: Create os-client-config directories.
+#      become: yes
+#      file:
+#        group: nodepool
+#        owner: nodepool
+#        path: /var/lib/nodepool/.config/openstack
+#        state: directory
 
-    - name: Create nodepool config directory.
-      become: yes
+#    - name: Copy clouds.yaml into place.
+#      become: yes
+#      copy:
+#        dest: /var/lib/nodepool/.config/openstack/clouds.yaml
+#        group: nodepool
+#        mode: 0400
+#        owner: nodepool
+#        src: "{{ nodepool_clouds_src }}"
+
+    - name: Create openstack config directory
       file:
-        group: nodepool
-        owner: nodepool
-        path: /etc/nodepool/
+        dest: "/etc/openstack/"
+        mode: 0755
         state: directory
 
     - name: Copy clouds.yaml into place.
       become: yes
       copy:
-        dest: /var/lib/nodepool/.config/openstack/clouds.yaml
-        group: nodepool
-        mode: 0400
-        owner: nodepool
+        dest: /etc/openstack/clouds.yaml
+        mode: 0755
         src: "{{ nodepool_clouds_src }}"
+
+    - name: Create nodepool SSH directory.
+      file:
+        dest: "/var/lib/nodepool/.ssh/"
+        group: "nodepool"
+        mode: 0700
+        owner: "nodepool"
+        state: directory
+
+    - name: Copy zuul user SSH keys to nodepool home
+      copy:
+        dest: "/var/lib/nodepool/.ssh/{{ item }}"
+        group: nodepool
+        mode: 0600
+        owner: nodepool
+        src: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
+      with_items:
+        - id_rsa
+        - id_rsa.pub
+
+    - name: Install and config nodepool packages
+      include_role:
+        name: openstack.nodepool
+      vars:
+        nodepool_task_manager:
+          - install
+          - config
