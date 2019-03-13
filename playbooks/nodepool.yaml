@@ -45,6 +45,7 @@
 #        src: "{{ nodepool_clouds_src }}"
 
     - name: Create openstack config directory
+      become: yes
       file:
         dest: "/etc/openstack/"
         mode: 0755
