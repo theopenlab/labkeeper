@@ -16,17 +16,16 @@
   hosts: nodepool-launcher
 
   tasks:
-    - name: Setup openstack.openstacksdk role
-      include_role:
-        name: openstack.openstacksdk
-
-    - name: Setup openstack.nodepool role
+    - name: Enable nodepool launcher service
       include_role:
         name: openstack.nodepool
-
-    - name: Setup openstack.logrotate role
-      include_role:
-        name: openstack.logrotate
+      vars:
+        nodepool_task_manager:
+          - service
+        # disable nodepool builder service
+        nodepool_file_nodepool_builder_service_manage: false
+        nodepool_file_nodepool_builder_service_config_manage: false
+        nodepool_service_nodepool_builder_manage: false
 
     - name: Setup openstack.logrotate role
       include_role:
