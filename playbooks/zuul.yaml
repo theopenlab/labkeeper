@@ -81,10 +81,10 @@
       shell: cat /var/lib/zuul/.ssh/id_rsa.pub
       register: ssh_pub_key
 
-    - name: add zuul SSH public key to github
-      github_key:
-        name: '{{ github_zuul_ssh_key_name }}'
-        force: yes
-        pubkey: '{{ ssh_pub_key.stdout }}'
-        token: '{{ github_acc_token }}'
-      when: github_acc_token is defined
+#    - name: add zuul SSH public key to github
+#      github_key:
+#        name: '{{ github_zuul_ssh_key_name }}'
+#        force: yes
+#        pubkey: '{{ ssh_pub_key.stdout }}'
+#        token: '{{ github_acc_token }}'
+#      when: github_acc_token is defined
