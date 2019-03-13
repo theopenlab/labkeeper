@@ -14,10 +14,9 @@
 ---
 - name: Install zuul-merger.
   hosts: zuul-merger
-
+  become: yes
   tasks:
     - name: Ensure zuul build dependencies are installed (workaround).
-      become: yes
       package:
         name: "{{ item }}"
         state: present
@@ -29,7 +28,6 @@
         - python3-dev
 
     - name: Setup openstack.zuul role.
-      become: yes
       include_role:
         name: openstack.zuul
       vars:

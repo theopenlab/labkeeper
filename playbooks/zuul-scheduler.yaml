@@ -14,10 +14,10 @@
 ---
 - name: Install zuul-scheduler.
   hosts: zuul-scheduler
+  become: yes
 
   tasks:
     - name: Ensure zuul build dependencies are installed (workaround).
-      become: yes
       package:
         name: "{{ item }}"
         state: present
@@ -29,14 +29,12 @@
         - python3-dev
 
     - name: Upgrade the version of six(workaround)
-      become: yes
       pip:
         name: six
         version: 1.11.0
         executable: pip3
 
     - name: Setup openstack.zuul role.
-      become: yes
       include_role:
         name: openstack.zuul
       vars:
