@@ -16,7 +16,7 @@
 
 nodepool_install_method: git
 nodepool_pip_editable: yes
-nodepool_git_dest: "{{ ansible_user_dir }}/nodepool"
+nodepool_git_dest: "/opt/src/nodepool"
 
 # labkeeper.diskimage-builder
 diskimage_builder_pip_virtualenv_python: python3
