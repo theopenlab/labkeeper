@@ -28,23 +28,6 @@
         nodepool_task_manager:
           - pre
 
-#    - name: Create os-client-config directories.
-#      become: yes
-#      file:
-#        group: nodepool
-#        owner: nodepool
-#        path: /var/lib/nodepool/.config/openstack
-#        state: directory
-
-#    - name: Copy clouds.yaml into place.
-#      become: yes
-#      copy:
-#        dest: /var/lib/nodepool/.config/openstack/clouds.yaml
-#        group: nodepool
-#        mode: 0400
-#        owner: nodepool
-#        src: "{{ nodepool_clouds_src }}"
-
     - name: Create openstack config directory
       file:
         dest: "/etc/openstack/"

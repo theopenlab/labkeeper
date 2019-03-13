@@ -16,7 +16,7 @@
 zuul_file_zuul_conf_src: "{{ labkeeper_config_git_dest }}/zuul/zuul.conf.j2"
 
 zuul_install_method: git
-zuul_git_dest: "{{ ansible_user_dir }}/zuul"
+zuul_git_dest: "/opt/src/zuul"
 zuul_pip_editable: yes
 
 # Disable all services as default
