@@ -17,8 +17,6 @@ labels:
     min-ready: 1
   - name: ubuntu-trusty
     min-ready: 0
-  - name: ubuntu-xenial-huaweicloud
-    min-ready: 0
 
 providers:
   - name: otcallinone
@@ -57,30 +55,6 @@ providers:
             flavor-name: 's2.2xlarge.1'
             boot-from-volume: True
             volume-size: 100
-
-  - name: huaweicloudallinone
-    cloud: huaweicloud
-    driver: openstack
-    launch-timeout: 1200
-    boot-timeout: 1200
-    image-name-format: 'allinone-openlab-{image_name}-{timestamp}'
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-    pools:
-      - name: ubuntu-xenial-huaweicloud
-        max-servers: -1
-        networks:
-          - openlab-net
-        security-groups:
-          - openlab-sg
-        labels:
-          - name: ubuntu-xenial-huaweicloud
-            diskimage: ubuntu-xenial
-            flavor-name: 's2.xlarge.2'
-            boot-from-volume: True
-            volume-size: 100
-
 
 diskimages:
   - name: ubuntu-xenial
