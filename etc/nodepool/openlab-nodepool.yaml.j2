@@ -14,7 +14,7 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 35
+    min-ready: 30
     max-ready-age: 432000
   - name: ubuntu-trusty
     min-ready: 4
@@ -23,49 +23,17 @@ labels:
     min-ready: 3
     max-ready-age: 432000
   - name: ubuntu-xenial-vexxhost
-    min-ready: 7
+    min-ready: 4
     max-ready-age: 432000
   - name: ubuntu-xenial-huaweicloud
+    min-ready: 0
+    max-ready-age: 432000
+  - name: ubuntu-xenial-arm64
     min-ready: -1
+    max-ready-age: 432000
 
 providers:
-#OTC
-  # limits: 100 vms, 800 Cores, 1638400 M Ram
-  - name: otc-openlab
-    cloud: otc
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
-    max-concurrency: 10
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-        pause: true
-      - name: ubuntu-trusty
-        config-drive: true
-        pause: true
-    pools:
-      - name: ubuntu-xenial
-        auto-floating-ip: False
-        max-servers: 6
-        networks:
-          - openlab-net
-        labels:
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 8C-8G-0G
-            flavor-name: 's2.2xlarge.1'
-            boot-from-volume: True
-            volume-size: 100
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 8C-8G-0G
-            flavor-name: 's2.2xlarge.1'
-            boot-from-volume: True
-            volume-size: 100
-
-#VEXXHOST
+  #VEXXHOST
   # limits: -1 vms, -1 Cores, 163840 M Ram
   - name: vexxhost-openlab
     cloud: vexxhost
@@ -73,7 +41,7 @@ providers:
     image-name-format: 'openlab-{image_name}-{timestamp}'
     launch-timeout: 900
     boot-timeout: 600
-    max-concurrency: 10
+    max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -81,9 +49,16 @@ providers:
       - name: ubuntu-trusty
         config-drive: true
         pause: true
+      - name: ubuntu-xenial-arm64
+        meta:
+          architecture: aarch64
+          min_disk: '80'
+        config-drive: true
+        #NOTE: don't upload ARM image in x86 node, add config to avoid refering error
+        pause: true
     pools:
       - name: ubuntu-xenial
-        max-ram: 163840
+        max-ram: 98304 #163840-8vm reserved
         networks:
           - int-net
         labels:
@@ -99,8 +74,16 @@ providers:
             diskimage: ubuntu-trusty
             # 8C-8G-200G
             flavor-name: 'v1-standard-8'
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            # 2C-2G-0G
+            flavor-name: 'v2-highcpu-2'
+          - name: ubuntu-xenial-arm64
+            diskimage: ubuntu-xenial-arm64
+            # 8C-8G-80G NOTE: have to use v2 flavor to boot ARM instance
+            flavor-name: 'v2-highcpu-8'
 
-#ChameleonCloud
+  #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
   - name: chameleon-openlab
     cloud: chameleon
@@ -108,9 +91,12 @@ providers:
     image-name-format: 'openlab-{image_name}-{timestamp}'
     launch-timeout: 900
     boot-timeout: 600
-    max-concurrency: 10
+    max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
+        config-drive: true
+        pause: true
+      - name: ubuntu-trusty
         config-drive: true
         pause: true
     pools:
@@ -123,18 +109,16 @@ providers:
             diskimage: ubuntu-xenial
             # 4C-8G-80G
             flavor-name: 'm1.large'
-            # Do not support boot from volume according to the test,
-            # error occurs when calling this CLI:
-            #     $ openstack --os-cloud chameleon volume create --image ubuntu-xenial-1527565364 --size 100 volume-bootable
-            #     Invalid image identifier or unable to access requested image. (HTTP 400) (Request-ID: req-8a64388e-26f5-4df3-b034-dd455f5a1da3)
-            # boot-from-volume: True
-            # volume-size: 100
+          - name: ubuntu-trusty
+            diskimage: ubuntu-trusty
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
           - name: ubuntu-xenial-ut
             diskimage: ubuntu-xenial
             # 1C-2G-20G
             flavor-name: 'm1.small'
 
-#CityNetwork
+  #CityNetwork
   # limits: 50 vms, 100 Cores, 256000 M Ram
   - name: citynetwork-openlab
     cloud: citynetwork
@@ -142,7 +126,7 @@ providers:
     image-name-format: 'openlab-{image_name}-{timestamp}'
     launch-timeout: 900
     boot-timeout: 600
-    max-concurrency: 10
+    max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -166,7 +150,7 @@ providers:
             diskimage: ubuntu-xenial
             flavor-name: '1C-2GB-50GB'
 
-#SWITCH
+  #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
   - name: switch-openlab
     cloud: switch
@@ -179,6 +163,9 @@ providers:
       - name: ubuntu-xenial
         config-drive: true
         pause: true
+      - name: ubuntu-trusty
+        config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
         max-servers: 8
@@ -188,9 +175,17 @@ providers:
           - name: ubuntu-xenial
             diskimage: ubuntu-xenial
             # 4C-8G-80G
-            flavor-name: 'm1.large' #m1.xlarge 8C-16G-160G
+            flavor-name: 'm1.large'
+          - name: ubuntu-trusty
+            diskimage: ubuntu-trusty
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            # 1C-2G-20G
+            flavor-name: 'm1.small'
 
-#PACKET
+  #PACKET
   # limits: 10 vms, 80 Cores, 81920M Ram
   - name: packet-openlab
     cloud: packet
@@ -198,14 +193,14 @@ providers:
     image-name-format: 'openlab-{image_name}-{timestamp}'
     launch-timeout: 900
     boot-timeout: 600
-    max-concurrency: 10
+    max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
         pause: true
       - name: ubuntu-trusty
-        pause: true
         config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
         max-cores: 80
@@ -218,26 +213,32 @@ providers:
             flavor-name: 'zuul-flavor'
           - name: ubuntu-trusty
             diskimage: ubuntu-trusty
+            # 8C-8G-80G
             flavor-name: 'zuul-flavor'
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            # 1C-2G-20G
+            flavor-name: 'm1.small'
 
-#HuaweiCloud
-  # limits: 500 vms, 4000 Cores, 8000G Ram
+  #Huaweicloud
+  # limits: 500 vms, 4000 Cores,8000G Ram
   - name: huaweicloud-openlab
     cloud: huaweicloud
     driver: openstack
-    launch-timeout: 1200
-    boot-timeout: 1200
     image-name-format: 'openlab-{image_name}-{timestamp}'
+    launch-timeout: 900
+    boot-timeout: 600
+    max-concurrency: 3
     diskimages:
       - name: ubuntu-xenial
-        pause: true
         config-drive: true
+        pause: true
       - name: ubuntu-trusty
-        pause: true
         config-drive: true
+        pause: true
     pools:
       - name: ubuntu-xenial
-        max-cores: 24
+        max-servers: 2
         networks:
           - openlab-net
         security-groups:
@@ -245,18 +246,26 @@ providers:
         labels:
           - name: ubuntu-xenial
             diskimage: ubuntu-xenial
-            # 4C-8G
-            flavor-name: 's2.xlarge.2'
+            # 4C-8G-100G
+            flavor-name: 's3.xlarge.2'
             boot-from-volume: True
             volume-size: 100
           - name: ubuntu-trusty
             diskimage: ubuntu-trusty
-            flavor-name: 's2.xlarge.2'
+            # 4C-8G-100G
+            flavor-name: 's3.xlarge.2'
             boot-from-volume: True
             volume-size: 100
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            # 1C-2G-20G
+            flavor-name: 's3.medium.2'
+            boot-from-volume: True
+            volume-size: 20
           - name: ubuntu-xenial-huaweicloud
             diskimage: ubuntu-xenial
-            flavor-name: 's2.xlarge.2'
+            # 4C-8G-100G
+            flavor-name: 's3.xlarge.2'
             boot-from-volume: True
             volume-size: 100
 
@@ -312,6 +321,37 @@ diskimages:
       DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
       DIB_DEV_USER_PWDLESS_SUDO: '1'
       DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
+      GIT_HTTP_LOW_SPEED_TIME: '300'
+      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
+      ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
+
+  - name: ubuntu-xenial-arm64
+    rebuild-age: 172800 # 2 days
+    #NOTE: don't build ARM image in x86 node, add config to avoid image refering error
+    pause: true
+    elements:
+      - block-device-efi
+      - ubuntu-minimal
+      - vm
+      - simple-init
+      - nodepool-base
+      - cache-devstack
+      - initialize-urandom
+      - growroot
+      - infra-package-needs
+    release: xenial
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_IMAGE_SIZE: '80'
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_DISTRIBUTION_MIRROR: 'http://mirror.london.linaro-london.openstack.org/ubuntu-ports'
+      DIB_DEBOOTSTRAP_EXTRA_ARGS: '--no-check-gpg'
+      DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
+      DIB_DEV_USER_PWDLESS_SUDO: '1'
       GIT_HTTP_LOW_SPEED_TIME: '300'
       GIT_HTTP_LOW_SPEED_LIMIT: '1000'
       ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
