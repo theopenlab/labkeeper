@@ -2,59 +2,50 @@ all:
   hosts:
     bastion:
       ansible_connection: local
-    allinone:
+    labkeepertest:
       ansible_host: 127.0.0.1
   vars:
-    zuul_tenant_name: openlaballinone
+    zuul_tenant_name: labkeepertest
+    new_zuul_user_key: true
   children:
     nodepool:
       children:
         nodepool-builder:
-          hosts: allinone
+          hosts: labkeepertest
         nodepool-launcher:
-          hosts: allinone
+          hosts: labkeepertest
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:
-          hosts: allinone
+          hosts: labkeepertest
         zuul-executor:
-          hosts: allinone
+          hosts: labkeepertest
         zuul-web:
-          hosts: allinone
+          hosts: labkeepertest
         zuul-merger:
-          hosts: allinone
+          hosts: labkeepertest
         zuul-fingergw:
-          hosts: allinone
+          hosts: labkeepertest
         zuul-log-server:
-          hosts: allinone
+          hosts: labkeepertest
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
-        # Github app secret
-        github_webhook_token: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          65633963633835333432666238626638383938316433303663666333343639643733363862346566
-          3363393730343335373261663533303361316430373861370a346663396338336135616538646635
-          65326433343366363030393862396336393866336337366265303532636461633064356235313133
-          6232353665643934620a613937663931396337363232313065653031623234336332336533376233
-          3432
         zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-main.yaml"
-        #github_acc_token:
-        #github_zuul_ssh_key_name: "pub key for openlaballinone"
-        zuul_tenant_name: openlaballinone
+        zuul_tenant_name: labkeepertest
         zuul_public_ip: 80.158.7.210
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
     gear:
-      hosts: allinone
+      hosts: labkeepertest
     statsd:
-      hosts: allinone
+      hosts: labkeepertest
     zookeeper:
-      hosts: allinone
+      hosts: labkeepertest
     mysql:
-      hosts: allinone
+      hosts: labkeepertest
     apache:
-      hosts: allinone
+      hosts: labkeepertest

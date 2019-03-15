@@ -44,8 +44,8 @@ all:
           6232353665643934620a613937663931396337363232313065653031623234336332336533376233
           3432
         zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/openlab-main.yaml"
-        github_acc_token:
-        github_zuul_ssh_key_name: "pub key for openlab"
+        #github_acc_token:
+        #github_zuul_ssh_key_name: "pub key for openlab"
         zuul_tenant_name: openlab
         zuul_public_ip: 80.158.7.173
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"

@@ -48,15 +48,17 @@
       copy:
         dest: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
         mode: 0644
-        src: "{{ labkeeper_config_git_dest }}/zuul/{{ item }}"
+        src: "{{ labkeeper_config_git_dest }}/zuul/zuul_user_{{ item }}"
       with_items:
         - id_rsa
         - id_rsa.pub
+      when: new_zuul_user_key|default(false)|bool
 
     - name: Prepare zuul user SSH keys (if missing).
       command: ssh-keygen -t rsa -f {{ labkeeper_config_git_dest }}/zuul/id_rsa -N ""
       args:
         creates: "{{ labkeeper_config_git_dest }}/zuul/id_rsa"
+
 
     - name: Change zuul user SSH keys permissions
       file:
