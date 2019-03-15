@@ -53,8 +53,9 @@ providers:
         meta:
           architecture: aarch64
           min_disk: '80'
-        config-drive: true
-        #NOTE: don't upload ARM image in x86 node, add config to avoid refering error
+        #NOTE: don't upload ARM image in x86 node, add config to avoid refering error,
+        #      disable config drive to avoid ARM instance booting error
+        config-drive: false
         pause: true
     pools:
       - name: ubuntu-xenial
