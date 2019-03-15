@@ -25,6 +25,9 @@
         mode: 0600
         owner: zuul
         src: "{{ openlab_zuul_jobs_key_src }}"
+      when:
+        - openlab_zuul_jobs_key_dest is defined
+        - openlab_zuul_jobs_key_src is defined
 
     - name: Restart zuul services
       service:

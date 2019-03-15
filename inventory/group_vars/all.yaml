@@ -13,5 +13,5 @@
 # under the License.
 ---
 # labkeeper-config
-labkeeper_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/config"
+labkeeper_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/etc"
 labkeeper_src_dir: "{{ lookup('pipe', 'pwd') | dirname }}"
