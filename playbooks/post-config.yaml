@@ -17,6 +17,8 @@
       wait_for:
         path: "{{ openlab_zuul_jobs_key_dest }}"
         state: present
+      when:
+        - openlab_zuul_jobs_key_dest is defined
 
     - name: Copy openlab-zuul-jobs key into place
       copy:
