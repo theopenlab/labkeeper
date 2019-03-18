@@ -7,7 +7,7 @@ images-dir: /opt/nodepool/images
 zookeeper-servers:
 {% if 'zookeeper' in groups %}
 {% for host in groups['zookeeper'] %}
-  - host: '{{ hostvars[host].ansible_host | ipwrap }}'
+  - host: '{{ hostvars[host].ansible_host }}'
     port: 2181
 {% endfor %}
 {% endif %}

@@ -34,6 +34,7 @@ all:
       vars:
         github_app_id: 7102
         #github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
+        github_webhook_token: "fake"
         #zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-main.yaml"
         zuul_tenant_name: labkeepertest
         zuul_public_ip: ""
