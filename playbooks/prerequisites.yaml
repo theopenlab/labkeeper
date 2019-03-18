@@ -35,6 +35,7 @@
         - python-dev
         - python3-pip
         - python-pip
+        - python-netaddr
 
     - name: Install pip packages
       pip:
