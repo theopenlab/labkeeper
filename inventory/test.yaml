@@ -36,7 +36,6 @@ all:
         github_webhook_token: "test"
         zuul_tenant_name: test
         zuul_public_ip: ""
-        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
     gear:
       hosts: test
     statsd:
