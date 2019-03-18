@@ -54,7 +54,13 @@
               exclude-unprotected-branches: true
           - zhongjun2/bosh-huaweicloud-cpi-release:
               exclude-unprotected-branches: false
+          - cloudfoundry/bosh-openstack-cpi-release:
+              exclude-unprotected-branches: true
           - cloudfoundry/bosh-acceptance-tests:
+              exclude-unprotected-branches: true
+          - helm/charts:
+              exclude-unprotected-branches: true
+          - kubernetes-sigs/kind:
               exclude-unprotected-branches: true
 
       openstack-git:
