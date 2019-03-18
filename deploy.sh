@@ -17,7 +17,7 @@ fi
 export DEFAULT_REMOTE_USER=${DEFAULT_REMOTE_USER:-ubuntu}
 export DPLOY_TYPE=${DPLOY_TYPE:-allinone}
 
-echo "Checking key and user access, 'ubuntu' user as default, you can set 'ANSIBLE_REMOTE_USER' to override!"
+echo "Checking key and user access, 'ubuntu' user as default, you can set 'DEFAULT_REMOTE_USER' to override!"
 if ! ssh -o "StrictHostKeyChecking no" -i openlab.pem ${DEFAULT_REMOTE_USER}@localhost 'pwd'; then
     echo "Please ensure you have created correct 'openlab.pem' and switched to the user which can access with this key!"
     exit 1

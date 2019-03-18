@@ -30,13 +30,13 @@
         - python-dev
         - python3-pip
         - python-pip
-        - python-netaddr
+        #- python-netaddr
 
     - name: Install pip requirement packages
       pip:
         requirements: '{{ labkeeper_src_dir }}/requirements.txt'
 
-    - pip: name=netaddr executable=pip3
+    - pip: name=netaddr
 
     - name: Install ansible roles via galaxy
       args:

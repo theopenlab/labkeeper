@@ -37,6 +37,7 @@ Steps to deploy a CI system by this tool
 3. Select one type of deployment: `allinone`, `openlab`(refer to the inventory in `/inventory`),
    the `allinone` is default choice. Then run following script to start deployment::
 
+    $ export DEFAULT_REMOTE_USER=ubuntu
     $ export DPLOY_TYPE=openlab
     $ ./deploy.sh
 
