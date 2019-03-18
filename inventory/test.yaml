@@ -2,51 +2,48 @@ all:
   hosts:
     bastion:
       ansible_connection: local
-    labkeepertest:
+    test:
       ansible_host: 127.0.0.1
   vars:
-    zuul_tenant_name: labkeepertest
+    zuul_tenant_name: test
     new_zuul_user_key: true
   children:
     nodepool:
       children:
         nodepool-builder:
-          hosts: labkeepertest
+          hosts: test
         nodepool-launcher:
-          hosts: labkeepertest
+          hosts: test
       vars:
-        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:
-          hosts: labkeepertest
+          hosts: test
         zuul-executor:
-          hosts: labkeepertest
+          hosts: test
         zuul-web:
-          hosts: labkeepertest
+          hosts: test
         zuul-merger:
-          hosts: labkeepertest
+          hosts: test
         zuul-fingergw:
-          hosts: labkeepertest
+          hosts: test
         zuul-log-server:
-          hosts: labkeepertest
+          hosts: test
       vars:
-        github_app_id: 7102
-        #github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
-        github_webhook_token: "fake"
-        #zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-main.yaml"
-        zuul_tenant_name: labkeepertest
+        github_app_id: 0000
+        github_webhook_token: "test"
+        zuul_tenant_name: test
         zuul_public_ip: ""
-        #openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
-        #openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
     gear:
-      hosts: labkeepertest
+      hosts: test
     statsd:
-      hosts: labkeepertest
+      hosts: test
     zookeeper:
-      hosts: labkeepertest
+      hosts: test
     mysql:
-      hosts: labkeepertest
+      hosts: test
     apache:
-      hosts: labkeepertest
+      hosts: test
