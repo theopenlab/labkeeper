@@ -44,7 +44,7 @@ sql_connection_name=mysql
 status_url=http://{{ zuul_public_ip }}/
 
 [zookeeper]
-hosts = {{ hostvars[groups["zookeeper"][0]].ansible_host | ipwrap }}
+hosts = {{ hostvars[groups["zookeeper"][0]].ansible_host }}
 
 [connection github]
 driver=github
