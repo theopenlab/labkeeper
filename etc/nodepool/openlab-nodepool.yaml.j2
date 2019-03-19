@@ -15,22 +15,25 @@ zookeeper-servers:
 labels:
   - name: ubuntu-xenial
     min-ready: 30
-    max-ready-age: 432000
+    max-ready-age: 14400
   - name: ubuntu-trusty
     min-ready: 4
-    max-ready-age: 432000
+    max-ready-age: 14400
   - name: ubuntu-xenial-ut
     min-ready: 3
-    max-ready-age: 432000
+    max-ready-age: 14400
   - name: ubuntu-xenial-vexxhost
     min-ready: 4
-    max-ready-age: 432000
+    max-ready-age: 14400
   - name: ubuntu-xenial-huaweicloud
     min-ready: 0
-    max-ready-age: 432000
+    max-ready-age: 14400
   - name: ubuntu-xenial-arm64
-    min-ready: -1
-    max-ready-age: 432000
+    min-ready: 0
+    max-ready-age: 14400
+  - name: ubuntu-xenial-gpu
+    min-ready: 0
+    max-ready-age: 14400
 
 providers:
   #VEXXHOST
@@ -58,8 +61,8 @@ providers:
         config-drive: false
         pause: true
     pools:
-      - name: ubuntu-xenial
-        max-ram: 98304 #163840-8vm reserved
+      - name: main
+        max-ram: 106496 #163840-7vm reserved
         networks:
           - int-net
         labels:
@@ -101,7 +104,7 @@ providers:
         config-drive: true
         pause: true
     pools:
-      - name: ubuntu-xenial
+      - name: main
         max-ram: 80000
         networks:
           - openlab-net
@@ -136,8 +139,8 @@ providers:
         config-drive: true
         pause: true
     pools:
-      - name: ubuntu-xenial
-        max-cores: 40
+      - name: main
+        max-cores: 68
         networks:
           - openlab-net
         labels:
@@ -168,7 +171,7 @@ providers:
         config-drive: true
         pause: true
     pools:
-      - name: ubuntu-xenial
+      - name: main
         max-servers: 8
         networks:
           - openlab-net
@@ -187,7 +190,7 @@ providers:
             flavor-name: 'm1.small'
 
   #PACKET
-  # limits: 10 vms, 80 Cores, 81920M Ram
+  # limits: 10 vms, 80 Cores, 81920 M Ram
   - name: packet-openlab
     cloud: packet
     driver: openstack
@@ -203,7 +206,7 @@ providers:
         config-drive: true
         pause: true
     pools:
-      - name: ubuntu-xenial
+      - name: main
         max-cores: 80
         networks:
           - openlabzuul-net
@@ -222,7 +225,7 @@ providers:
             flavor-name: 'm1.small'
 
   #Huaweicloud
-  # limits: 500 vms, 4000 Cores,8000G Ram
+  # limits: 500 vms, 4000 Cores, 8192000 M Ram
   - name: huaweicloud-openlab
     cloud: huaweicloud
     driver: openstack
@@ -238,7 +241,7 @@ providers:
         config-drive: true
         pause: true
     pools:
-      - name: ubuntu-xenial
+      - name: main
         max-servers: 2
         networks:
           - openlab-net
@@ -264,6 +267,12 @@ providers:
             boot-from-volume: True
             volume-size: 40
           - name: ubuntu-xenial-huaweicloud
+            diskimage: ubuntu-xenial
+            # 4C-8G-100G
+            flavor-name: 's3.xlarge.2'
+            boot-from-volume: True
+            volume-size: 100
+          - name: ubuntu-xenial-gpu
             diskimage: ubuntu-xenial
             # 4C-8G-100G
             flavor-name: 's3.xlarge.2'
