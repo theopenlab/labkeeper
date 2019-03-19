@@ -21,6 +21,7 @@ finger_port = 17979
 log_config = /etc/zuul/executor-logging.conf
 private_key_file = {{ zuul_user_home }}/.ssh/id_rsa
 disk_limit_per_job=1024
+load_multiplier=4
 
 [fingergw]
 listen_address = {{ hostvars[groups["zuul-fingergw"][0]].ansible_host }}
