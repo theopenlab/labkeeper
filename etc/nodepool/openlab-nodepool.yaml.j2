@@ -42,8 +42,9 @@ providers:
     cloud: vexxhost
     driver: openstack
     image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
     max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
@@ -93,9 +94,10 @@ providers:
     cloud: chameleon
     driver: openstack
     image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
-    max-concurrency: 5
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 1
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -128,8 +130,9 @@ providers:
     cloud: citynetwork
     driver: openstack
     image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
     max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
@@ -160,9 +163,10 @@ providers:
     cloud: switch
     driver: openstack
     image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
-    max-concurrency: 10
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -195,9 +199,10 @@ providers:
     cloud: packet
     driver: openstack
     image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
-    max-concurrency: 5
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 1
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -230,9 +235,10 @@ providers:
     cloud: huaweicloud
     driver: openstack
     image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 900
-    boot-timeout: 600
-    max-concurrency: 3
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 1
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
