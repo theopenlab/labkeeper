@@ -15,8 +15,8 @@ all:
         nodepool-launcher:
           hosts: test
       vars:
-        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-nodepool.yaml.j2"
-        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:

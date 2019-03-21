@@ -17,17 +17,6 @@
   become: yes
 
   tasks:
-    - name: Ensure zuul build dependencies are installed (workaround).
-      package:
-        name: "{{ item }}"
-        state: present
-      with_items:
-        - build-essential
-        - libffi-dev
-        - libre2-dev
-        - libssl-dev
-        - python3-dev
-
     - name: Upgrade the version of six(workaround)
       pip:
         name: six
@@ -38,6 +27,8 @@
       include_role:
         name: openstack.zuul
       vars:
+        zuul_task_manager:
+          - service
         zuul_file_zuul_scheduler_service_config_manage: true
         zuul_file_zuul_scheduler_service_manage: true
         zuul_service_zuul_scheduler_enabled: yes
