@@ -43,7 +43,7 @@ status_url=http://{{ zuul_public_ip }}/
 
 [zookeeper]
 {% if 'zookeeper' in groups %}
-hosts = '{{ groups['zookeeper'] | map('extract', hostvars, ansible_host) | join(", ") }}'
+hosts = {{ groups['zookeeper'] | map('extract', hostvars, 'ansible_host') | join(', ') }}
 {% endif %}
 
 [connection github]

@@ -26,6 +26,8 @@ all:
     nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
     nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
 
+    zookeeper_ha_mode: true
+
   children:
     master:
       children:
@@ -57,6 +59,8 @@ all:
           hosts: allinone01
         zookeeper:
           hosts: allinone01
+          vars:
+            zk_myid: 1
         mysql:
           hosts: allinone01
         apache:
@@ -92,6 +96,8 @@ all:
           hosts: allinone02
         zookeeper:
           hosts: allinone02
+          vars:
+            zk_myid: 2
         mysql:
           hosts: allinone02
         apache:
@@ -101,3 +107,5 @@ all:
       children:
         zookeeper:
           hosts: zk03
+          vars:
+            zk_myid: 3
