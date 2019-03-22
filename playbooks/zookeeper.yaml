@@ -13,6 +13,7 @@
 # under the License.
 ---
 - name: Install zookeeper
+  become: yes
   hosts: zookeeper
 
   tasks:
@@ -32,8 +33,9 @@
           ini_file:
             path: /etc/zookeeper/conf/zoo.cfg
             option: server.{{ zk_myid }}
-            value: {{ hostvars[item].ansible_host }}:2888:3888
-          with_items: {{ groups['zookeeper'] }}
+            section: null
+            value: "{{ hostvars[item].ansible_host }}:2888:3888"
+          with_items: "{{ groups['zookeeper'] }}"
 
         - name: Restart zookeeper services
           service:
