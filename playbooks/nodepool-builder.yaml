@@ -46,7 +46,7 @@
         src: /tmp/project-config/nodepool/elements/
         recursive: yes
         rsync_opts: '--chown=nodepool:nodepool'
-      delegate_to: "{{ hostvars[groups['nodepool-builder'][0]].ansible_host }}"
+      delegate_to: "{{ inventory_hostname }}"
 
     - name: install pyyaml for elements (workaround)
       pip: name=pyyaml
