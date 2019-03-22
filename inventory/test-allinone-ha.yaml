@@ -3,87 +3,90 @@ all:
     bastion:
       ansible_connection: local
     allinone01:
-      ansible_host: 10.3.0.1
+      ansible_host: 192.168.211.76
     allinone02:
-      ansible_host: 10.3.0.2
+      ansible_host: 192.168.211.37
     zk03:
-      ansible_host: 10.3.0.3
+      ansible_host: 192.168.211.107
   vars:
-    nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
-    nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
-
+    zuul_tenant_name: openlaballinone
+    zookeeper_ha_mode: true
   children:
-    master:
+    nodepool:
       children:
-        nodepool:
-          children:
-            nodepool-builder:
-              hosts: allinone01
-            nodepool-launcher:
-              hosts: allinone01
-        zuul:
-          children:
-            zuul-scheduler:
-              hosts: allinone01
-            zuul-executor:
-              hosts: allinone01
-            zuul-web:
-              hosts: allinone01
-            zuul-merger:
-              hosts: allinone01
-            zuul-fingergw:
-              hosts: allinone01
-            zuul-log-server:
-              hosts: allinone01
-          vars:
-            zuul_public_ip: 80.158.7.173
-        gear:
-          hosts: allinone01
-        statsd:
-          hosts: allinone01
-        zookeeper:
-          hosts: allinone01
-        mysql:
-          hosts: allinone01
-        apache:
-          hosts: allinone01
+        nodepool-builder:
+          hosts:
+            allinone01:
+            allinone02:
+        nodepool-launcher:
+          hosts:
+            allinone01:
+            allinone02:
+      vars:
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
+    zuul:
+      children:
+        zuul-scheduler:
+          hosts:
+            allinone01:
+            allinone02:
+        zuul-executor:
+          hosts:
+            allinone01:
+            allinone02:
+        zuul-web:
+          hosts:
+            allinone01:
+            allinone02:
+        zuul-merger:
+          hosts:
+            allinone01:
+            allinone02:
+        zuul-fingergw:
+          hosts:
+            allinone01:
+            allinone02:
+        zuul-log-server:
+          hosts:
+            allinone01:
+            allinone02:
+      vars:
+        github_app_id: 0000
+        github_webhook_token: "test"
+        zuul_tenant_name: test
+        zuul_public_ip: ""
+    gear:
+      hosts:
+        allinone01:
+        allinone02:
+    statsd:
+      hosts:
+        allinone01:
+        allinone02:
+    zookeeper:
+      hosts:
+        allinone01:
+        allinone02:
+        zk03:
+    mysql:
+      hosts:
+        allinone01:
+        allinone02:
+    apache:
+      hosts:
+        allinone01:
+        allinone02:
 
-    slave:
-      children:
-        nodepool:
-          children:
-            nodepool-builder:
-              hosts: allinone02
-            nodepool-launcher:
-              hosts: allinone02
-        zuul:
-          children:
-            zuul-scheduler:
-              hosts: allinone02
-            zuul-executor:
-              hosts: allinone02
-            zuul-web:
-              hosts: allinone02
-            zuul-merger:
-              hosts: allinone02
-            zuul-fingergw:
-              hosts: allinone02
-            zuul-log-server:
-              hosts: allinone02
-          vars:
-            zuul_public_ip: 80.158.7.173
-        gear:
-          hosts: allinone02
-        statsd:
-          hosts: allinone02
-        zookeeper:
-          hosts: allinone02
-        mysql:
-          hosts: allinone02
-        apache:
-          hosts: allinone02
-
-    zookeeper3:
-      children:
-        zookeeper:
-          hosts: zk03
+    openlab-master:
+      hosts: allinone01
+      vars:
+        zk_myid: 1
+    openlab-slave:
+      hosts: allinone02
+      vars:
+        zk_myid: 2
+    openlab-zk3:
+      hosts: zk03
+      vars:
+        zk_myid: 3

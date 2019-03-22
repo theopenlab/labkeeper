@@ -3,105 +3,111 @@ all:
     bastion:
       ansible_connection: local
     nodepool01:
-      ansible_host: 10.3.0.1
+      ansible_host: 192.168.211.1
     zuul01:
-      ansible_host: 10.3.0.2
+      ansible_host: 192.168.211.2
     nodepool02:
-      ansible_host: 10.3.0.3
+      ansible_host: 192.168.211.3
     zuul02:
-      ansible_host: 10.3.0.4
+      ansible_host: 192.168.211.4
     zk03:
-      ansible_host: 10.3.0.5
+      ansible_host: 192.168.211.5
   vars:
     zuul_tenant_name: openlab
-    github_app_id: 6778
-    github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-theopenlab-ci.pem"
-    github_webhook_token: !vault |
-      $ANSIBLE_VAULT;1.1;AES256
-      65633963633835333432666238626638383938316433303663666333343639643733363862346566
-      3363393730343335373261663533303361316430373861370a346663396338336135616538646635
-      65326433343366363030393862396336393866336337366265303532636461633064356235313133
-      6232353665643934620a613937663931396337363232313065653031623234336332336533376233
-      3432
-    zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/openlab-main.yaml"
-    openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
-    openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
-
-    nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-nodepool.yaml.j2"
-    nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
-
+    zookeeper_ha_mode: true
   children:
-    master:
+    nodepool:
       children:
-        nodepool:
-          children:
-            nodepool-builder:
-              hosts: nodepool01
-            nodepool-launcher:
-              hosts: nodepool01
-        zuul:
-          children:
-            zuul-scheduler:
-              hosts: zuul01
-            zuul-executor:
-              hosts: zuul01
-            zuul-web:
-              hosts: zuul01
-            zuul-merger:
-              hosts: zuul01
-            zuul-fingergw:
-              hosts: zuul01
-            zuul-log-server:
-              hosts: zuul01
-          vars:
-            zuul_public_ip: 80.158.7.173
-        gear:
-          hosts: zuul01
-        statsd:
-          hosts: zuul01
-        zookeeper:
-          hosts: nodepool01
-        mysql:
-          hosts: zuul01
-        apache:
-          hosts: zuul01
+        nodepool-builder:
+          hosts:
+            nodepool01:
+            nodepool02:
+        nodepool-launcher:
+          hosts:
+            nodepool01:
+            nodepool02:
+      vars:
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
+    zuul:
+      children:
+        zuul-scheduler:
+          hosts:
+            zuul01:
+            zuul02:
+        zuul-executor:
+          hosts:
+            zuul01:
+            zuul02:
+        zuul-web:
+          hosts:
+            zuul01:
+            zuul02:
+        zuul-merger:
+          hosts:
+            zuul01:
+            zuul02:
+        zuul-fingergw:
+          hosts:
+            zuul01:
+            zuul02:
+        zuul-log-server:
+          hosts:
+            zuul01:
+            zuul02:
+      vars:
+        github_app_id: 6778
+        github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-theopenlab-ci.pem"
+        # Github app secret
+        github_webhook_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          65633963633835333432666238626638383938316433303663666333343639643733363862346566
+          3363393730343335373261663533303361316430373861370a346663396338336135616538646635
+          65326433343366363030393862396336393866336337366265303532636461633064356235313133
+          6232353665643934620a613937663931396337363232313065653031623234336332336533376233
+          3432
+        zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/openlab-main.yaml"
+        #github_acc_token:
+        #github_zuul_ssh_key_name: "pub key for openlab"
+        zuul_tenant_name: openlab
+        zuul_public_ip: 80.158.7.173
+        openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
+    gear:
+      hosts:
+        zuul01:
+        zuul02:
+    statsd:
+      hosts:
+        zuul01:
+        zuul02:
+    zookeeper:
+      hosts:
+        nodepool01:
+        nodepool02:
+        zk03:
+    mysql:
+      hosts:
+        zuul01:
+        zuul02:
+    apache:
+      hosts:
+        zuul01:
+        zuul02:
 
-    slave:
-      children:
-        nodepool:
-          children:
-            nodepool-builder:
-              hosts: nodepool02
-            nodepool-launcher:
-              hosts: nodepool02
-        zuul:
-          children:
-            zuul-scheduler:
-              hosts: zuul02
-            zuul-executor:
-              hosts: zuul02
-            zuul-web:
-              hosts: zuul02
-            zuul-merger:
-              hosts: zuul02
-            zuul-fingergw:
-              hosts: zuul02
-            zuul-log-server:
-              hosts: zuul02
-          vars:
-            zuul_public_ip: 80.158.7.173
-        gear:
-          hosts: zuul02
-        statsd:
-          hosts: zuul02
-        zookeeper:
-          hosts: nodepool02
-        mysql:
-          hosts: zuul02
-        apache:
-          hosts: zuul02
-
-    zookeeper3:
-      children:
-        zookeeper:
-          hosts: zk03
+    openlab-master:
+      hosts:
+        zuul01:
+        nodepool01:
+      vars:
+        zk_myid: 1
+    openlab-slave:
+      hosts:
+        zuul02:
+        nodepool02:
+      vars:
+        zk_myid: 2
+    openlab-zk3:
+      hosts: zk03
+      vars:
+        zk_myid: 3

@@ -32,7 +32,7 @@
         - name: Config zookeeper cluster
           ini_file:
             path: /etc/zookeeper/conf/zoo.cfg
-            option: server.{{ zk_myid }}
+            option: "server.{{ hostvars[item].zk_myid }}"
             section: null
             value: "{{ hostvars[item].ansible_host }}:2888:3888"
           with_items: "{{ groups['zookeeper'] }}"
