@@ -3,9 +3,11 @@ all:
     bastion:
       ansible_connection: local
     allinone01:
-      ansible_host: 10.3.0.17
+      ansible_host: 10.3.0.1
     allinone02:
-      ansible_host: 10.3.0.17
+      ansible_host: 10.3.0.2
+    zk03:
+      ansible_host: 10.3.0.3
   vars:
     nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
     nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
@@ -80,3 +82,8 @@ all:
           hosts: allinone02
         apache:
           hosts: allinone02
+
+    zookeeper3:
+      children:
+        zookeeper:
+          hosts: zk03

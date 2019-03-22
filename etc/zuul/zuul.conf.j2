@@ -42,7 +42,9 @@ sql_connection_name=mysql
 status_url=http://{{ zuul_public_ip }}/
 
 [zookeeper]
-hosts = {{ hostvars[groups["zookeeper"][0]].ansible_host }}
+{% if 'zookeeper' in groups %}
+hosts = '{{ groups['zookeeper'] | map('extract', hostvars, ansible_host) | join(", ") }}'
+{% endif %}
 
 [connection github]
 driver=github

@@ -3,13 +3,15 @@ all:
     bastion:
       ansible_connection: local
     nodepool01:
-      ansible_host: 10.3.0.17
-    nodepool02:
-      ansible_host: 10.3.0.17
+      ansible_host: 10.3.0.1
     zuul01:
-      ansible_host: 10.3.0.15
+      ansible_host: 10.3.0.2
+    nodepool02:
+      ansible_host: 10.3.0.3
     zuul02:
-      ansible_host: 10.3.0.15
+      ansible_host: 10.3.0.4
+    zk03:
+      ansible_host: 10.3.0.5
   vars:
     zuul_tenant_name: openlab
     github_app_id: 6778
@@ -98,3 +100,8 @@ all:
           hosts: zuul02
         apache:
           hosts: zuul02
+
+    zookeeper3:
+      children:
+        zookeeper:
+          hosts: zk03
