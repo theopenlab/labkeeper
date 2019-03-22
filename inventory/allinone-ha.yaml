@@ -15,26 +15,42 @@ all:
     nodepool:
       children:
         nodepool-builder:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
         nodepool-launcher:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
         zuul-executor:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
         zuul-web:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
         zuul-merger:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
         zuul-fingergw:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
         zuul-log-server:
-          hosts: allinone01,allinone02
+          hosts:
+            allinone01:
+            allinone02:
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
@@ -54,15 +70,26 @@ all:
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
     gear:
-      hosts: allinone01,allinone02
+      hosts:
+        allinone01:
+        allinone02:
     statsd:
-      hosts: allinone01,allinone02
+      hosts:
+        allinone01:
+        allinone02:
     zookeeper:
-      hosts: allinone01,allinone02,zk03
+      hosts:
+        allinone01:
+        allinone02:
+        zk03:
     mysql:
-      hosts: allinone01,allinone02
+      hosts:
+        allinone01:
+        allinone02:
     apache:
-      hosts: allinone01,allinone02
+      hosts:
+        allinone01:
+        allinone02:
 
     openlab-master:
       hosts: allinone01
