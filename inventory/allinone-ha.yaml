@@ -6,6 +6,8 @@ all:
       ansible_host: 10.3.0.17
     allinone02:
       ansible_host: 10.3.0.17
+    zk03:
+      ansible_host: 10.3.0.17
   vars:
     zuul_tenant_name: openlaballinone
     github_app_id: 7102
@@ -94,3 +96,8 @@ all:
           hosts: allinone02
         apache:
           hosts: allinone02
+
+    zookeeper3:
+      children:
+        zookeeper:
+          hosts: zk03

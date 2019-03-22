@@ -2,75 +2,12 @@ all:
   hosts:
     bastion:
       ansible_connection: local
-    test:
-      ansible_host: 127.0.0.1
-  vars:
-    zuul_tenant_name: test
-    new_zuul_user_key: true
-  children:
-    nodepool:
-      children:
-        nodepool-builder:
-          hosts: test
-        nodepool-launcher:
-          hosts: test
-      vars:
-        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-nodepool.yaml.j2"
-        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
-    zuul:
-      children:
-        zuul-scheduler:
-          hosts: test
-        zuul-executor:
-          hosts: test
-        zuul-web:
-          hosts: test
-        zuul-merger:
-          hosts: test
-        zuul-fingergw:
-          hosts: test
-        zuul-log-server:
-          hosts: test
-      vars:
-        github_app_id: 0000
-        github_webhook_token: "test"
-        zuul_tenant_name: test
-        zuul_public_ip: ""
-    gear:
-      hosts: test
-    statsd:
-      hosts: test
-    zookeeper:
-      hosts: test
-    mysql:
-      hosts: test
-    apache:
-      hosts: test
-
-all:
-  hosts:
-    bastion:
-      ansible_connection: local
     allinone01:
       ansible_host: 10.3.0.17
     allinone02:
       ansible_host: 10.3.0.17
   vars:
-    zuul_tenant_name: openlaballinone
-    github_app_id: 7102
-    github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
-    github_webhook_token: !vault |
-      $ANSIBLE_VAULT;1.1;AES256
-      65633963633835333432666238626638383938316433303663666333343639643733363862346566
-      3363393730343335373261663533303361316430373861370a346663396338336135616538646635
-      65326433343366363030393862396336393866336337366265303532636461633064356235313133
-      6232353665643934620a613937663931396337363232313065653031623234336332336533376233
-      3432
-    zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/openlab-main.yaml"
-    openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
-    openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
-
-    nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-nodepool.yaml.j2"
+    nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
     nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/fake-clouds.yaml.j2"
 
   children:
