@@ -31,6 +31,8 @@
     - name: Install mysql packages
       apt:
         name: ['mariadb-server', 'mariadb-client', 'python-pymysql', 'libmysqlclient-dev']
+        install_recommends: yes
+        upgrade: yes
         update_cache: yes
 
     - pip: name=pymysql executable=pip3
