@@ -46,13 +46,16 @@
         mode: 0400
 
     - mysql_db:
-        login_unix_socket: /var/run/mysqld/mysqld.sock
+        #login_unix_socket: /var/run/mysqld/mysqld.sock
+        login_user: root
+        login_password: root
         state: import
         name: all
         target: /tmp/mysql_secure_installation.sql
 
     - mysql_user:
-        login_unix_socket: /var/run/mysqld/mysqld.sock
+        login_user: root
+        login_password: root
         name: zuul
         host: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
         state: present
@@ -64,7 +67,8 @@
   tasks:
     - name: Ensure replication user exists on master.
       mysql_user:
-        login_unix_socket: /var/run/mysqld/mysqld.sock
+        login_user: root
+        login_password: root
         name: "replica"
         host: "%"
         password: "replica"
