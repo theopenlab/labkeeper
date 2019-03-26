@@ -1,11 +1,6 @@
 NOCOLOR = False
 
 
-def setnocolor():
-    global NOCOLOR
-    NOCOLOR = True
-
-
 def _color(s, color='b'):
     global NOCOLOR
     if NOCOLOR:

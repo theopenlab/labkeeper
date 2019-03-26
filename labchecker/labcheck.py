@@ -1,5 +1,6 @@
 from plugins.base import Plugin
-from utils import _color, setnocolor
+from utils import _color
+import utils
 import sys
 import getopt
 import yaml
@@ -11,7 +12,7 @@ def usage():
     print("\t--help\t\tShow help message and exit.")
     print("\t--type\t\tSpecify a plugin type, like 'provider', 'all'(default)")
     print("\t--cloud\t\tSpecify a cloud provider, like 'otc', 'vexxhost', 'all'(default).")
-    print("\t--nocolor\t\tEnable the no color mode.")
+    print("\t--nocolor\tEnable the no color mode.")
     print("Exmaple:")
     print("labchecker check --type all --cloud all")
     print("labchecker check --type nodepool --cloud vexxhost")
@@ -57,7 +58,7 @@ def main(argv):
         elif o in ("-t", "--type"):
             ptype = a
         elif o in ("n", "--nocolor"):
-            setnocolor()
+            utils.NOCOLOR = True
 
     cloud_list = get_cloud_list(cloud)
 
@@ -73,13 +74,13 @@ def main(argv):
         header = "%s/%s. %s cloud check" % (i+1, cnt, c)
         header_print(header)
         for plugin in plugins:
-                plugin.cloud = c
-                plugin.check_begin()
-                plugin.check()
-                plugin.check_end()
-                # the failed flag would be record when do check()
-                if plugin.failed:
-                    plugin.recover()
+            plugin.cloud = c
+            plugin.check_begin()
+            plugin.check()
+            plugin.check_end()
+            # the failed flag would be record when do check()
+            if plugin.failed:
+                plugin.recover()
 
 
 if __name__ == '__main__':
