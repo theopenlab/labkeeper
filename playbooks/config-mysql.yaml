@@ -16,6 +16,17 @@
   hosts: mysql
   become: yes
   tasks:
+    - name: Install software-properties-common
+      package: name=sort-ware-properties-common
+
+    - name: Add apt-key for Mariadb packages
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 0xF1656F24C74CD1D8
+
+    - apt_repository:
+      repo: deb [arch=amd64,i386] http://mirror.jmu.edu/pub/mariadb/repo/10.2/ubuntu xenial main
+
     - name: Install mysql packages
       apt:
         name: ['mariadb-server', 'mariadb-client', 'python-pymysql', 'libmysqlclient-dev']
