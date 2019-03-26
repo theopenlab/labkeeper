@@ -76,7 +76,7 @@
         state: restarted
 
 - name: Config replication users
-  hosts: mysql-master
+  hosts: mysql-master, mysql-master
   become: yes
   tasks:
     - name: Ensure replication user exists on master.
@@ -91,6 +91,7 @@
       with_items:
         - localhost
         - "{{ hostvars[groups['mysql-slave'][0]].ansible_host }}"
+        - "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
 
 - name: Config Mysql Slave of replication
   hosts: mysql-slave
@@ -99,8 +100,8 @@
     - name: Check slave replication status.
       mysql_replication:
         mode: getslave
-        login_user: "root"
-        login_password: "root"
+        login_user: "replica"
+        login_password: "replica"
       ignore_errors: true
       register: slave_status
 
@@ -116,6 +117,8 @@
       mysql_replication:
         mode: changemaster
         master_host: "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
+        login_user: "replica"
+        login_password: "replica"
         master_user: "replica"
         master_password: "replica"
         master_log_file: "{{ master_status.File }}"
@@ -128,6 +131,8 @@
     - name: Start replication.
       mysql_replication:
         mode: startslave
+        login_user: "replica"
+        login_password: "replica"
       when:
       - (slave_status.Is_Slave is defined and not slave_status.Is_Slave) or
         (slave_status.Is_Slave is not defined and slave_status is failed)
