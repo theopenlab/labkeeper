@@ -61,7 +61,21 @@
         state: present
         priv: 'zuul.*:ALL'
 
-- name: Config Mysql Master of replication
+- name: Config master of replication mysql service
+  hosts: mysql-master
+  become: yes
+  tasks:
+    - name: Copy my.cnf into place.
+      copy:
+        src: "{{ labkeeper_config_git_dest }}/mysql/my.cnf"
+        dest: /etc/mysql/my.cnf
+
+    - name: Restart Mysql servers in master node.
+      service:
+        name: mysql
+        state: restarted
+
+- name: Config replication users
   hosts: mysql-master
   become: yes
   tasks:
@@ -70,10 +84,13 @@
         login_user: root
         login_password: root
         name: "replica"
-        host: "%"
+        host: "{{ item }}"
         password: "replica"
         priv: "*.*:REPLICATION SLAVE,REPLICATION CLIENT"
         state: present
+      with_items:
+        - localhost
+        - {{ hostvars[groups['mysql-slave'][0]].ansible_host }}
 
 - name: Config Mysql Slave of replication
   hosts: mysql-slave
@@ -90,6 +107,8 @@
     - name: Check master replication status.
       mysql_replication:
         mode: getmaster
+        login_user: "replica"
+        login_password: "replica"
       delegate_to: "{{ groups['mysql-master'][0] }}"
       register: master_status
 
