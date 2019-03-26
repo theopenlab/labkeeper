@@ -99,8 +99,8 @@
     - name: Check slave replication status.
       mysql_replication:
         mode: getslave
-        login_user: "replica"
-        login_password: "replica"
+        login_user: "root"
+        login_password: "root"
       ignore_errors: true
       register: slave_status
 
