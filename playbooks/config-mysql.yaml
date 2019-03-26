@@ -86,7 +86,7 @@
         name: "replica"
         host: "{{ item }}"
         password: "replica"
-        priv: "*.*:REPLICATION SLAVE,*.*:REPLICATION MASTER,REPLICATION CLIENT"
+        priv: "*.*:REPLICATION SLAVE,REPLICATION CLIENT"
         state: present
       with_items:
         - localhost
@@ -117,8 +117,8 @@
       mysql_replication:
         mode: changemaster
         master_host: "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
-        login_user: "replica"
-        login_password: "replica"
+        login_user: "root"
+        login_password: "root"
         master_user: "replica"
         master_password: "replica"
         master_log_file: "{{ master_status.File }}"
@@ -131,8 +131,8 @@
     - name: Start replication.
       mysql_replication:
         mode: startslave
-        login_user: "replica"
-        login_password: "replica"
+        login_user: "root"
+        login_password: "root"
       when:
       - (slave_status.Is_Slave is defined and not slave_status.Is_Slave) or
         (slave_status.Is_Slave is not defined and slave_status is failed)
