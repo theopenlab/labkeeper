@@ -62,12 +62,12 @@
         priv: 'zuul.*:ALL'
 
 - name: Config master of replication mysql service
-  hosts: mysql-master
+  hosts: mysql-master, mysql-slave
   become: yes
   tasks:
     - name: Copy my.cnf into place.
-      copy:
-        src: "{{ labkeeper_config_git_dest }}/mysql/my.cnf"
+      template:
+        src: "{{ labkeeper_config_git_dest }}/mysql/my.cnf.j2"
         dest: /etc/mysql/my.cnf
 
     - name: Restart Mysql servers in master node.
@@ -123,7 +123,6 @@
         master_password: "replica"
         master_log_file: "{{ master_status.File }}"
         master_log_pos: "{{ master_status.Position }}"
-      ignore_errors: true
       when:
         - (slave_status.Is_Slave is defined and not slave_status.Is_Slave) or
           (slave_status.Is_Slave is not defined and slave_status is failed)

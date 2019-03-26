@@ -102,8 +102,12 @@ all:
       children:
         mysql-master:
           hosts: allinone01
+          vars:
+            mysql_server_id: 1
         mysql-slave:
           hosts: allinone02
+          vars:
+            mysql_server_id: 2
     apache:
       hosts:
         allinone01:
