@@ -32,7 +32,7 @@
       apt:
         name: ['mariadb-server', 'mariadb-client', 'python-pymysql', 'libmysqlclient-dev']
         install_recommends: yes
-        upgrade: yes
+        state: latest
         update_cache: yes
 
     - pip: name=pymysql executable=pip3
