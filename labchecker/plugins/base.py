@@ -1,5 +1,8 @@
 import six
-import yaml
+from plugins.recover import RECOVER_MAPS
+from utils import _color
+import commands
+
 
 class PluginMount(type):
     """
@@ -37,42 +40,67 @@ class PluginMount(type):
 class Plugin(object):
     """A plugin which must provide a register_signals() method"""
     cloud = 'all'
-    type = 'Base'
+    ptype = 'Base'
     name = 'Base Check'
+    failed = False
+    reasons = []
+    nocolor = False
 
     def register_signals(self):
-        print("%s has been loaded." % self.__class__.__name__)
+        # print("%s has been loaded." % self.__class__.__name__)
+        pass
 
     def check_begin(self):
-        print("\033[1;30m" + "-" * 10 + self.type + " - " + self.name + "-" * 10 + "\033[0m")
+        pass
 
     def check(self):
         pass
 
-    def get_clouds(self):
-        with open('/etc/openstack/clouds.yaml') as f:
-            clouds = yaml.load(f)
-            op_clouds = [c for c in clouds['clouds']]
+    def _print_info(self, header='Reason'):
+        if not self.reasons:
+            return
+        print(header+":")
+        for r_code in self.reasons:
+            # Translate the r_code to fail reason
+            message = RECOVER_MAPS[r_code]['reason'] if r_code in RECOVER_MAPS else r_code
+            print('%s' % message)
 
-        with open('/etc/nodepool/nodepool.yaml') as np:
-            clouds = yaml.load(np)
-            np_clouds = [c['cloud'] for c in clouds['providers']]
-
-        clouds_list = op_clouds and np_clouds
-
-        if self.cloud not in clouds_list + ['all']:
-            print("Error: Cloud %s is not found." % self.cloud)
-            print("Please use the cloud in %s." % clouds_list)
-            exit(2)
-
-        clouds_list = [self.cloud] if self.cloud in clouds_list else clouds_list
-        return clouds_list
-
-    def print_result(self, cloud):
-        if self.failed:
-            print("(%s) " + (40-len(cloud)) * "-" + " \033[1;31m FAILED \033[0m") % cloud
-            print("Reason:")
-            for r in self.reasons:
-                print('%s' % r)
+    def _print_check_line(self, item, passed, width=40):
+        if passed:
+            print(_color(item + (width - len(item)) * "-") + _color(" PASSED", "g"))
         else:
-            print("(%s) " + (40-len(cloud)) * "-" + " \033[1;32m PASSED \033[0m") % cloud
+            print(_color(item + (width - len(item)) * "-") + _color(" FAILED ", "r"))
+
+    def _print_recover_line(self, passed, recover_cmd, res=""):
+        if passed:
+            print(_color(" PASSED ", "g") + " %s" % recover_cmd)
+        else:
+            print(_color(" FAILED ", "r") + " %s" % recover_cmd)
+        if res:
+            print(res)
+
+    def check_end(self, recheck=False):
+        item = "[%s] %s" % (self.ptype, self.name)
+        if recheck:
+            item = "%s (recheck)" % item
+        if self.failed:
+            self._print_check_line(item, False)
+            self._print_info()
+        else:
+            self._print_check_line(item, True)
+            self._print_info(header='Info')
+
+    def recover(self):
+        print("Recover:")
+        for r_code in self.reasons:
+            if r_code in RECOVER_MAPS:
+                recover_cmd = RECOVER_MAPS[r_code]['recover'] % self.cloud
+                ret, res = commands.getstatusoutput(recover_cmd)
+                if not ret:
+                    self._print_recover_line(True, recover_cmd)
+                else:
+                    self._print_recover_line(False, recover_cmd, res)
+
+        print("Recheck:")
+        self.check()
+        self.check_end(recheck=True)
