@@ -13,9 +13,11 @@ def usage():
     print("\t--type\t\tSpecify a plugin type, like 'provider', 'all'(default)")
     print("\t--cloud\t\tSpecify a cloud provider, like 'otc', 'vexxhost', 'all'(default).")
     print("\t--nocolor\tEnable the no color mode.")
+    print("\t--recover\tEnable the auto recover mode.")
     print("Exmaple:")
     print("labchecker check --type all --cloud all")
     print("labchecker check --type nodepool --cloud vexxhost")
+    print("labchecker check --type nodepool --cloud vexxhost --recover")
     print("labchecker check --type nodepool --cloud vexxhost --nocolor")
 
 
@@ -41,9 +43,10 @@ def header_print(header):
 def main(argv):
     cloud = 'all'
     ptype = ''
+    recover = False
 
     try:
-        opts, args = getopt.getopt(argv, "hnt:c:", ["help", "cloud=", "type=", "nocolor"])
+        opts, args = getopt.getopt(argv, "rhnt:c:", ["help", "cloud=", "type=", "nocolor", "recover"])
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -59,6 +62,8 @@ def main(argv):
             ptype = a
         elif o in ("n", "--nocolor"):
             utils.NOCOLOR = True
+        elif o in ("r", "--recover"):
+            recover = True
 
     cloud_list = get_cloud_list(cloud)
 
@@ -79,7 +84,7 @@ def main(argv):
             plugin.check()
             plugin.check_end()
             # the failed flag would be record when do check()
-            if plugin.failed:
+            if recover and plugin.failed:
                 plugin.recover()
 
 
