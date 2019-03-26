@@ -90,7 +90,7 @@
         state: present
       with_items:
         - localhost
-        - {{ hostvars[groups['mysql-slave'][0]].ansible_host }}
+        - "{{ hostvars[groups['mysql-slave'][0]].ansible_host }}"
 
 - name: Config Mysql Slave of replication
   hosts: mysql-slave
