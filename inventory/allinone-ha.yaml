@@ -48,9 +48,11 @@ all:
             allinone01:
             allinone02:
         zuul-log-server:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            logserver-master:
+              hosts: allinone01
+            logserver-slave:
+              hosts: allinone02
         zuul-master:
           hosts: allinone01
           vars:

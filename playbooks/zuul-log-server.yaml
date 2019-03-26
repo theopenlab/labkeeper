@@ -22,3 +22,31 @@
         path: /srv/static/logs/
         mode: 0755
         state: directory
+
+- name: Install Unison.
+  hosts: logserver-master
+  become: yes
+  tasks:
+    - name: Install Unison on log servers
+      apt: name=unison
+
+    - name: Config Unison
+      template:
+        src: "{{ labkeeper_config_git_dest }}/unison/openlab-log-ha.prf.j2"
+        dest: ~/.unison/openlab-log-ha.prf
+      vars:
+        logserver-opposite-ip: "{{ hostvars[groups['logserver-slave'][0]].ansible_host }}"
+
+- name: Install Unison.
+  hosts: logserver-slave
+  become: yes
+  tasks:
+    - name: Install Unison on log servers
+      apt: name=unison
+
+    - name: Config Unison
+      template:
+        src: "{{ labkeeper_config_git_dest }}/unison/openlab-log-ha.prf.j2"
+        dest: ~/.unison/openlab-log-ha.prf
+      vars:
+        logserver-opposite-ip: "{{ hostvars[groups['logserver-master'][0]].ansible_host }}"

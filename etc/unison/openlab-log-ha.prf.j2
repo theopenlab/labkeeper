@@ -1,0 +1,13 @@
+# Unison preferences file
+root = /srv/static/logs
+root = ssh://zuul@{{ logserver-opposite-ip }}//srv/static/logs
+batch = true
+owner = true
+group = true
+perms = -1
+#repeat = 1
+retry = 3
+sshargs = -C
+fastcheck = true
+log = true
+logfile = /opt/unison_log/unison.log
