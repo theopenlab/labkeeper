@@ -36,7 +36,6 @@
         state: import
         name: all
         target: /tmp/mysql_secure_installation.sql
-      ignore_errors: yes
 
     - mysql_user:
         login_unix_socket: /var/run/mysqld/mysqld.sock
