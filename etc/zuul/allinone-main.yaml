@@ -33,11 +33,15 @@
               exclude-unprotected-branches: true
           - liu-sheng/bosh-acceptance-tests:
               exclude-unprotected-branches: true
+          - liu-sheng/cloud-provider-openstack:
+              exclude-unprotected-branches: true
+          - liu-sheng/labkeeper-1
           - openservicebrokerapi/osb-checker
           - huaweicloud/openshift-ansible
           - moo-ai/moo-ai.github.io
           - Yikun/arm-openlab-test
           - h00130372/charts
+          - moo-ai/test_openlab_ha
       openstack-git:
         untrusted-projects:
           - include: []
