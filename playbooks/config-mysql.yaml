@@ -72,13 +72,13 @@
     - name: Check master replication status.
       mysql_replication:
         mode: getmaster
-      delegate_to: "{{ mysql_replication_master }}"
+      delegate_to: "{{ groups['mysql-master'][0] }}"
       register: master_status
 
     - name: Configure replication on the slave.
       mysql_replication:
         mode: changemaster
-        master_host: "{{ mysql_replication_master }}"
+        master_host: "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
         master_user: "replica"
         master_password: "replica"
         master_log_file: "{{ master_status.File }}"
