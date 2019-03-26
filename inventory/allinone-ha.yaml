@@ -91,12 +91,12 @@ all:
         allinone01:
         allinone02:
 
-    openlab-master:
+    master:
       hosts: allinone01
       vars:
         zuul_public_ip: 80.158.7.1
         zk_myid: 1
-    openlab-slave:
+    slave:
       hosts: allinone02
       vars:
         zuul_public_ip: 80.158.7.2

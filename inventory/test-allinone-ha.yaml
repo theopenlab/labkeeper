@@ -78,11 +78,11 @@ all:
         allinone01:
         allinone02:
 
-    openlab-master:
+    master:
       hosts: allinone01
       vars:
         zk_myid: 1
-    openlab-slave:
+    slave:
       hosts: allinone02
       vars:
         zk_myid: 2

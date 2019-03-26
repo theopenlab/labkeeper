@@ -1,0 +1,126 @@
+all:
+  hosts:
+    bastion:
+      ansible_connection: local
+    allinone01:
+      ansible_host: 192.168.211.76
+    allinone02:
+      ansible_host: 192.168.211.37
+    zk03:
+      ansible_host: 192.168.211.107
+  vars:
+    zuul_tenant_name: openlaballinone
+    zookeeper_ha_mode: true
+
+    nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
+    nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
+
+    github_app_id: 7102
+    github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
+    # Github app secret
+    github_webhook_token: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      65633963633835333432666238626638383938316433303663666333343639643733363862346566
+      3363393730343335373261663533303361316430373861370a346663396338336135616538646635
+      65326433343366363030393862396336393866336337366265303532636461633064356235313133
+      6232353665643934620a613937663931396337363232313065653031623234336332336533376233
+      3432
+    zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-main.yaml"
+    #github_acc_token:
+    #github_zuul_ssh_key_name: "pub key for openlaballinone"
+    zuul_public_ip: 80.158.7.210
+    openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
+    openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
+
+  children:
+# ----------allinone openlab master ---------
+    master:
+      hosts: allinone01
+      vars:
+        zuul_public_ip: 80.158.7.1
+        zk_myid: 1
+      children:
+        nodepool:
+          children:
+            nodepool-builder:
+              hosts: allinone01
+            nodepool-launcher:
+              hosts: allinone01
+        zuul:
+          children:
+            zuul-scheduler:
+              hosts: allinone01
+            zuul-executor:
+              hosts: allinone01
+            zuul-web:
+              hosts: allinone01
+            zuul-merger:
+              hosts: allinone01
+            zuul-fingergw:
+              hosts: allinone01
+            zuul-log-server:
+              hosts: allinone01
+        gear:
+          hosts: allinone01
+        statsd:
+          hosts: allinone01
+        zookeeper:
+          hosts: allinone01
+            allinone01:
+            allinone02:
+            zk03:
+        mysql:
+          hosts:
+            allinone01:
+            allinone02:
+        apache:
+          hosts:
+            allinone01:
+            allinone02:
+
+# ----------allinone openlab slave ---------
+    slave:
+      hosts: allinone02
+      vars:
+        zuul_public_ip: 80.158.7.2
+        zk_myid: 2
+      children:
+        nodepool:
+          children:
+            nodepool-builder:
+              hosts: allinone02
+            nodepool-launcher:
+              hosts: allinone02
+        zuul:
+          children:
+            zuul-scheduler:
+              hosts: allinone02
+            zuul-executor:
+              hosts: allinone02
+            zuul-web:
+              hosts: allinone02
+            zuul-merger:
+              hosts: allinone02
+            zuul-fingergw:
+              hosts: allinone02
+            zuul-log-server:
+              hosts: allinone02
+        gear:
+          hosts: allinone02
+        statsd:
+          hosts: allinone02
+        zookeeper:
+          hosts: allinone02
+        mysql:
+          hosts: allinone02
+        apache:
+          hosts: allinone02
+
+# ----------allinone openlab 3rd zookeeper ---------
+    openlab-zk3:
+      hosts: zk03
+      vars:
+        zk_myid: 3
+      children:
+        zookeeper:
+          hosts: zk03

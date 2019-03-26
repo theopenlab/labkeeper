@@ -95,13 +95,13 @@ all:
         zuul01:
         zuul02:
 
-    openlab-master:
+    master:
       hosts:
         zuul01:
         nodepool01:
       vars:
         zk_myid: 1
-    openlab-slave:
+    slave:
       hosts:
         zuul02:
         nodepool02:
