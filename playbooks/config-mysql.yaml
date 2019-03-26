@@ -61,7 +61,7 @@
         state: present
         priv: 'zuul.*:ALL'
 
-- name: Config master of replication mysql service
+- name: Config replication mysql service
   hosts: mysql-master, mysql-slave
   become: yes
   tasks:
@@ -79,7 +79,7 @@
   hosts: mysql-master, mysql-slave
   become: yes
   tasks:
-    - name: Ensure replication user exists on master.
+    - name: Ensure replication user exists.
       mysql_user:
         login_user: root
         login_password: root
