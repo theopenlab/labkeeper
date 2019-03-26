@@ -76,7 +76,7 @@
         state: restarted
 
 - name: Config replication users
-  hosts: mysql-master, mysql-master
+  hosts: mysql-master, mysql-slave
   become: yes
   tasks:
     - name: Ensure replication user exists on master.
@@ -86,7 +86,7 @@
         name: "replica"
         host: "{{ item }}"
         password: "replica"
-        priv: "*.*:REPLICATION SLAVE,REPLICATION CLIENT"
+        priv: "*.*:REPLICATION SLAVE,*.*:REPLICATION MASTER,REPLICATION CLIENT"
         state: present
       with_items:
         - localhost
