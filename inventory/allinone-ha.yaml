@@ -3,11 +3,11 @@ all:
     bastion:
       ansible_connection: local
     allinone01:
-      ansible_host: 192.168.211.76
+      ansible_host: 192.168.211.20
     allinone02:
-      ansible_host: 192.168.211.37
+      ansible_host: 192.168.211.174
     zk03:
-      ansible_host: 192.168.211.107
+      ansible_host: 192.168.211.151
   vars:
     zuul_tenant_name: openlaballinone
     zookeeper_ha_mode: true
@@ -51,6 +51,14 @@ all:
           hosts:
             allinone01:
             allinone02:
+        zuul-master:
+          hosts: allinone01
+          vars:
+            zuul_public_ip: 80.158.7.1
+        zuul-slave:
+          hosts: allinone01
+          vars:
+            zuul_public_ip: 80.158.7.2
       vars:
         github_app_id: 7102
         github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
@@ -78,30 +86,26 @@ all:
         allinone01:
         allinone02:
     zookeeper:
-      hosts:
-        allinone01:
-        allinone02:
-        zk03:
+      children:
+        zk-master:
+          hosts: allinone01
+          vars:
+            zk_myid: 1
+        zk-slave:
+          hosts: allinone01
+          vars:
+            zk_myid: 2
+        zk-03:
+          hosts: zk03
+          vars:
+            zk_myid: 3
     mysql:
-      hosts:
-        allinone01:
-        allinone02:
+      children:
+        mysql-master:
+          hosts: allinone01
+        mysql-slave:
+          hosts: allinone02
     apache:
       hosts:
         allinone01:
         allinone02:
-
-    master:
-      hosts: allinone01
-      vars:
-        zuul_public_ip: 80.158.7.1
-        zk_myid: 1
-    slave:
-      hosts: allinone02
-      vars:
-        zuul_public_ip: 80.158.7.2
-        zk_myid: 2
-    openlab-zk3:
-      hosts: zk03
-      vars:
-        zk_myid: 3
