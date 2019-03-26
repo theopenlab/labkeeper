@@ -92,7 +92,7 @@ all:
           vars:
             zk_myid: 1
         zk-slave:
-          hosts: allinone01
+          hosts: allinone02
           vars:
             zk_myid: 2
         zk-03:
