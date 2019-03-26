@@ -24,27 +24,37 @@
         state: directory
 
 - name: Install Unison.
-  hosts: logserver-master
+  hosts: logserver-master,logserver-slave
   become: yes
   tasks:
     - name: Install Unison on log servers
       apt: name=unison
 
-    - name: Config Unison
+    - name: create unison config file dir
+      file:
+        path: ~/.unison
+        state: directory
+
+    - name: create unison config file dir
+      file:
+        path: /var/log/unison/unison.log
+
+- name: Config Unison on master.
+  hosts: logserver-master,logserver-slave
+  become: yes
+  tasks:
+    - name: Config Unison on master
       template:
         src: "{{ labkeeper_config_git_dest }}/unison/openlab-log-ha.prf.j2"
         dest: ~/.unison/openlab-log-ha.prf
       vars:
         logserver_opposite_ip: "{{ hostvars[groups['logserver-slave'][0]].ansible_host }}"
 
-- name: Install Unison.
+- name: Config Unison on slave.
   hosts: logserver-slave
   become: yes
   tasks:
-    - name: Install Unison on log servers
-      apt: name=unison
-
-    - name: Config Unison
+    - name: Config Unison on slave
       template:
         src: "{{ labkeeper_config_git_dest }}/unison/openlab-log-ha.prf.j2"
         dest: ~/.unison/openlab-log-ha.prf
