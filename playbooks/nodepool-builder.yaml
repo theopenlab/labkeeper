@@ -55,6 +55,11 @@
       include_role:
         name: openstack.diskimage-builder
 
+    - name: Create builder_id.txt for replica builders
+      copy:
+        dest: /opt/nodepool/images/builder_id.txt
+        content: "{{ nodepool_builder_id }}"
+
     - name: Enable nodepool builder service
       include_role:
         name: openstack.nodepool

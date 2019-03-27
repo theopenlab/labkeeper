@@ -25,6 +25,7 @@
 
 - name: Install Unison.
   hosts: logserver-master,logserver-slave
+  gather_facts: no
   become: yes
   tasks:
     - name: Install Unison on log servers
@@ -64,7 +65,10 @@
 
 - name: Start Unison.
   hosts: logserver-master,logserver-slave
+  gather_facts: no
   become: yes
   tasks:
     - name: Start Unison
-      shell: unison openlab-log-ha > /dev/null 2>&1 &
+      shell: cd ~; nohup unison openlab-log-ha > /dev/null 2>&1 &
+      args:
+        executable: /bin/bash

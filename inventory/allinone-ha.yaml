@@ -18,6 +18,8 @@ all:
           hosts:
             allinone01:
             allinone02:
+          vars:
+            nodepool_builder_id: "8fcf0492-b972-45cc-828f-efd6b301b46e"
         nodepool-launcher:
           hosts:
             allinone01:
