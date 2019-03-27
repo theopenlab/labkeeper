@@ -46,16 +46,11 @@
         mode: 0400
 
     - mysql_db:
-        #login_unix_socket: /var/run/mysqld/mysqld.sock
-        login_user: root
-        login_password: root
         state: import
         name: all
         target: /tmp/mysql_secure_installation.sql
 
     - mysql_user:
-        login_user: root
-        login_password: root
         name: zuul
         host: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
         state: present
@@ -81,8 +76,6 @@
   tasks:
     - name: Ensure replication user exists.
       mysql_user:
-        login_user: root
-        login_password: root
         name: "replica"
         host: "{{ item }}"
         password: "replica"
@@ -117,8 +110,6 @@
       mysql_replication:
         mode: changemaster
         master_host: "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
-        login_user: "root"
-        login_password: "root"
         master_user: "replica"
         master_password: "replica"
         master_log_file: "{{ master_status.File }}"
@@ -130,8 +121,6 @@
     - name: Start replication.
       mysql_replication:
         mode: startslave
-        login_user: "root"
-        login_password: "root"
       when:
       - (slave_status.Is_Slave is defined and not slave_status.Is_Slave) or
         (slave_status.Is_Slave is not defined and slave_status is failed)
