@@ -10,7 +10,7 @@ def usage():
     print("Usage: labchecker [--type <plugin-type>] [--cloud <cloud-provider-name>] [--nocolor]")
     print("optional arguments:")
     print("\t--help\t\tShow help message and exit.")
-    print("\t--type\t\tSpecify a plugin type, like 'provider', 'all'(default)")
+    print("\t--type\t\tSpecify a plugin type, like 'nodepool', 'jobs', 'all'(default)")
     print("\t--cloud\t\tSpecify a cloud provider, like 'otc', 'vexxhost', 'all'(default).")
     print("\t--nocolor\tEnable the no color mode.")
     print("\t--recover\tEnable the auto recover mode.")

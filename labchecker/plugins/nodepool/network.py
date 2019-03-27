@@ -10,23 +10,27 @@ class NetworkPlugin(Plugin):
     def check(self):
         self.failed = False
         self.reasons = []
-        net = 'openstack --os-cloud %s network list -f value -c Name | grep openlab-net' % self.cloud
-        res = commands.getoutput(net)
-        if "openlab-net" not in res:
+        net = 'openstack --os-cloud %s network show openlab-net' % self.cloud
+        ret, res = commands.getstatusoutput(net)
+        if ret != 0:
             self.failed = True
-            self.reasons.append(Recover.NETWORK)
-            self.reasons.append(Recover.NETWORK_SUBNET)
+            if "More than one Network exists" in res:
+                self.reasons.append(res)
+            else:
+                self.reasons.append(Recover.NETWORK)
+                self.reasons.append(Recover.NETWORK_SUBNET)
             return
 
         subnet = 'openstack --os-cloud %s subnet list --network openlab-net ' \
                  '-f value -c Name -c Subnet' % self.cloud
-        res = commands.getoutput(subnet)
-        if "openlab-subnet" not in res:
+        ret, res = commands.getstatusoutput(subnet)
+        if ret != 0 and "More than one Subnet exists" in res:
             self.failed = True
-            self.reasons.append(Recover.NETWORK_SUBNET)
+            self.reasons.append(res)
             return
 
-        if "192.168.199.0/24" not in res:
+        # get subnet of openlab-net successfully, check subnet
+        if "openlab-subnet 192.168.199.0/24" not in res:
             self.failed = True
-            self.reasons.append(Recover.NETWORK_SUBNET_CIDR)
+            self.reasons.append(Recover.NETWORK_SUBNET)
             return

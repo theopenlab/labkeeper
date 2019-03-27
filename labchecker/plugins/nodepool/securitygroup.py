@@ -11,14 +11,17 @@ class SecurityGroupPlugin(Plugin):
     def check(self):
         self.failed = False
         self.reasons = []
-        sg = 'openstack --os-cloud %s security group list -f value -c Name | grep openlab-sg' % self.cloud
-        res = commands.getoutput(sg)
-        if "openlab-sg" not in res:
+        sg = 'openstack --os-cloud %s security group show openlab-sg' % self.cloud
+        ret, res = commands.getstatusoutput(sg)
+        if ret != 0:
             self.failed = True
-            self.reasons.append(Recover.SECURITY_GROUP)
-            self.reasons.append(Recover.SECURITY_GROUP_22)
-            self.reasons.append(Recover.SECURITY_GROUP_19885)
-            self.reasons.append(Recover.SECURITY_GROUP_ICMP)
+            if "More than one SecurityGroup exists" in res:
+                self.reasons.append(res)
+            else:
+                self.reasons.append(Recover.SECURITY_GROUP)
+                self.reasons.append(Recover.SECURITY_GROUP_22)
+                self.reasons.append(Recover.SECURITY_GROUP_19885)
+                self.reasons.append(Recover.SECURITY_GROUP_ICMP)
             return
 
         tcp_rule = 'openstack --os-cloud %s security group rule list openlab-sg \
