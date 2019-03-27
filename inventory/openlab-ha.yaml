@@ -22,12 +22,14 @@ all:
           hosts:
             nodepool01:
             nodepool02:
+          vars:
+            nodepool_builder_id: "8fcf0492-b972-45cc-828f-efd6b301b46e"
         nodepool-launcher:
           hosts:
             nodepool01:
             nodepool02:
       vars:
-        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-nodepool.yaml.j2"
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
     zuul:
       children:
@@ -52,9 +54,19 @@ all:
             zuul01:
             zuul02:
         zuul-log-server:
-          hosts:
-            zuul01:
-            zuul02:
+          children:
+            logserver-master:
+              hosts: zuul01
+            logserver-slave:
+              hosts: zuul02
+        zuul-master:
+          hosts: zuul01
+          vars:
+            zuul_public_ip: 10.3.0.1
+        zuul-slave:
+          hosts: zuul02
+          vars:
+            zuul_public_ip: 10.3.0.2
       vars:
         github_app_id: 6778
         github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-theopenlab-ci.pem"
@@ -70,7 +82,6 @@ all:
         #github_acc_token:
         #github_zuul_ssh_key_name: "pub key for openlab"
         zuul_tenant_name: openlab
-        zuul_public_ip: 80.158.7.173
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
     gear:
@@ -82,32 +93,30 @@ all:
         zuul01:
         zuul02:
     zookeeper:
-      hosts:
-        nodepool01:
-        nodepool02:
-        zk03:
+      children:
+        zk-master:
+          hosts: zuul01
+          vars:
+            zk_myid: 1
+        zk-slave:
+          hosts: zuul02
+          vars:
+            zk_myid: 2
+        zk-03:
+          hosts: zk03
+          vars:
+            zk_myid: 3
     mysql:
-      hosts:
-        zuul01:
-        zuul02:
+      children:
+        mysql-master:
+          hosts: zuul01
+          vars:
+            mysql_server_id: 1
+        mysql-slave:
+          hosts: zuul02
+          vars:
+            mysql_server_id: 2
     apache:
       hosts:
         zuul01:
         zuul02:
-
-    master:
-      hosts:
-        zuul01:
-        nodepool01:
-      vars:
-        zk_myid: 1
-    slave:
-      hosts:
-        zuul02:
-        nodepool02:
-      vars:
-        zk_myid: 2
-    openlab-zk3:
-      hosts: zk03
-      vars:
-        zk_myid: 3
