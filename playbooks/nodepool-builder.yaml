@@ -59,6 +59,7 @@
       copy:
         dest: /opt/nodepool/images/builder_id.txt
         content: "{{ nodepool_builder_id }}"
+      when: nodepool_builder_id is defined
 
     - name: Enable nodepool builder service
       include_role:
