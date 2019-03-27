@@ -37,7 +37,8 @@
 
     - name: create unison config file dir
       file:
-        path: /var/log/unison/unison.log
+        path: /var/log/unison/
+        state: directory
 
 - name: Config Unison on master.
   hosts: logserver-master,logserver-slave
@@ -60,3 +61,10 @@
         dest: ~/.unison/openlab-log-ha.prf
       vars:
         logserver_opposite_ip: "{{ hostvars[groups['logserver-master'][0]].ansible_host }}"
+
+- name: Start Unison.
+  hosts: logserver-master,logserver-slave
+  become: yes
+  tasks:
+    - name: Start Unison
+      shell: unison openlab-log-ha > /dev/null 2>&1 &
