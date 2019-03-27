@@ -2,47 +2,47 @@ all:
   hosts:
     bastion:
       ansible_connection: local
-    test:
+    aio_test:
       ansible_host: 127.0.0.1
   vars:
-    zuul_tenant_name: test
+    zuul_tenant_name: aio_test
     new_zuul_user_key: true
   children:
     nodepool:
       children:
         nodepool-builder:
-          hosts: test
+          hosts: aio_test
         nodepool-launcher:
-          hosts: test
+          hosts: aio_test
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:
-          hosts: test
+          hosts: aio_test
         zuul-executor:
-          hosts: test
+          hosts: aio_test
         zuul-web:
-          hosts: test
+          hosts: aio_test
         zuul-merger:
-          hosts: test
+          hosts: aio_test
         zuul-fingergw:
-          hosts: test
+          hosts: aio_test
         zuul-log-server:
-          hosts: test
+          hosts: aio_test
       vars:
         github_app_id: 0000
         github_webhook_token: "test"
-        zuul_tenant_name: test
+        zuul_tenant_name: aio_test
         zuul_public_ip: ""
     gear:
-      hosts: test
+      hosts: aio_test
     statsd:
-      hosts: test
+      hosts: aio_test
     zookeeper:
-      hosts: test
+      hosts: aio_test
     mysql:
-      hosts: test
+      hosts: aio_test
     apache:
-      hosts: test
+      hosts: aio_test
