@@ -8,6 +8,7 @@ all:
       ansible_host: 10.3.0.15
   vars:
     zuul_tenant_name: openlab
+    labsync_enabled: true
   children:
     nodepool:
       children:
