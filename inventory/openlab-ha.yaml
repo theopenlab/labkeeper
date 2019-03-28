@@ -3,15 +3,15 @@ all:
     bastion:
       ansible_connection: local
     nodepool01:
-      ansible_host: 192.168.211.1
+      ansible_host: 192.168.211.170
     zuul01:
-      ansible_host: 192.168.211.2
+      ansible_host: 192.168.211.114
     nodepool02:
-      ansible_host: 192.168.211.3
+      ansible_host: 192.168.211.251
     zuul02:
-      ansible_host: 192.168.211.4
+      ansible_host: 192.168.211.243
     zk03:
-      ansible_host: 192.168.211.5
+      ansible_host: 192.168.211.12
   vars:
     zuul_tenant_name: openlab
     zookeeper_ha_mode: true
