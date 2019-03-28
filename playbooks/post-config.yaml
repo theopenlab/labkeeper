@@ -13,10 +13,12 @@
 - hosts: zuul
   become: yes
   tasks:
-    - name: Ensure openlab-zuul-jobs key has been generated
-      wait_for:
-        path: "{{ openlab_zuul_jobs_key_dest }}"
-        state: present
+    - name: Ensure openlab-zuul-jobs key directory has been created
+      file:
+        path: "{{ openlab_zuul_jobs_key_dest|dirname }}"
+        group: zuul
+        owner: zuul
+        state: directory
       when:
         - openlab_zuul_jobs_key_dest is defined
 
