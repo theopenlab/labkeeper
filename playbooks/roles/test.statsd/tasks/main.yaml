@@ -16,3 +16,4 @@
   become: yes
   shell: /usr/sbin/service statsd status
   changed_when: false
+  when: statsd_service_statsd_state in ['reloaded', 'restarted', 'started']

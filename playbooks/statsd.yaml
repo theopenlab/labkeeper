@@ -40,3 +40,5 @@
     - name: Run statsd validation.
       include_role:
         name: test.statsd
+      vars:
+        statsd_service_statsd_state: "{{ service_state|default('started') }}"
