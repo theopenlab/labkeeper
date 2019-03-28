@@ -27,7 +27,7 @@
         zuul_file_zuul_fingergw_service_manage: true
         zuul_service_zuul_fingergw_enabled: yes
         zuul_service_zuul_fingergw_manage: true
-        zuul_service_zuul_fingergw_state: "{{ service_state|default(started) }}"
+        zuul_service_zuul_fingergw_state: "{{ service_state|default('started') }}"
 
     - name: Setup openstack.logrotate role.
       include_role:
@@ -47,3 +47,5 @@
     - name: Run zuul-fingergw validation.
       include_role:
         name: test.zuul-fingergw
+      vars:
+        zuul_service_zuul_fingergw_state: "{{ service_state|default('started') }}"

@@ -34,7 +34,7 @@
     - name: Restart zuul services
       service:
         name: "{{ item }}"
-        state: {{ service_state|default(restarted) }}
+        state: "{{ service_state|default('started') }}"
       with_items:
         - zuul-scheduler
         - zuul-executor

@@ -26,7 +26,7 @@
         nodepool_file_nodepool_builder_service_manage: false
         nodepool_file_nodepool_builder_service_config_manage: false
         nodepool_service_nodepool_builder_manage: false
-        nodepool_service_nodepool_launcher_state: "{{ service_state|default(started) }}"
+        nodepool_service_nodepool_launcher_state: "{{ service_state|default('started') }}"
 
     - name: Setup openstack.logrotate role
       include_role:

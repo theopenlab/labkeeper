@@ -12,5 +12,5 @@
           sed -i 's/127.0.0.1/0.0.0.0/1' /lib/systemd/system/gearman-job-server.service
           sed -i 's/127.0.0.1/0.0.0.0/1' /etc/systemd/system/multi-user.target.wants/gearman-job-server.service
           systemctl daemon-reload
-          service gearman-job-server "{{ service_state|default(started) }}"
+          service gearman-job-server "{{ service_state|default('started') }}"
         executable: /bin/bash
