@@ -51,33 +51,33 @@ all:
                 service_state: stopped
         zuul-executor:
           children:
-            zuul-scheduler-master:
+            zuul-executor-master:
               hosts: zuul01
-            zuul-scheduler-slave:
+            zuul-executor-slave:
               hosts: zuul02
               vars:
                 service_state: stopped
         zuul-web:
           children:
-            zuul-scheduler-master:
+            zuul-web-master:
               hosts: zuul01
-            zuul-scheduler-slave:
+            zuul-web-slave:
               hosts: zuul02
               vars:
                 service_state: stopped
         zuul-merger:
           children:
-            zuul-scheduler-master:
+            zuul-merger-master:
               hosts: zuul01
-            zuul-scheduler-slave:
+            zuul-merger-slave:
               hosts: zuul02
               vars:
                 service_state: stopped
         zuul-fingergw:
           children:
-            zuul-scheduler-master:
+            zuul-fingergw-master:
               hosts: zuul01
-            zuul-scheduler-slave:
+            zuul-fingergw-slave:
               hosts: zuul02
               vars:
                 service_state: stopped
@@ -131,11 +131,11 @@ all:
     zookeeper:
       children:
         zk-master:
-          hosts: zuul01
+          hosts: nodepool01
           vars:
             zk_myid: 1
         zk-slave:
-          hosts: zuul02
+          hosts: nodepool02
           vars:
             zk_myid: 2
         zk-03:
