@@ -158,3 +158,10 @@ all:
           hosts: allinone02
           vars:
             service_state: stopped
+
+    keepalive:
+      children:
+        keepalive-master:
+          hosts: allinone01
+        keepalive-slave:
+          hosts: allinone02

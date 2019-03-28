@@ -160,3 +160,9 @@ all:
           hosts: zuul02
           vars:
             service_state: stopped
+    keepalive:
+      children:
+        keepalive-master:
+          hosts: zuul01
+        keepalive-slave:
+          hosts: zuul02
