@@ -15,46 +15,76 @@ all:
     nodepool:
       children:
         nodepool-builder:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            nodepool-builder-master:
+              hosts: allinone01
+            nodepool-builder-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
           vars:
             nodepool_builder_id: "8fcf0492-b972-45cc-828f-efd6b301b46e"
         nodepool-launcher:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            nodepool-launcher-master:
+              hosts: allinone01
+            nodepool-launcher-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            zuul-scheduler-master:
+              hosts: allinone01
+            zuul-scheduler-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
         zuul-executor:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            zuul-executor-master:
+              hosts: allinone01
+            zuul-executor-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
         zuul-web:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            zuul-web-master:
+              hosts: allinone01
+            zuul-web-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
         zuul-merger:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            zuul-merger-master:
+              hosts: allinone01
+            zuul-merger-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
         zuul-fingergw:
-          hosts:
-            allinone01:
-            allinone02:
+          children:
+            zuul-fingergw-master:
+              hosts: allinone01
+            zuul-fingergw-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
         zuul-log-server:
           children:
             logserver-master:
               hosts: allinone01
             logserver-slave:
               hosts: allinone02
+              vars:
+                service_state: stopped
         zuul-master:
           hosts: allinone01
           vars:
@@ -81,13 +111,21 @@ all:
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
     gear:
-      hosts:
-        allinone01:
-        allinone02:
+      children:
+        gear-master:
+          hosts: allinone01
+        gear-slave:
+          hosts: allinone02
+          vars:
+            service_state: stopped
     statsd:
-      hosts:
-        allinone01:
-        allinone02:
+      children:
+        statsd-master:
+          hosts: allinone01
+        statsd-slave:
+          hosts: allinone02
+          vars:
+            service_state: stopped
     zookeeper:
       children:
         zk-master:
@@ -113,6 +151,10 @@ all:
           vars:
             mysql_server_id: 2
     apache:
-      hosts:
-        allinone01:
-        allinone02:
+      children:
+        apache-master:
+          hosts: allinone01
+        apache-slave:
+          hosts: allinone02
+          vars:
+            service_state: stopped

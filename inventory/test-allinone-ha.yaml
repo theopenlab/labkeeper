@@ -3,11 +3,11 @@ all:
     bastion:
       ansible_connection: local
     aio_test01:
-      ansible_host: 192.168.211.20
+      ansible_host: 127.0.0.1
     aio_test02:
       ansible_host: 192.168.211.174
-    test_zk03:
-      ansible_host: 192.168.211.151
+    #test_zk03:
+    #  ansible_host: 192.168.211.151
   vars:
     zuul_tenant_name: aio_test_ha
     zookeeper_ha_mode: true
@@ -86,10 +86,10 @@ all:
           hosts: aio_test02
           vars:
             zk_myid: 2
-        zk-03:
-          hosts: zk03
-          vars:
-            zk_myid: 3
+        #zk-03:
+        #  hosts: zk03
+        #  vars:
+        #    zk_myid: 3
     mysql:
       children:
         mysql-master:
