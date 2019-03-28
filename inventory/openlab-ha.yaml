@@ -19,40 +19,68 @@ all:
     nodepool:
       children:
         nodepool-builder:
-          hosts:
-            nodepool01:
-            nodepool02:
+          children:
+            nodepool-builder-master:
+              hosts: nodepool01
+            nodepool-builder-slave:
+              hosts: nodepool02
+              vars:
+                service_state: stopped
           vars:
-            nodepool_builder_id: "8fcf0492-b972-45cc-828f-efd6b301b46e"
+            nodepool_builder_id: "16023c68-b5ce-4152-abbc-64ea88868a9e"
         nodepool-launcher:
-          hosts:
-            nodepool01:
-            nodepool02:
+          children:
+            nodepool-launcher-master:
+              hosts: nodepool01
+            nodepool-launcher-slave:
+              hosts: nodepool02
+              vars:
+                service_state: stopped
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
     zuul:
       children:
         zuul-scheduler:
-          hosts:
-            zuul01:
-            zuul02:
+          children:
+            zuul-scheduler-master:
+              hosts: zuul01
+            zuul-scheduler-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
         zuul-executor:
-          hosts:
-            zuul01:
-            zuul02:
+          children:
+            zuul-scheduler-master:
+              hosts: zuul01
+            zuul-scheduler-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
         zuul-web:
-          hosts:
-            zuul01:
-            zuul02:
+          children:
+            zuul-scheduler-master:
+              hosts: zuul01
+            zuul-scheduler-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
         zuul-merger:
-          hosts:
-            zuul01:
-            zuul02:
+          children:
+            zuul-scheduler-master:
+              hosts: zuul01
+            zuul-scheduler-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
         zuul-fingergw:
-          hosts:
-            zuul01:
-            zuul02:
+          children:
+            zuul-scheduler-master:
+              hosts: zuul01
+            zuul-scheduler-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
         zuul-log-server:
           children:
             logserver-master:
@@ -85,13 +113,21 @@ all:
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
         openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
     gear:
-      hosts:
-        zuul01:
-        zuul02:
+      children:
+        gear-master:
+          hosts: zuul01
+        gear-slave:
+          hosts: zuul02
+          vars:
+            service_state: stopped
     statsd:
-      hosts:
-        zuul01:
-        zuul02:
+      children:
+        statsd-master:
+          hosts: zuul01
+        statsd-slave:
+          hosts: zuul02
+          vars:
+            service_state: stopped
     zookeeper:
       children:
         zk-master:
@@ -117,6 +153,10 @@ all:
           vars:
             mysql_server_id: 2
     apache:
-      hosts:
-        zuul01:
-        zuul02:
+      children:
+        apache-master:
+          hosts: zuul01
+        apache-slave:
+          hosts: zuul02
+          vars:
+            service_state: stopped
