@@ -1,0 +1,41 @@
+vrrp_instance VirtIP_10 {
+    state {{ keepalived_role }}
+    interface {{ local_interface }}
+    virtual_router_id 10
+    priority 100
+    advert_int 3
+    authentication {
+        auth_type PASS
+        auth_pass MY_PASS
+    }
+    virtual_ipaddress {
+        100.1.1.1
+    }
+}
+
+virtual_server 100.1.1.1 80 {
+    delay_loop 10
+    lb_algo rr
+    lb_kind NAT
+    persistence_timeout 5
+    protocol TCP
+
+    real_server {{ kp_opposite_ip }} 80 {
+        weight 100
+        connect_timeout 3
+        retry 3
+        delay_before_retry 10
+        notify_down {{ notify_down_action }}
+        #MISC_CHECK {
+        #    # PERIOD check MASTER NODE local services are OK.
+        #    misc_path "/root/check_master.sh"
+        #    misc_timeout 5
+        #}
+        TCP_CHECK {
+            connection_timeout 5
+            retry 5
+            connect_port 22
+            delay_before_retry 3
+        }
+    }
+}

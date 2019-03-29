@@ -159,9 +159,9 @@ all:
           vars:
             service_state: stopped
 
-    keepalive:
+    keepalived:
       children:
-        keepalive-master:
+        keepalived-master:
           hosts: allinone01
-        keepalive-slave:
+        keepalived-slave:
           hosts: allinone02
