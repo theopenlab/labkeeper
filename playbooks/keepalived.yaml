@@ -22,6 +22,7 @@
       copy:
         src: "{{ labkeeper_src_dir }}/openlab.pem"
         dest: /etc/keepalived/openlab.pem
+        mode: 0600
 
 - name: Config keepalived master
   hosts: keepalived-master
