@@ -1,2 +1,2 @@
-from plugins import provider
+from plugins import jobs
 from plugins import nodepool
