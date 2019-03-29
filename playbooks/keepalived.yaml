@@ -24,6 +24,14 @@
         dest: /etc/keepalived/openlab.pem
         mode: 0600
 
+    - name: Enable ip_vs module
+      shell: |
+        modprobe ip_vs
+        modprobe ip_vs_wrr
+        lsmod |grep ip_vs
+      args:
+        executable: /bin/bash
+
 - name: Config keepalived master
   hosts: keepalived-master
   become: yes
@@ -41,6 +49,9 @@
         kp_opposite_ip: "{{ hostvars[groups['keepalived-slave'][0]].ansible_host }}"
         notify_down_action: ""
         local_interface: "{{ local_default_interface.stdout }}"
+
+    - name: Start keepalived service
+      service: name=keepalived state=started
 
 - name: Config keepalived slave
   hosts: keepalived-slave
@@ -70,3 +81,6 @@
         nodepool_slave_ip: "{{ hostvars[groups['nodepool-builder-slave'][0]].ansible_host }}"
         zuul_master_ip: "{{ hostvars[groups['zuul-scheduler-master'][0]].ansible_host }}"
         zuul_slave_ip: "{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"
+
+    - name: Start keepalived service
+      service: name=keepalived state=started
