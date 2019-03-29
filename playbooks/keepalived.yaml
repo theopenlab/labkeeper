@@ -37,7 +37,7 @@
   become: yes
   tasks:
     - name: Get interface of default route
-      shell: ip route |grep default | awk '{print $NF}'
+      shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
       register: local_default_interface
 
     - name: Generate keepalived conf
@@ -58,7 +58,7 @@
   become: yes
   tasks:
     - name: Get interface of default route
-      shell: ip route |grep default | awk '{print $NF}'
+      shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
       register: local_default_interface
 
     - name: Generate keepalived conf
