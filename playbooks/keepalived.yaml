@@ -39,7 +39,7 @@
         keepalived_role: MASTER
         kp_opposite_ip: "{{ hostvars[groups['keepalived-master'][0]].ansible_host }}"
         notify_down_action: ""
-        local_interface: local_default_interface.stdout
+        local_interface: "{{ local_default_interface.stdout }}"
 
 - name: Config keepalived slave
   hosts: keepalived-slave
@@ -55,9 +55,9 @@
         dest: /etc/keepalived/keepalived.conf
       vars:
         keepalived_role: BACKUP
-        kp_opposite_ip: "{{ hostvars[groups['keepalived-master'][0]].ansible_host }}"
+        kp_opposite_ip: "{{ hostvars[groups['keepalived-slave'][0]].ansible_host }}"
         notify_down_action: "/etc/keepalived/start_slave_svcs.sh"
-        local_interface: local_default_interface.stdout
+        local_interface: "{{ local_default_interface.stdout }}"
 
     - name: Create start services script
       template:
