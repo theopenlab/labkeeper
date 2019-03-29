@@ -16,7 +16,7 @@ OpenLab CI infrastructures.
 This project is initially forked from the `OpenStack Windmill project`_, and
 modified for specific `OpenLab`_ CI system deployment.
 
-.. _OpenStack Windmill project: http://git.openstack.org/cgit/openstack/labkeeper/
+.. _OpenStack Windmill project: https://github.com/openstack/windmill
 .. _OpenLab: https://github.com/theopenlab
 
 Steps to deploy a CI system by this tool
