@@ -38,9 +38,7 @@
       with_items: "{{ groups['zookeeper'] }}"
 
     - name: Restart zookeeper services
-      service:
-        name: zookeeper
-          state: restarted
+      service: name=zookeeper state=restarted
 
   post_tasks:
     - name: Run zookeeper validation
