@@ -40,7 +40,7 @@
   hosts: nodepool-builder-master, nodepool-builder-slave
   tasks:
     - name: modify nodepoo.yaml to use new zookeeper servers
-      shell: sed -i 's/{{ old_nodepool_master }}/{{ hostvars[groups["nodepool-builder-master"][0]].ansible_host }}/g' /etc/nodepool/nodepool.yaml
+      shell: sed -i 's/{{ old_nodepool_master }}/{{ hostvars[groups["nodepool-builder-slave"][0]].ansible_host }}/g' /etc/nodepool/nodepool.yaml
       args:
         executable: /bin/bash
 
@@ -55,7 +55,7 @@
   hosts: zuul-scheduler-master, zuul-scheduler-slave
   tasks:
     - name: modify zuul.conf to use new zookeeper servers
-      shell: sed -i 's/{{ old_zuul_master }}/{{ hostvars[groups["zuul-scheduler-master"][0]].ansible_host }}/g' /etc/zuul/zuul.conf
+      shell: sed -i 's/{{ old_zuul_master }}/{{ hostvars[groups["zuul-scheduler-slave"][0]].ansible_host }}/g' /etc/zuul/zuul.conf
       args:
         executable: /bin/bash
 
