@@ -29,6 +29,6 @@ if __name__ == "__main__":
     parser.add_argument('--password', metavar='<password>', required=True,
                         help="The PassWord of Github User")
     parser.add_argument('--env-role', metavar='<env_role>', required=True,
-                        help="The PassWord of Github User")
+                        help="The role of target deployment")
     args = parser.parse_args()
     main(args)
