@@ -25,3 +25,12 @@ ssh -o StrictHostKeyChecking=no -i /etc/keepalived/openlab.pem "ubuntu@{{ zuul_s
         sudo systemctl start zuul-* --all
         sudo systemctl start apache2
     "
+
+# Get tools to change webhook or change the DNS record(Manually)
+if [ ! -f "/etc/keepalived/cli.py" ];then
+    wget -P /etc/keepalived/  https://raw.githubusercontent.com/wangxiyuan/Toy/master/github-app-webhook-url-update-tool/cli.py
+fi
+python3 /etc/keepalived/cli.py --user {{ upstream_user }} --password {{ upstream_password }} --app {{ app_name }} --ip {{ zuul_slave_ip }}
+
+# For now, if a deployment is Down, we need to notify to upstream through a Github Issue
+python /etc/keepalived/notify_upstream.py --username {{ upstream_user }} --password {{ upstream_password }} --env-role {{ ori_env_role }}
