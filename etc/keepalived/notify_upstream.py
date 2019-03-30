@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import argparse
-
+import datetime
 from github import Github
 
 REPO_NAME = 'moo-ai/moo-ai.github.io'
@@ -10,8 +10,10 @@ def notify_issue(args):
     g = Github(args.username, args.password)
     repo = g.get_repo(REPO_NAME)
     repo.create_issue(
-        title="WARNING: The online openlab deployment <%s> has Down, "
-              "Please recovery asap!" % args.env_role,
+        title="[FATAL][%s] The online openlab deployment <%s> has Down, "
+              "Please recovery asap!" % (
+                  datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                  args.env_role),
         body="")
 
 

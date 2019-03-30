@@ -1,2 +1,2 @@
 # For now, if a deployment is Down, we need to notify to upstream through a Github Issue
-python /etc/keepalived/notify_upstream.py --username {{ upstream_user }} --password {{ upstream_password }} --env-role {{ ori_env_role }}
+python /etc/keepalived/change_app_webhook.py --username {{ upstream_user }} --password {{ upstream_password }} --env-role {{ ori_env_role }}
