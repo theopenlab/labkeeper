@@ -1,0 +1,168 @@
+all:
+  hosts:
+    bastion:
+      ansible_connection: local
+    nodepool01:
+      ansible_host: 192.168.211.170
+    zuul01:
+      ansible_host: 192.168.211.114
+    nodepool02:
+      ansible_host: 192.168.211.251
+    zuul02:
+      ansible_host: 192.168.211.243
+    zk03:
+      ansible_host: 192.168.211.12
+  vars:
+    zuul_tenant_name: openlab
+    zookeeper_ha_mode: true
+  children:
+    nodepool:
+      children:
+        nodepool-builder:
+          children:
+            nodepool-builder-master:
+              hosts: nodepool01
+            nodepool-builder-slave:
+              hosts: nodepool02
+              vars:
+                service_state: stopped
+          vars:
+            nodepool_builder_id: "16023c68-b5ce-4152-abbc-64ea88868a9e"
+        nodepool-launcher:
+          children:
+            nodepool-launcher-master:
+              hosts: nodepool01
+            nodepool-launcher-slave:
+              hosts: nodepool02
+              vars:
+                service_state: stopped
+      vars:
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
+    zuul:
+      children:
+        zuul-scheduler:
+          children:
+            zuul-scheduler-master:
+              hosts: zuul01
+            zuul-scheduler-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
+        zuul-executor:
+          children:
+            zuul-executor-master:
+              hosts: zuul01
+            zuul-executor-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
+        zuul-web:
+          children:
+            zuul-web-master:
+              hosts: zuul01
+            zuul-web-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
+        zuul-merger:
+          children:
+            zuul-merger-master:
+              hosts: zuul01
+            zuul-merger-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
+        zuul-fingergw:
+          children:
+            zuul-fingergw-master:
+              hosts: zuul01
+            zuul-fingergw-slave:
+              hosts: zuul02
+              vars:
+                service_state: stopped
+        zuul-log-server:
+          children:
+            logserver-master:
+              hosts: zuul01
+            logserver-slave:
+              hosts: zuul02
+        zuul-master:
+          hosts: zuul01
+          vars:
+            zuul_public_ip: 10.3.0.1
+        zuul-slave:
+          hosts: zuul02
+          vars:
+            zuul_public_ip: 10.3.0.2
+      vars:
+        github_app_id: 6778
+        github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-theopenlab-ci.pem"
+        # Github app secret
+        github_webhook_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          65633963633835333432666238626638383938316433303663666333343639643733363862346566
+          3363393730343335373261663533303361316430373861370a346663396338336135616538646635
+          65326433343366363030393862396336393866336337366265303532636461633064356235313133
+          6232353665643934620a613937663931396337363232313065653031623234336332336533376233
+          3432
+        zuul_file_main_yaml_src: "{{ labkeeper_config_git_dest }}/zuul/openlab-main.yaml"
+        #github_acc_token:
+        #github_zuul_ssh_key_name: "pub key for openlab"
+        zuul_tenant_name: openlab
+        openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/theopenlab-openlab-zuul-jobs.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/theopenlab/openlab-zuul-jobs/0.pem"
+    gear:
+      children:
+        gear-master:
+          hosts: zuul01
+        gear-slave:
+          hosts: zuul02
+          vars:
+            service_state: stopped
+    statsd:
+      children:
+        statsd-master:
+          hosts: zuul01
+        statsd-slave:
+          hosts: zuul02
+          vars:
+            service_state: stopped
+    zookeeper:
+      children:
+        zk-master:
+          hosts: nodepool01
+          vars:
+            zk_myid: 1
+        zk-slave:
+          hosts: nodepool02
+          vars:
+            zk_myid: 2
+        zk-03:
+          hosts: zk03
+          vars:
+            zk_myid: 3
+    mysql:
+      children:
+        mysql-master:
+          hosts: zuul01
+          vars:
+            mysql_server_id: 1
+        mysql-slave:
+          hosts: zuul02
+          vars:
+            mysql_server_id: 2
+    apache:
+      children:
+        apache-master:
+          hosts: zuul01
+        apache-slave:
+          hosts: zuul02
+          vars:
+            service_state: stopped
+    keepalived:
+      children:
+        keepalived-master:
+          hosts: zuul01
+        keepalived-slave:
+          hosts: zuul02

@@ -1,0 +1,86 @@
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+- name: Install keepalived
+  hosts: keepalived
+  become: yes
+  tasks:
+    - name: Install keepalived
+      package: name=keepalived
+
+    - name: Copy openlab key to keepalived nodes
+      copy:
+        src: "{{ labkeeper_src_dir }}/openlab.pem"
+        dest: /etc/keepalived/openlab.pem
+        mode: 0600
+
+    - name: Enable ip_vs module
+      shell: |
+        modprobe ip_vs
+        modprobe ip_vs_wrr
+        lsmod |grep ip_vs
+      args:
+        executable: /bin/bash
+
+- name: Config keepalived master
+  hosts: keepalived-master
+  become: yes
+  tasks:
+    - name: Get interface of default route
+      shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
+      register: local_default_interface
+
+    - name: Generate keepalived conf
+      template:
+        src: "{{ labkeeper_config_git_dest }}/keepalived/keepalived.conf.j2"
+        dest: /etc/keepalived/keepalived.conf
+      vars:
+        keepalived_role: MASTER
+        kp_opposite_ip: "{{ hostvars[groups['keepalived-slave'][0]].ansible_host }}"
+        notify_down_action: ""
+        local_interface: "{{ local_default_interface.stdout }}"
+
+    - name: Start keepalived service
+      service: name=keepalived state=started
+
+- name: Config keepalived slave
+  hosts: keepalived-slave
+  become: yes
+  tasks:
+    - name: Get interface of default route
+      shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
+      register: local_default_interface
+
+    - name: Generate keepalived conf
+      template:
+        src: "{{ labkeeper_config_git_dest }}/keepalived/keepalived.conf.j2"
+        dest: /etc/keepalived/keepalived.conf
+      vars:
+        keepalived_role: BACKUP
+        kp_opposite_ip: "{{ hostvars[groups['keepalived-master'][0]].ansible_host }}"
+        notify_down_action: "/etc/keepalived/start_slave_svcs.sh"
+        local_interface: "{{ local_default_interface.stdout }}"
+
+    - name: Create start services script
+      template:
+        src: "{{ labkeeper_config_git_dest }}/keepalived/start_slave_svcs.sh.j2"
+        dest: /etc/keepalived/start_slave_svcs.sh
+        mode: 0755
+      vars:
+        nodepool_master_ip: "{{ hostvars[groups['nodepool-builder-master'][0]].ansible_host }}"
+        nodepool_slave_ip: "{{ hostvars[groups['nodepool-builder-slave'][0]].ansible_host }}"
+        zuul_master_ip: "{{ hostvars[groups['zuul-scheduler-master'][0]].ansible_host }}"
+        zuul_slave_ip: "{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"
+
+    - name: Start keepalived service
+      service: name=keepalived state=started

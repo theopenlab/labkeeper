@@ -14,16 +14,10 @@ if [ ! -f vault-password.txt ]; then
     exit 1
 fi
 
-export DEFAULT_REMOTE_USER=${DEFAULT_REMOTE_USER:-ubuntu}
+export ANSIBLE_REMOTE_USER=${ANSIBLE_REMOTE_USER:-ubuntu}
 export DPLOY_TYPE=${DPLOY_TYPE:-allinone}
-
-echo "Checking key and user access, 'ubuntu' user as default, you can set 'DEFAULT_REMOTE_USER' to override!"
-if ! ssh -o "StrictHostKeyChecking no" -i openlab.pem ${DEFAULT_REMOTE_USER}@localhost 'pwd'; then
-    echo "Please ensure you have created correct 'openlab.pem' and switched to the user which can access with this key!"
-    exit 1
-fi
 
 sudo apt update -y
 sudo apt install python python-pip python3 python3-pip kpartx qemu-utils curl python-yaml debootstrap libffi-dev libssl-dev -y
-sudo pip install ansible
-ansible-playbook playbooks/site.yaml -i inventory/${DPLOY_TYPE}.yaml
+sudo pip install -U pip setuptools wheel virtualenv ansible
+ansible-playbook -i inventory/${DPLOY_TYPE}.yaml  playbooks/site.yaml

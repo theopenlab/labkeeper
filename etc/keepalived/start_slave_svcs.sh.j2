@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+cd /
+ssh -o StrictHostKeyChecking=no -i /etc/keepalived/openlab.pem "ubuntu@{{ nodepool_master_ip }}" "
+        set -x
+        sudo systemctl stop nodepool-* --all
+    "
+
+ssh -o StrictHostKeyChecking=no -i /etc/keepalived/openlab.pem "ubuntu@{{ zuul_master_ip }}" "
+        set -x
+        sudo systemctl stop gearman-job-server
+        sudo systemctl stop statsd
+        sudo systemctl stop zuul-* --all
+        sudo systemctl stop apache2
+    "
+
+ssh -o StrictHostKeyChecking=no -i /etc/keepalived/openlab.pem "ubuntu@{{ nodepool_slave_ip }}" "
+        set -x
+        sudo systemctl start nodepool-* --all
+    "
+
+ssh -o StrictHostKeyChecking=no -i /etc/keepalived/openlab.pem "ubuntu@{{ zuul_slave_ip }}" "
+        set -x
+        sudo systemctl start gearman-job-server
+        sudo systemctl start statsd
+        sudo systemctl start zuul-* --all
+        sudo systemctl start apache2
+    "

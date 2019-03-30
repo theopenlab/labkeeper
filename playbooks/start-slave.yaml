@@ -1,0 +1,74 @@
+# Copyright 2016 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+- hosts: nodepool-builder-slave
+  become: yes
+  tasks:
+  - name: start nodepool-builder service on slave
+    service: name=nodepool-builder state=started
+
+- hosts: nodepool-launcher-slave
+  become: yes
+  tasks:
+  - name: start nodepool-launcher service on slave
+    service: name=nodepool-launcher state=started
+
+
+- hosts: zuul-executor-slave
+  become: yes
+  tasks:
+    - name: start zuul-executor service on slave
+      service: name=zuul-executor state=started
+
+- hosts: zuul-scheduler-slave
+  become: yes
+  tasks:
+    - name: start zuul-scheduler service on slave
+      service: name=zuul-scheduler state=started
+
+- hosts: zuul-merger-slave
+  become: yes
+  tasks:
+    - name: start zuul-merger service on slave
+      service: name=zuul-merger state=started
+
+- hosts: zuul-fingergw-slave
+  become: yes
+  tasks:
+    - name: start zuul-fingergw service on slave
+      service: name=zuul-fingergw state=started
+
+- hosts: zuul-web-slave
+  become: yes
+  tasks:
+    - name: start zuul-web service on slave
+      service: name=zuul-web state=started
+
+- hosts: gear-slave
+  become: yes
+  tasks:
+    - name: start gearman service on slave
+      service: name=gearman-job-server state=started
+
+- hosts: statsd-slave
+  become: yes
+  tasks:
+    - name: start statsd service on slave
+      service: name=statsd state=started
+
+- hosts: apache-slave
+  become: yes
+  tasks:
+    - name: start apache service on slave
+      service: name=apache2 state=started

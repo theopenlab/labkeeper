@@ -1,0 +1,13 @@
+# Unison preferences file
+root = /srv/static/logs # root of a replica (should be used exactly twice)
+root = ssh://zuul@{{ logserver_opposite_ip }}//srv/static/logs
+batch = true # batch mode: ask no questions at all
+owner = true # synchronize owner
+group = true # synchronize group attributes
+perms = -1 # part of the permissions which is synchronized
+repeat = 1800 # synchronize repeatedly (text interface only)
+retry = 3 # re-try failed synchronizations N times
+sshargs = -i /var/lib/zuul/.ssh/id_rsa -C
+fastcheck = true # do fast update detection (true/false/default)
+log = true
+logfile = /var/log/unison/unison.log

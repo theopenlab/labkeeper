@@ -14,17 +14,22 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 1
+    min-ready: 0
+  - name: ubuntu-xenial-gpu
+    min-ready: 0
   - name: ubuntu-trusty
     min-ready: 0
 
 providers:
-  - name: otcallinone
-    cloud: otc
+  #CityNetwork
+  # limits: 50 vms, 100 Cores, 256000 M Ram
+  - name: citynetworkallinone
+    cloud: citynetwork
     driver: openstack
-    launch-timeout: 1200
-    boot-timeout: 1200
-    image-name-format: 'allinone-openlab-{image_name}-{timestamp}'
+    image-name-format: 'openlaballinone-{image_name}-{timestamp}'
+    launch-timeout: 900
+    boot-timeout: 600
+    max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -32,29 +37,16 @@ providers:
         config-drive: true
     pools:
       - name: ubuntu-xenial
-        auto-floating-ip: False
-        max-servers: 12
+        max-cores: 12
         networks:
           - openlab-net
         labels:
           - name: ubuntu-xenial
             diskimage: ubuntu-xenial
-            # flavor-name: 'c2.4xlarge'
-            flavor-name: 's2.2xlarge.1'
-            boot-from-volume: True
-            volume-size: 100
-      - name: ubuntu-trusty
-        auto-floating-ip: False
-        max-servers: 2
-        networks:
-          - openlab-net
-        labels:
+            flavor-name: '4C-8GB-100GB'
           - name: ubuntu-trusty
             diskimage: ubuntu-trusty
-            # flavor-name: 'c2.4xlarge'
-            flavor-name: 's2.2xlarge.1'
-            boot-from-volume: True
-            volume-size: 100
+            flavor-name: '4C-8GB-100GB'
 
 diskimages:
   - name: ubuntu-xenial

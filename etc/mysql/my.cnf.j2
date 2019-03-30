@@ -1,0 +1,13 @@
+[mysqld]
+server-id={{ mysql_server_id }}
+log-bin=mysql-bin
+log-slave-updates
+sync_binlog = 10
+auto_increment_offset = 1
+auto_increment_increment = 2
+binlog-do-db = zuul
+binlog-ignore-db = mysql,information_schema,performance_schema
+replicate-do-db = zuul
+replicate-ignore-db = mysql,information_schema,performance_schema
+
+!includedir /etc/mysql/conf.d/

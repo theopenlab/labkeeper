@@ -37,7 +37,7 @@ Steps to deploy a CI system by this tool
 3. Select one type of deployment: `allinone`, `openlab`(refer to the inventory in `/inventory`),
    the `allinone` is default choice. Then run following script to start deployment::
 
-    $ export DEFAULT_REMOTE_USER=ubuntu
+    $ export ANSIBLE_REMOTE_USER=ubuntu
     $ export DPLOY_TYPE=openlab
     $ ./deploy.sh
 
@@ -48,6 +48,19 @@ Steps to deploy a CI system by this tool
 .. _theopenlab app: https://github.com/organizations/theopenlab/settings/apps/theopenlab-ci
 
 5. Update the log server `fqdn` and host key(`secrets.yaml`) in the jobs config repo (`openlab-zuul-jobs`).
+
+HA deployment
+----------
+
+You can also deploy openlab environment in HA mode, only need to choose using the HA
+deployment inventory files in `inventory/` directory, including `allinone-ha` and `openlab-ha`
+deployment types.
+
+As default, when deploy environment in HA mode, the services(nodepool and zuul) in slave hosts
+won't start, except for the *data layer* components: zookeeper, mysql, log server. If you want
+to start services on slave hosts in case the master hosts down, you can just run like::
+
+    $ ansible-playbook -i inventory/allinone-ha.yaml playbooks/start-slave.yaml
 
 TODO items
 ----------

@@ -1,0 +1,148 @@
+all:
+  hosts:
+    bastion:
+      ansible_connection: local
+    allinone01:
+      ansible_host: 192.168.211.1
+    allinone02:
+      ansible_host: 192.168.211.2
+    zk03:
+      ansible_host: 192.168.211.3
+  vars:
+    zuul_tenant_name: aio_test
+    zookeeper_ha_mode: true
+  children:
+    nodepool:
+      children:
+        nodepool-builder:
+          children:
+            nodepool-builder-master:
+              hosts: allinone01
+            nodepool-builder-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+          vars:
+            nodepool_builder_id: "456f30be-c1e6-4e97-b075-7dc1840b083d"
+        nodepool-launcher:
+          children:
+            nodepool-launcher-master:
+              hosts: allinone01
+            nodepool-launcher-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+      vars:
+        nodepool_file_nodepool_yaml_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-nodepool.yaml.j2"
+        nodepool_clouds_src: "{{ labkeeper_src_dir }}/tests/nodepool/fake-clouds.yaml.j2"
+    zuul:
+      children:
+        zuul-scheduler:
+          children:
+            zuul-scheduler-master:
+              hosts: allinone01
+            zuul-scheduler-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+        zuul-executor:
+          children:
+            zuul-executor-master:
+              hosts: allinone01
+            zuul-executor-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+        zuul-web:
+          children:
+            zuul-web-master:
+              hosts: allinone01
+            zuul-web-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+        zuul-merger:
+          children:
+            zuul-merger-master:
+              hosts: allinone01
+            zuul-merger-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+        zuul-fingergw:
+          children:
+            zuul-fingergw-master:
+              hosts: allinone01
+            zuul-fingergw-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+        zuul-log-server:
+          children:
+            logserver-master:
+              hosts: allinone01
+            logserver-slave:
+              hosts: allinone02
+              vars:
+                service_state: stopped
+        zuul-master:
+          hosts: allinone01
+          vars:
+            zuul_public_ip: 80.158.7.1
+        zuul-slave:
+          hosts: allinone02
+          vars:
+            zuul_public_ip: 80.158.7.2
+      vars:
+        github_app_id: 0000
+        github_webhook_token: "test"
+        zuul_tenant_name: aio_test
+        zuul_public_ip: ""
+    gear:
+      children:
+        gear-master:
+          hosts: allinone01
+        gear-slave:
+          hosts: allinone02
+          vars:
+            service_state: stopped
+    statsd:
+      children:
+        statsd-master:
+          hosts: allinone01
+        statsd-slave:
+          hosts: allinone02
+          vars:
+            service_state: stopped
+    zookeeper:
+      children:
+        zk-master:
+          hosts: allinone01
+          vars:
+            zk_myid: 1
+        zk-slave:
+          hosts: allinone02
+          vars:
+            zk_myid: 2
+        zk-03:
+          hosts: zk03
+          vars:
+            zk_myid: 3
+    mysql:
+      children:
+        mysql-master:
+          hosts: allinone01
+          vars:
+            mysql_server_id: 1
+        mysql-slave:
+          hosts: allinone02
+          vars:
+            mysql_server_id: 2
+    apache:
+      children:
+        apache-master:
+          hosts: allinone01
+        apache-slave:
+          hosts: allinone02
+          vars:
+            service_state: stopped

@@ -46,7 +46,7 @@
         src: /tmp/project-config/nodepool/elements/
         recursive: yes
         rsync_opts: '--chown=nodepool:nodepool'
-      delegate_to: "{{ hostvars[groups['nodepool-builder'][0]].ansible_host }}"
+      delegate_to: "{{ inventory_hostname }}"
 
     - name: install pyyaml for elements (workaround)
       pip: name=pyyaml
@@ -54,6 +54,12 @@
     - name: Setup openstack.diskimage-builder role
       include_role:
         name: openstack.diskimage-builder
+
+    - name: Create builder_id.txt for replica builders
+      copy:
+        dest: /opt/nodepool/images/builder_id.txt
+        content: "{{ nodepool_builder_id }}"
+      when: nodepool_builder_id is defined
 
     - name: Enable nodepool builder service
       include_role:
@@ -65,6 +71,7 @@
         nodepool_file_nodepool_launcher_service_manage: false
         nodepool_file_nodepool_launcher_service_config_manage: false
         nodepool_service_nodepool_launcher_manage: false
+        nodepool_service_nodepool_builder_state: "{{ service_state|default('started') }}"
 
     - name: Setup openstack.logrotate role
       include_role:
