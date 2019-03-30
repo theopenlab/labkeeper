@@ -1,4 +1,5 @@
-# ansible-playbook -v -i inventory/openlab-ha.yaml -i inventory/openlab-new-slave.yaml -l slave-hosts
+# ansible-playbook -v -i inventory/openlab-ha.yaml -i inventory/openlab-new-slave.yaml -l slave-hosts playbooks/site.yaml
+# ansible-playbook -v -i inventory/openlab-ha.yaml -i inventory/openlab-new-slave.yaml -l playbooks/conf-new-slave.yaml
 all:
   hosts:
     bastion:
