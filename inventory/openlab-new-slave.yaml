@@ -1,0 +1,25 @@
+# ansible-playbook -v -i inventory/openlab-ha.yaml -i inventory/openlab-new-slave.yaml -l slave-hosts
+all:
+  hosts:
+    bastion:
+      ansible_connection: local
+    # NOTE: following nodepool01 and zuul01 are old master hosts(old nodepool02 and zuul02)
+    nodepool01:
+      ansible_host: 192.168.211.251 # Old nodepool slave
+    zuul01:
+      ansible_host: 192.168.211.243 # Old zuul slave
+    zk03:
+      ansible_host: 192.168.211.12
+    # NOTE: following nodepool02 and zuul02 are new slave hosts
+    nodepool02:
+      ansible_host: 192.168.211.221 # New nodepool slave
+    zuul02:
+      ansible_host: 192.168.211.193 # New zuul slave
+  vars:
+    old_zuul_master: 192.168.211.114 # Old zuul master ip
+    old_nodepool_master: 192.168.211.170 # Old nodepool master ip
+  children:
+    slave-hosts:
+      hosts:
+        nodepool02:
+        zuul02:

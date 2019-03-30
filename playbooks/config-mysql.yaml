@@ -86,6 +86,9 @@
         - "{{ hostvars[groups['mysql-slave'][0]].ansible_host }}"
         - "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
 
+    - name: Stop slave if already started.
+      mysql_replication: modestop
+
 - name: Config Mysql Slave of replication
   hosts: mysql-slave
   become: yes
