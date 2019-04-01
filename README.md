@@ -63,6 +63,18 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
 6. Update the log server `fqdn` and host key(`secrets.yaml`) in the jobs config repo (`openlab-zuul-jobs`).
 
+## Deploy a new slave of a master of CI system
+
+This situation is used to recover the slave parts of a openlab CI system in HA deployment, in case the
+**master** has down and the **slave** becoming the new **master**, we need to supply a new **slave**
+for the new **master**.
+
+1. Check andi modify the `inventory/openlab-new-slave.yaml` before deploying, you may need to config the new
+   slave `nodepool` and `zuul` hosts, and the old `nodepool` and `zuul` hosts IP, also you can choose to sync
+   the old **zuul** database to new slave or not.
+
+2. Run the `deploy_new_slave.sh` script
+
 ## TODO items
 
 - Fix some workaround approaches and make more variables in playbooks configurable.
