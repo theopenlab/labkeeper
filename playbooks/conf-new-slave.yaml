@@ -44,12 +44,6 @@
       args:
         executable: /bin/bash
 
-    - name: Restart nodepool services
-      service: name="{{ item }}" state=restarted
-      with_items:
-        - nodepool-builder
-        - nodepool-launcher
-
 - name: Update zookeeper config for zuul
   become: yes
   hosts: zuul-scheduler-master, zuul-scheduler-slave
@@ -58,12 +52,3 @@
       shell: sed -i 's/{{ old_zuul_master }}/{{ hostvars[groups["zuul-scheduler-slave"][0]].ansible_host }}/g' /etc/zuul/zuul.conf
       args:
         executable: /bin/bash
-
-    - name: Restart zuul services
-      service: name="{{ item }}" state=restarted
-      with_items:
-        - zuul-scheduler
-        - zuul-executor
-        - zuul-merger
-        - zuul-fingergw
-        - zuul-web
