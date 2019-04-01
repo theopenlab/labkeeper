@@ -19,6 +19,7 @@ all:
   vars:
     old_zuul_master: 192.168.211.114 # Old zuul master ip
     old_nodepool_master: 192.168.211.170 # Old nodepool master ip
+    sync_db_from_master: yes #Sync old zuul database from master or not
   children:
     slave-hosts:
       hosts:
