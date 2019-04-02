@@ -1,2 +1,2 @@
 # For now, if a deployment is Down, we need to notify to upstream through a Github Issue
-python /etc/keepalived/notify_upstream.py --username {{ upstream_user }} --password {{ upstream_password }} --env-role {{ monitored_env_role }}
+python /etc/keepalived/notify_upstream.py --username {{ github_username }} --password {{ github_password }} --env-role {{ monitored_env_role }}

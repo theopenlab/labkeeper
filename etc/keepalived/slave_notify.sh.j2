@@ -27,7 +27,7 @@ ssh -o StrictHostKeyChecking=no -i /etc/keepalived/openlab.pem "ubuntu@{{ zuul_s
     "
 
 # Change webhook or change the DNS record(Manually)
-python3 /etc/keepalived/change_app_webhook.py --user {{ upstream_user }} --password {{ upstream_password }} --app {{ app_name }} --ip {{ zuul_slave_ip }}
+python3 /etc/keepalived/change_app_webhook.py --user {{ github_username }} --password {{ github_password }} --app {{ app_name }} --ip {{ zuul_slave_ip }}
 
 # For now, if a deployment is Down, we need to notify to upstream through a Github Issue
-python /etc/keepalived/notify_upstream.py --username {{ upstream_user }} --password {{ upstream_password }} --env-role {{ monitored_env_role }}
+python /etc/keepalived/notify_upstream.py --username {{ github_username }} --password {{ github_password }} --env-role {{ monitored_env_role }}
