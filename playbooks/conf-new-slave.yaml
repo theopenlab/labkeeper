@@ -35,12 +35,17 @@
 - import_playbook: zuul-log-server.yaml
 - import_playbook: config-mysql.yaml
 
-- name: Update zookeeper config for nodepool
+- name: Update zookeeper config for zuul
   become: yes
   hosts: nodepool-builder-master, nodepool-builder-slave
   tasks:
-    - name: modify nodepoo.yaml to use new zookeeper servers
-      shell: sed -i 's/{{ old_nodepool_master }}/{{ hostvars[groups["nodepool-builder-slave"][0]].ansible_host }}/g' /etc/nodepool/nodepool.yaml
+    - name: modify zuul.conf to use new zookeeper servers
+      shell: |
+        sed -i "/^zookeeper-servers:$/{N;N;N;N;N;N;s/.*/zookeeper-servers:\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][0]].ansible_host }}\'\n    port: 2181\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][1]].ansible_host }}\'\n    port: 2181\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][2]].ansible_host }}\'\n    port: 2181/}" \
+        /etc/nodepool/nodepool.yaml
       args:
         executable: /bin/bash
 
@@ -49,6 +54,8 @@
   hosts: zuul-scheduler-master, zuul-scheduler-slave
   tasks:
     - name: modify zuul.conf to use new zookeeper servers
-      shell: sed -i 's/{{ old_zuul_master }}/{{ hostvars[groups["zuul-scheduler-slave"][0]].ansible_host }}/g' /etc/zuul/zuul.conf
-      args:
-        executable: /bin/bash
+      ini_file:
+        path: /etc/zuul/zuul.conf
+        section: "zookeeper"
+        option: "hosts"
+        value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"

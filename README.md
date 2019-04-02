@@ -70,8 +70,7 @@ This situation is used to recover the slave parts of a openlab CI system in HA d
 for the new **master**.
 
 1. Check andi modify the `inventory/openlab-new-slave.yaml` before deploying, you may need to config the new
-   slave `nodepool` and `zuul` hosts, and the old `nodepool` and `zuul` hosts IP, also you can choose to sync
-   the old **zuul** database to new slave or not.
+   slave `nodepool` and `zuul` hosts and choose whether to sync the old **zuul** database to new slave.
 
 2. Run the `deploy_new_slave.sh` script
 
