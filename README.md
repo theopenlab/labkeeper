@@ -55,8 +55,7 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
    ```
    $ export ANSIBLE_REMOTE_USER=ubuntu
-   $ export DPLOY_TYPE=openlab
-   $ ./deploy.sh
+   $ ./deploy.sh -d openlab
    ```
 
 5. After finishing deploying, please update the github app webhook URL in your github app, e.g. modify the [allinoneopenlab app](https://github.com/settings/apps/liu-openlab-ci) or [theopenlab app](https://github.com/organizations/theopenlab/settings/apps/theopenlab-ci) webhook URL.
