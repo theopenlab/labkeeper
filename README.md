@@ -37,7 +37,7 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
      Using two nodes to  create a new CI system. One is for Master, the other one is for Slave
 
-   - ALL In One HA Recover Mode (Work In Progress)
+   - New Slave Mode (`new-slave`)
 
      Recovering a new Slave node based on the existing Master node.
 
