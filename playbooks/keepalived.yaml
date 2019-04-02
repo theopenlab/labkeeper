@@ -53,20 +53,10 @@
     # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
     # to test post issue and change the github app webhook.
     - name: Copy necessary scripts
-      copy: src={{ item.src }} dest={{ item.dest }} mode=0755
+      template: src={{ item.src }} dest={{ item.dest }} mode=0755
       with_items:
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/master_notify.sh.j2", dest: "/etc/keepalived/master_notify.sh" }
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/notify_upstream.py", dest: "/etc/keepalived/notify_upstream.py" }
-      vars:
-        upstream_user: moo-ai
-        upstream_password: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          31636661633365633364613732343738643135616137636566613536383833636138366338346337
-          6562623862363161316435323637633533656166343532620a353833366162393066353533343030
-          36666134313835616330373535356137653064656535313734306638376363663062653961646433
-          3466343735323338310a313963666339653934636630393437303239356236393234336562323065
-          6665
-        ori_env_role: "BACKUP"
 
     - name: install script dependency
       pip:
@@ -100,33 +90,12 @@
     # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
     # to test post issue and change the github app webhook.
     - name: Copy necessary scripts
-      copy: src={{ item.src }} dest={{ item.dest }} mode=0755
+      template: src={{ item.src }} dest={{ item.dest }} mode=0755
       with_items:
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/master_notify.sh.j2", dest: "/etc/keepalived/master_notify.sh" }
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/notify_upstream.py", dest: "/etc/keepalived/notify_upstream.py" }
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/slave_notify.sh.j2", dest: "/etc/keepalived/slave_notify.sh" }
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/change_app_webhook.py", dest: "/etc/keepalived/change_app_webhook.py" }
-      vars:
-        nodepool_master_ip: "{{ hostvars[groups['nodepool-builder-master'][0]].ansible_host }}"
-        nodepool_slave_ip: "{{ hostvars[groups['nodepool-builder-slave'][0]].ansible_host }}"
-        zuul_master_ip: "{{ hostvars[groups['zuul-scheduler-master'][0]].ansible_host }}"
-        zuul_slave_ip: "{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"
-        upstream_user: moo-ai
-        upstream_password: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          31636661633365633364613732343738643135616137636566613536383833636138366338346337
-          6562623862363161316435323637633533656166343532620a353833366162393066353533343030
-          36666134313835616330373535356137653064656535313734306638376363663062653961646433
-          3466343735323338310a313963666339653934636630393437303239356236393234336562323065
-          6665
-        app_name: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          37393735656236656535663061646437313839396634326534653466323166623133613432353939
-          3536336463303365636134393765623363666161626666300a366162363033366565313962356263
-          61383566333938313831336564623334613362343866383462343461643439333234386532616461
-          3339663232623034660a393662313762366662323536326336373961616664326165363134336134
-          3433
-        ori_env_role: "MASTER"
 
     - name: install script dependency
       pip:
