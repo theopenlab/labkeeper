@@ -96,6 +96,11 @@
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/notify_upstream.py", dest: "/etc/keepalived/notify_upstream.py" }
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/slave_notify.sh.j2", dest: "/etc/keepalived/slave_notify.sh" }
         - { src: "{{ labkeeper_config_git_dest }}/keepalived/change_app_webhook.py", dest: "/etc/keepalived/change_app_webhook.py" }
+      vars:
+        nodepool_master_ip: "{{ hostvars[groups['nodepool-builder-master'][0]].ansible_host }}"
+        nodepool_slave_ip: "{{ hostvars[groups['nodepool-builder-slave'][0]].ansible_host }}"
+        zuul_master_ip: "{{ hostvars[groups['zuul-scheduler-master'][0]].ansible_host }}"
+        zuul_slave_ip: "{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"
 
     - name: install script dependency
       pip:
