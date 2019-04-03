@@ -36,6 +36,7 @@ all:
         github_webhook_token: "test"
         zuul_tenant_name: aio_test
         zuul_public_ip: ""
+        config_host_ecdsa_key: false
     gear:
       hosts: aio_test
     statsd:
