@@ -14,7 +14,7 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 30
+    min-ready: 20
     max-ready-age: 14400
   - name: ubuntu-trusty
     min-ready: 4
@@ -29,8 +29,8 @@ labels:
     min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-arm64
-    min-ready: 0
-    max-ready-age: 14400
+    min-ready: 1
+#    max-ready-age: 14400
   - name: ubuntu-xenial-gpu
     min-ready: 0
     max-ready-age: 14400
@@ -49,13 +49,12 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-        pause: true
       - name: ubuntu-trusty
         config-drive: true
-        pause: true
       - name: ubuntu-xenial-arm64
         meta:
           architecture: aarch64
+          os_distro: ubuntu
           min_disk: '80'
         #NOTE: don't upload ARM image in x86 node, add config to avoid refering error,
         #      disable config drive to avoid ARM instance booting error
@@ -64,6 +63,8 @@ providers:
     pools:
       - name: main
         max-ram: 106496 #163840-7vm reserved
+        availability-zones:
+          - ca-ymq-2
         networks:
           - int-net
         labels:
@@ -87,6 +88,8 @@ providers:
             diskimage: ubuntu-xenial-arm64
             # 8C-8G-80G NOTE: have to use v2 flavor to boot ARM instance
             flavor-name: 'v2-highcpu-8'
+            #boot-from-volume: false
+            #volume-size: 80
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
@@ -101,10 +104,8 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-        pause: true
       - name: ubuntu-trusty
         config-drive: true
-        pause: true
     pools:
       - name: main
         max-ram: 80000
@@ -137,13 +138,11 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-        pause: true
       - name: ubuntu-trusty
         config-drive: true
-        pause: true
     pools:
       - name: main
-        max-cores: 68
+        max-cores: 72
         networks:
           - openlab-net
         labels:
@@ -170,10 +169,8 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-        pause: true
       - name: ubuntu-trusty
         config-drive: true
-        pause: true
     pools:
       - name: main
         max-servers: 8
@@ -206,10 +203,8 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-        pause: true
       - name: ubuntu-trusty
         config-drive: true
-        pause: true
     pools:
       - name: main
         max-cores: 80
@@ -242,13 +237,11 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-        pause: true
       - name: ubuntu-trusty
         config-drive: true
-        pause: true
     pools:
       - name: main
-        max-servers: 2
+        max-servers: 0
         networks:
           - openlab-net
         security-groups:
@@ -288,7 +281,7 @@ providers:
 diskimages:
   - name: ubuntu-xenial
     rebuild-age: 172800 # 2 days
-    pause: true
+    pause: false
     elements:
       - ubuntu
       - vm
@@ -316,7 +309,7 @@ diskimages:
 
   - name: ubuntu-trusty
     rebuild-age: 172800 # 2 days
-    pause: true
+    pause: false
     elements:
       - ubuntu
       - vm

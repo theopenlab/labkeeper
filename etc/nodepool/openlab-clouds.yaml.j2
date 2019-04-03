@@ -1,78 +1,95 @@
 clouds:
-  vexxhost:
-    auth:
-      auth_url: 'https://auth.vexxhost.net/'
-      username: '{{ vexxhost_username }}'
-      password: '{{ vexxhost_password }}'
-      project_name: '705bca15-7bc2-46cf-b119-4bd1fce56c17'
-      user_domain_id: 'default'
-      project_domain_id: 'default'
-    identity_api_version: '3'
-    network_api_version: '2.0'
-    floating_ip_source: 'neutron'
-    volume_api_version: '2'
-    region_name: 'ca-ymq-1'
-
-  chameleon:
-    auth:
-      auth_url: 'https://openstack.tacc.chameleoncloud.org:5000/v2.0'
-      username: '{{ chameleon_username }}'
-      password: '{{ chameleon_password }}'
-      project_name: 'CH-819710'
-    identity_api_version: '2'
-    network_api_version: '2.0'
-    floating_ip_source: 'neutron'
-    volume_api_version: '2'
-    region_name: 'RegionOne'
-
   citynetwork:
     auth:
-      auth_url: 'https://lon1.citycloud.com:5000/v3/'
-      username: '{{ citynetwork_username }}'
+      auth_url: https://lon1.citycloud.com:5000/v3/
       password: '{{ citynetwork_password }}'
-      project_name: 'Default Project 32924'
-      project_domain_name: 'CCP_Domain_32924'
-      user_domain_name: 'CCP_Domain_32924'
+      project_domain_name: CCP_Domain_32924
+      project_name: Default Project 32924
+      user_domain_name: CCP_Domain_32924
+      username: '{{ citynetwork_username }}'
     identity_api_version: '3'
     network_api_version: '2.0'
+    region_name: Lon1
     volume_api_version: '2'
-    region_name: 'Lon1'
-
+  otc-501:
+    auth:
+      auth_url: https://iam.eu-de.otc.t-systems.com/v3
+      password: '{{ otc-501_password }}'
+      project_domain_name: OTC00000000001000010501
+      project_name: eu-de_terraform
+      user_domain_name: OTC00000000001000010501
+      username: '{{ otc-501_username }}'
+    identity_api_version: '3'
+    network_api_version: '2.0'
+    region_name: eu-de
+    volume_api_version: '2'
+  otc:
+    auth:
+      auth_url: https://iam.eu-de.otc.t-systems.com/v3
+      password: '{{ otc_password }}'
+      project_domain_name: OTC00000000001000010507
+      project_name: otc_iam
+      user_domain_name: OTC00000000001000010507
+      username: '{{ otc_username }}'
+    identity_api_version: '3'
+    network_api_version: '2.0'
+    region_name: eu-de
+    volume_api_version: '2'
   switch:
     auth:
-      auth_url: 'https://keystone.cloud.switch.ch:5000/v3'
-      username: '{{ switch_username }}'
+      auth_url: https://keystone.cloud.switch.ch:5000/v3
       password: '{{ switch_password }}'
-      project_name: 'openlab'
-      project_domain_name: 'default'
-      user_domain_name: 'Default'
+      project_domain_name: default
+      project_name: openlab
+      user_domain_name: Default
+      username: '{{ switch_username }}'
     identity_api_version: '3'
     network_api_version: '2.0'
+    region_name: LS
     volume_api_version: '2'
-    region_name: 'LS'
-
+  vexxhost:
+    auth:
+      auth_url: https://auth.vexxhost.net/
+      password: '{{ vexxhost_password }}'
+      project_domain_id: default
+      project_name: 705bca15-7bc2-46cf-b119-4bd1fce56c17
+      user_domain_id: default
+      username: '{{ vexxhost_username }}'
+    identity_api_version: '3'
+    network_api_version: '2.0'
+    region_name: ca-ymq-1
+    volume_api_version: '2'
+  chameleon:
+    auth:
+      auth_url: https://openstack.tacc.chameleoncloud.org:5000/v2.0
+      password: '{{ chameleon_password }}'
+      project_name: CH-819710
+      username: '{{ chameleon_username }}'
+    identity_api_version: '2'
+    network_api_version: '2.0'
+    region_name: RegionOne
+    volume_api_version: '2'
   huaweicloud:
     auth:
       auth_url: https://iam.ap-southeast-1.myhuaweicloud.com/v3
-      username: '{{ huaweicloud_username }}'
       password: '{{ huaweicloud_password }}'
-      project_name: ap-southeast-1
       project_domain_name: wangkunpeng
+      project_name: ap-southeast-1
       user_domain_name: wangkunpeng
+      username: '{{ huaweicloud_username }}'
     identity_api_version: '3'
     network_api_version: '2.0'
+    region_name: ap-southeast-1
     volume_api_version: '2'
-    region_name: 'ap-southeast-1'
-
   packet:
     auth:
       auth_url: https://packet.platform9.net/keystone/v3
-      username: '{{ packet_username }}'
       password: '{{ packet_password }}'
-      project_name: openlabzuul
       project_domain_name: default
+      project_name: openlabzuul
       user_domain_name: Default
+      username: '{{ packet_username }}'
     identity_api_version: '3'
     network_api_version: '2.0'
+    region_name: us-west-1
     volume_api_version: '2'
-    region_name: 'us-west-1'
