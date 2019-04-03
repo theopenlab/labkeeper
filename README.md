@@ -25,10 +25,6 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
      Using five nodes to create a new CI system. Two is for Master cluster, the other two is for Slave cluster, the last one is for zookeeper cluster. In this mode, the service on slave cluster won't start. Only the service data will be synced.
 
-   - Production HA Recover Mode (Work In Progress)
-
-     Recovering a new Slave cluster based on the existing Master cluster.
-
    - All In One Mode (`allinone`)
 
      Using only one node to create a new CI system. All components will be deployed there.
@@ -37,9 +33,12 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
      Using two nodes to  create a new CI system. One is for Master, the other one is for Slave
 
-   - ALL In One HA Recover Mode (Work In Progress)
+   - New Slave Mode (`new-slave`)
 
-     Recovering a new Slave node based on the existing Master node.
+     Recovering a new Slave node based on the existing Master node. Before runing with this mode,
+     please check the `inventory/openlab-new-slave.yaml`, you may need to config the new slave
+     `nodepool` and `zuul` hosts IP, also you can choose whether to sync the old **zuul**
+     database to new slave or not.
 
 2. Check and modify the configuration yaml files base one the mode you choose.
 
@@ -55,8 +54,7 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
    ```
    $ export ANSIBLE_REMOTE_USER=ubuntu
-   $ export DPLOY_TYPE=openlab
-   $ ./deploy.sh
+   $ ./deploy.sh -d openlab
    ```
 
 5. After finishing deploying, please update the github app webhook URL in your github app, e.g. modify the [allinoneopenlab app](https://github.com/settings/apps/liu-openlab-ci) or [theopenlab app](https://github.com/organizations/theopenlab/settings/apps/theopenlab-ci) webhook URL.

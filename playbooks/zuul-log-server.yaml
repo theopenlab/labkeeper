@@ -42,7 +42,7 @@
         state: directory
 
 - name: Config Unison on master.
-  hosts: logserver-master,logserver-slave
+  hosts: logserver-master
   become: yes
   tasks:
     - name: Config Unison on master

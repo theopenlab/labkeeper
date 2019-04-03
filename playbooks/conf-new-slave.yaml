@@ -1,4 +1,3 @@
-# Copyright 2016 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +11,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- name: Install zookeeper
-  become: yes
-  hosts: zookeeper
-  tasks:
-    - name: Setup openstack.zookeeper role
-      include_role:
-        name: openstack.zookeeper
 
 - name: Config zookeeper for HA deployment
   become: yes
@@ -40,7 +32,30 @@
     - name: Restart zookeeper services
       service: name=zookeeper state=restarted
 
-  post_tasks:
-    - name: Run zookeeper validation
-      include_role:
-        name: test.zookeeper
+- import_playbook: zuul-log-server.yaml
+- import_playbook: config-mysql.yaml
+
+- name: Update zookeeper config for zuul
+  become: yes
+  hosts: nodepool-builder-master, nodepool-builder-slave
+  tasks:
+    - name: modify zuul.conf to use new zookeeper servers
+      shell: |
+        sed -i "/^zookeeper-servers:$/{N;N;N;N;N;N;s/.*/zookeeper-servers:\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][0]].ansible_host }}\'\n    port: 2181\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][1]].ansible_host }}\'\n    port: 2181\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][2]].ansible_host }}\'\n    port: 2181/}" \
+        /etc/nodepool/nodepool.yaml
+      args:
+        executable: /bin/bash
+
+- name: Update zookeeper config for zuul
+  become: yes
+  hosts: zuul-scheduler-master, zuul-scheduler-slave
+  tasks:
+    - name: modify zuul.conf to use new zookeeper servers
+      ini_file:
+        path: /etc/zuul/zuul.conf
+        section: "zookeeper"
+        option: "hosts"
+        value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"

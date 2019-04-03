@@ -10,7 +10,6 @@ all:
       ansible_host: 192.168.211.151
   vars:
     zuul_tenant_name: openlaballinone
-    zookeeper_ha_mode: true
   children:
     nodepool:
       children:

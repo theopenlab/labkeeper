@@ -86,10 +86,41 @@
         - "{{ hostvars[groups['mysql-slave'][0]].ansible_host }}"
         - "{{ hostvars[groups['mysql-master'][0]].ansible_host }}"
 
+    - name: Stop slave if already started.
+      mysql_replication: mode=stopslave
+
 - name: Config Mysql Slave of replication
   hosts: mysql-slave
   become: yes
   tasks:
+    - name: Dumps master database to slave
+      when: sync_db_from_master|default(false)|bool
+      block:
+        - name: Dumps master database
+          mysql_db:
+            state: dump
+            name: zuul
+            target: /tmp/mysql-master-dumps.sql
+          delegate_to: "{{ groups['mysql-master'][0] }}"
+
+        - name: Fetch replica master databases to local
+          fetch:
+            src: /tmp/mysql-master-dumps.sql
+            dest: /tmp/mysql-master-dumps.sql
+            flat: yes
+          delegate_to: "{{ groups['mysql-master'][0] }}"
+
+        - name: Copy replica master databases to slave
+          copy:
+            src: /tmp/mysql-master-dumps.sql
+            dest: /tmp/mysql-master-dumps.sql
+
+        - name: Import replica master databases to slave
+          mysql_db:
+            state: import
+            name: zuul
+            target: /tmp/mysql-master-dumps.sql
+
     - name: Check slave replication status.
       mysql_replication:
         mode: getslave
