@@ -39,7 +39,10 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
    - New Slave Mode (`new-slave`)
 
-     Recovering a new Slave node based on the existing Master node.
+     Recovering a new Slave node based on the existing Master node. Before runing with this mode,
+     please check the `inventory/openlab-new-slave.yaml`, you may need to config the new slave
+     `nodepool` and `zuul` hosts IP, also you can choose whether to sync the old **zuul**
+     database to new slave or not.
 
 2. Check and modify the configuration yaml files base one the mode you choose.
 
