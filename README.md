@@ -25,10 +25,6 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
 
      Using five nodes to create a new CI system. Two is for Master cluster, the other two is for Slave cluster, the last one is for zookeeper cluster. In this mode, the service on slave cluster won't start. Only the service data will be synced.
 
-   - Production HA Recover Mode (Work In Progress)
-
-     Recovering a new Slave cluster based on the existing Master cluster.
-
    - All In One Mode (`allinone`)
 
      Using only one node to create a new CI system. All components will be deployed there.
