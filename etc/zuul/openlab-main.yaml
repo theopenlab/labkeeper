@@ -14,7 +14,6 @@
           - theopenlab/zuul-jobs:
               shadow: theopenlab/project-config
               exclude-unprotected-branches: true
-
           # Offical
           # NOTE gophercloud and terraform master are not
           # protected branches
@@ -54,15 +53,18 @@
               exclude-unprotected-branches: true
           - zhongjun2/bosh-huaweicloud-cpi-release:
               exclude-unprotected-branches: false
-          - cloudfoundry/bosh-openstack-cpi-release:
-              exclude-unprotected-branches: true
           - cloudfoundry/bosh-acceptance-tests:
+              exclude-unprotected-branches: true
+          - cloudfoundry/bosh-openstack-cpi-release:
               exclude-unprotected-branches: true
           - helm/charts:
               exclude-unprotected-branches: true
           - kubernetes-sigs/kind:
               exclude-unprotected-branches: true
-
+          - moo-ai/moo-ai.github.io:
+              exclude-unprotected-branches: true
+          - theopenlab/labkeeper:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
