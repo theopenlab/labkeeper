@@ -1,7 +1,9 @@
-import six
-from plugins.recover import RECOVER_MAPS
-from utils import _color
 import commands
+import six
+
+from openlabcmd.plugins.recover import RECOVER_MAPS
+from openlabcmd.utils import _color
+
 
 
 class PluginMount(type):
