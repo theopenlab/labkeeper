@@ -1,6 +1,8 @@
-from labcheck import Plugin
 import commands
+
 import yaml
+
+from openlabcmd.plugins.base import Plugin
 
 
 class FlavorPlugin(Plugin):

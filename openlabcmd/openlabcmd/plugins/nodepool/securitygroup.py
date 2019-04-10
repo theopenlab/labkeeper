@@ -1,6 +1,7 @@
-from labcheck import Plugin
-from plugins.recover import Recover
 import commands
+
+from openlabcmd.plugins.base import Plugin
+from openlabcmd.plugins.recover import Recover
 
 
 class SecurityGroupPlugin(Plugin):

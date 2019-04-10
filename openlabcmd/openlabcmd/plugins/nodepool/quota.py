@@ -1,5 +1,6 @@
-from labcheck import Plugin
 import commands
+
+from openlabcmd.plugins.base import Plugin
 
 
 class QuotaPlugin(Plugin):
