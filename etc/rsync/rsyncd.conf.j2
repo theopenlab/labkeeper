@@ -44,8 +44,6 @@ secrets file = /etc/rsyncd/rsyncd.pass
 hosts allow={{ hostvars[groups['nodepool-launcher-master'][0]].ansible_host }}
 ignore errors = yes
 timeout = 600
-{% endif %}
-{% if 'nodepool-launcher-slave' in group_names %}
 
 [openlab_nodepool_cfg]
 comment = sync nodepool.yaml
