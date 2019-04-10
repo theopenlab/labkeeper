@@ -32,6 +32,7 @@ all:
               vars:
                 service_state: stopped
       vars:
+        nodepool_disable_systemd_units: true
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
     zuul:
@@ -93,6 +94,7 @@ all:
           vars:
             zuul_public_ip: 80.158.7.2
       vars:
+        zuul_disable_systemd_units: true
         github_app_id: 7102
         github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-liu-openlab-ci.pem"
         # Github app secret
