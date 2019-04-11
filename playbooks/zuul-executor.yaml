@@ -55,9 +55,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run zuul-executor validation
-      include_role:
-        name: test.zuul-executor
-

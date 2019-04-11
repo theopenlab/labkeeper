@@ -52,8 +52,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run zuul-web validation.
-      include_role:
-        name: test.zuul-web

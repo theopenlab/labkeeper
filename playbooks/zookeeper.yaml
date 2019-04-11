@@ -39,8 +39,3 @@
 
     - name: Restart zookeeper services
       service: name=zookeeper state=restarted
-
-  post_tasks:
-    - name: Run zookeeper validation
-      include_role:
-        name: test.zookeeper

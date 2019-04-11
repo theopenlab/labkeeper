@@ -67,9 +67,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run zuul-scheduler validation.
-      include_role:
-        name: test.zuul-scheduler
-

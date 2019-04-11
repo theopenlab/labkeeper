@@ -33,8 +33,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run statsd validation.
-      include_role:
-        name: test.statsd

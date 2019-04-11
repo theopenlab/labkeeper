@@ -39,8 +39,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run zuul-merger validation.
-      include_role:
-        name: test.zuul-merger
