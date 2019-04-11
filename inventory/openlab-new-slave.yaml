@@ -2,7 +2,7 @@ all:
   hosts:
     bastion:
       ansible_connection: local
-    # NOTE: following nodepool01 and zuul01 are old master hosts(old nodepool02 and zuul02)
+    # NOTE: following nodepool01 and zuul01 are old slave hosts(old nodepool02 and zuul02)
     nodepool01:
       ansible_host: 192.168.211.251 # Old nodepool slave
     zuul01:
