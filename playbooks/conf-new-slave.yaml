@@ -33,6 +33,7 @@
       service: name=zookeeper state=restarted
 
 - import_playbook: zuul-log-server.yaml
+- import_playbook: ha_log_cfg_sync.yaml
 - import_playbook: config-mysql.yaml
 
 - name: Update zookeeper config for zuul

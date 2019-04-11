@@ -1,0 +1,133 @@
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+- name: Config rsync daemon on slave nodes
+  hosts: logserver-slave, zuul-scheduler-slave, nodepool-launcher-slave
+  become: yes
+  tasks:
+    - file: path=/etc/rsyncd state=directory
+
+    - file: path=/var/run/rsyncd.pid state=absent
+
+    - name: Create rsyncd config on slave nodes
+      template:
+        src: "{{ labkeeper_config_git_dest }}/rsync/rsyncd.conf.j2"
+        dest: /etc/rsyncd/rsyncd.conf
+
+    - name: Start rsync daemon on slave nodes
+      shell: |
+        # kill rsync daemon if already run
+        killall rsync || true
+        sleep 1
+        echo 'root:{{ rsync_password }}' > /etc/rsyncd/rsyncd.pass
+        chmod 600 /etc/rsyncd/rsyncd.pass
+        rsync --daemon --config=/etc/rsyncd/rsyncd.conf
+      args:
+        executable: /bin/bash
+
+    - name: Teardown crontab tasks if existed(when slave master switched)
+      cron:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - "zuul jobs log synchronization"
+        - "zuul config files synchronization"
+        - "nodepool.yaml synchronization"
+        - "clouds.yaml synchronization"
+
+- name: Config rsync client on master nodes
+  hosts: logserver-master, zuul-scheduler-master, nodepool-launcher-master
+  become: yes
+  tasks:
+    - file: path=/etc/rsync state=directory
+
+    - name: kill rsync daemon if already run(when slave master switched)
+      shell: killall rsync || true
+
+    - name: Create sync password file
+      copy:
+        dest: /etc/rsync/rsync_client.pwd
+        content: "{{ rsync_password }}"
+        mode: 0600
+
+- name: Setup crontab job for sync zuul jobs logs files
+  hosts: logserver-master
+  become: yes
+  tasks:
+    - name: Create script for sync log files
+      copy:
+        dest: /etc/rsync/cron_sync_zuul_jobs_log.sh
+        content: |
+          #/bin/bash
+          rsync -auvrtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /srv/static/logs/ \
+          root@"{{ hostvars[groups['logserver-slave'][0]].ansible_host }}"::openlab_logserver
+        mode: 0755
+
+    - name: Add crontab task for sync logs between master and slave
+      cron:
+        name: "zuul jobs log synchronization"
+        minute: "0,30"
+        job: "/bin/bash /etc/rsync/cron_sync_zuul_jobs_log.sh > /dev/null"
+
+- name: Setup crontab job for sync zuul config files
+  hosts: zuul-scheduler-master
+  become: yes
+  tasks:
+    - name: Create script for sync zuul config files
+      copy:
+        dest: /etc/rsync/cron_sync_zuul_cfg.sh
+        content: |
+          #/bin/bash
+          rsync -auvtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /etc/zuul/main.yaml \
+          root@"{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"::openlab_zuul_cfg
+        mode: 0755
+
+    - name: Add crontab task for sync zuul config files
+      cron:
+        name: "zuul config files synchronization"
+        minute: "0,30"
+        job: "/bin/bash /etc/rsync/cron_sync_zuul_cfg.sh > /dev/null"
+
+- name: Setup crontab job for sync nodepool config files
+  hosts: nodepool-launcher-master
+  become: yes
+  tasks:
+    - name: Create script for sync nodepool config files
+      copy:
+        dest: /etc/rsync/cron_sync_nodepool_cfg.sh
+        content: |
+          #/bin/bash
+          rsync -auvtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /etc/nodepool/nodepool.yaml \
+          root@"{{ hostvars[groups['nodepool-launcher-slave'][0]].ansible_host }}"::openlab_nodepool_cfg
+        mode: 0755
+
+    - name: Add crontab task for sync nodepool.yaml
+      cron:
+        name: "nodepool.yaml synchronization"
+        minute: "0,30"
+        job: "/bin/bash /etc/rsync/cron_sync_nodepool_cfg.sh > /dev/null"
+
+    - name: Create script for sync clouds.yaml
+      copy:
+        dest: /etc/rsync/cron_sync_clouds_cfg.sh
+        content: |
+          #/bin/bash
+          rsync -auvtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /etc/openstack/clouds.yaml \
+          root@"{{ hostvars[groups['nodepool-launcher-slave'][0]].ansible_host }}"::openlab_clouds_cfg
+        mode: 0755
+
+    - name: Add crontab task for sync nodepool.yaml
+      cron:
+        name: "clouds.yaml synchronization"
+        minute: "0,30"
+        job: "/bin/bash /etc/rsync/cron_sync_clouds_cfg.sh > /dev/null"

@@ -1,0 +1,59 @@
+log file = /var/log/rsyncd.log
+pid file = /var/run/rsyncd.pid
+lock file = /var/lock/rsyncd
+uid=root
+gid=root
+{% if 'logserver-slave' in group_names %}
+
+[openlab_logserver]
+comment = sync zuul logs
+path = /srv/static/logs/
+use chroot=yes
+read only = no
+max connections=10
+auth users = root
+secrets file = /etc/rsyncd/rsyncd.pass
+hosts allow={{ hostvars[groups['logserver-master'][0]].ansible_host }}
+ignore errors = yes
+timeout = 600
+{% endif %}
+{% if 'zuul-scheduler-slave' in group_names %}
+
+[openlab_zuul_cfg]
+comment = sync zuul main.yaml
+path = /etc/zuul/
+use chroot=yes
+read only = no
+max connections=10
+auth users = root
+secrets file = /etc/rsyncd/rsyncd.pass
+hosts allow={{ hostvars[groups['zuul-scheduler-master'][0]].ansible_host }}
+ignore errors = yes
+timeout = 600
+{% endif %}
+{% if 'nodepool-launcher-slave' in group_names %}
+
+[openlab_clouds_cfg]
+comment = sync clouds.yaml
+path = /etc/openstack/
+use chroot=yes
+read only = no
+max connections=10
+auth users = root
+secrets file = /etc/rsyncd/rsyncd.pass
+hosts allow={{ hostvars[groups['nodepool-launcher-master'][0]].ansible_host }}
+ignore errors = yes
+timeout = 600
+
+[openlab_nodepool_cfg]
+comment = sync nodepool.yaml
+path = /etc/nodepool/
+use chroot=yes
+read only = no
+max connections=10
+auth users = root
+secrets file = /etc/rsyncd/rsyncd.pass
+hosts allow={{ hostvars[groups['nodepool-launcher-master'][0]].ansible_host }}
+ignore errors = yes
+timeout = 600
+{% endif %}

@@ -16,6 +16,9 @@
 labkeeper_config_git_dest: "{{ lookup('pipe', 'pwd') | dirname }}/etc"
 labkeeper_src_dir: "{{ lookup('pipe', 'pwd') | dirname }}"
 
+# password for sync files between master and slave
+rsync_password: "{{ lookup('password', '/tmp/rsyncpass chars=assii_letters,digits,hexdigits length=10') }}"
+
 # Github Account for submit a issue/PR and change app webhook
 github_username: theopenlab-ci
 github_useremail: theopenlab.ci@gmail.com
