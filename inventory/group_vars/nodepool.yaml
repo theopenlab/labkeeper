@@ -42,3 +42,6 @@ nodepool_file_nodepool_builder_service_manage: false
 nodepool_file_nodepool_builder_service_config_manage: false
 nodepool_service_nodepool_builder_manage: false
 
+# do not enable nodepool service as default
+nodepool_service_nodepool_builder_enabled: false
+nodepool_service_nodepool_launcher_enabled: false

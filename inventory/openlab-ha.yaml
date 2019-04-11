@@ -25,7 +25,7 @@ all:
             nodepool-builder-slave:
               hosts: nodepool02
               vars:
-                service_state: stopped
+                nodepool_service_nodepool_builder_state: stopped
           vars:
             nodepool_builder_id: "16023c68-b5ce-4152-abbc-64ea88868a9e"
         nodepool-launcher:
@@ -35,8 +35,9 @@ all:
             nodepool-launcher-slave:
               hosts: nodepool02
               vars:
-                service_state: stopped
+                nodepool_service_nodepool_launcher_state: stopped
       vars:
+        zuul_systemd_units_enabled: false
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
     zuul:
@@ -48,7 +49,7 @@ all:
             zuul-scheduler-slave:
               hosts: zuul02
               vars:
-                service_state: stopped
+                zuul_service_zuul_scheduler_state: stopped
         zuul-executor:
           children:
             zuul-executor-master:
@@ -56,7 +57,7 @@ all:
             zuul-executor-slave:
               hosts: zuul02
               vars:
-                service_state: stopped
+                zuul_service_zuul_executor_state: stopped
         zuul-web:
           children:
             zuul-web-master:
@@ -64,7 +65,7 @@ all:
             zuul-web-slave:
               hosts: zuul02
               vars:
-                service_state: stopped
+                zuul_service_zuul_web_state: stopped
         zuul-merger:
           children:
             zuul-merger-master:
@@ -72,7 +73,7 @@ all:
             zuul-merger-slave:
               hosts: zuul02
               vars:
-                service_state: stopped
+                zuul_service_zuul_merger_state: stopped
         zuul-fingergw:
           children:
             zuul-fingergw-master:
@@ -80,7 +81,7 @@ all:
             zuul-fingergw-slave:
               hosts: zuul02
               vars:
-                service_state: stopped
+                zuul_service_zuul_fingergw_state: stopped
         zuul-log-server:
           children:
             logserver-master:
@@ -96,6 +97,7 @@ all:
           vars:
             zuul_public_ip: 10.3.0.2
       vars:
+        zuul_systemd_units_enabled: false
         github_app_id: 6778
         github_app_key_file: "{{ labkeeper_config_git_dest }}/zuul/github-app-theopenlab-ci.pem"
         # Github app secret
@@ -119,7 +121,7 @@ all:
         gear-slave:
           hosts: zuul02
           vars:
-            service_state: stopped
+            gear_service_gear_state: stopped
     statsd:
       children:
         statsd-master:
@@ -127,7 +129,7 @@ all:
         statsd-slave:
           hosts: zuul02
           vars:
-            service_state: stopped
+            statsd_service_statsd_state: stopped
     zookeeper:
       children:
         zk-master:
@@ -159,7 +161,7 @@ all:
         apache-slave:
           hosts: zuul02
           vars:
-            service_state: stopped
+            apache_service_state: stopped
     keepalived:
       children:
         keepalived-master:

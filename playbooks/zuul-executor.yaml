@@ -25,9 +25,7 @@
           - service
         zuul_file_zuul_executor_service_config_manage: true
         zuul_file_zuul_executor_service_manage: true
-        zuul_service_zuul_executor_enabled: yes
         zuul_service_zuul_executor_manage: true
-        zuul_service_zuul_executor_state: "{{ service_state|default('started') }}"
 
     # TODO(pabelanger): If we want to support xenial, we'll need to use this ppa
     # since bubblewrap doesn't exist.
@@ -62,5 +60,4 @@
     - name: Run zuul-executor validation
       include_role:
         name: test.zuul-executor
-      vars:
-        zuul_service_zuul_executor_state: "{{ service_state|default('started') }}"
+

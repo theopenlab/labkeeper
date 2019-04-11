@@ -89,6 +89,6 @@
 
   handlers:
     - name: restart fail2ban
-      service: name=fail2ban state="{{ service_state|default('restarted') }}"
+      service: name=fail2ban state="{{ apache_service_state|default('restarted') }}"
     - name: restart apache2
-      service: name=apache2 state="{{ service_state|default('restarted') }}"
+      service: name=apache2 state="{{ apache_service_state|default('restarted') }}"
