@@ -14,6 +14,7 @@ all:
       ansible_host: 192.168.211.12
   vars:
     zuul_tenant_name: openlab
+    labsync_enabled: true
   children:
     nodepool:
       children:
