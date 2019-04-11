@@ -1,4 +1,6 @@
 import argparse
+import configparser
+import os
 import sys
 import yaml
 
@@ -11,15 +13,14 @@ class OpenLabCmd(object):
     def __init__(self):
         self.parser = None
         self.args = None
+        self.config = None
 
     def create_parser(self):
         parser = argparse.ArgumentParser(
             description='The command line tool for OpenLab management',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        # TODO(wxy): parse config file to make -c work
         parser.add_argument('-c', dest='config',
-                            default='/etc/openlab/openlab.yaml',
                             help='path to config file')
 
         subparsers = parser.add_subparsers(title='commands',
@@ -42,7 +43,9 @@ class OpenLabCmd(object):
         return parser
 
     def _get_cloud_list(self, cloud):
-        with open('/etc/openstack/clouds.yaml') as f:
+        cloud_conf_location = self.config.get(
+            'check', 'cloud_conf', fallback='/etc/openstack/clouds.yaml')
+        with open(cloud_conf_location) as f:
             clouds = yaml.load(f, Loader=yaml.FullLoader)
             clouds_list = [c for c in clouds['clouds']]
 
@@ -91,9 +94,25 @@ class OpenLabCmd(object):
             return 1
         self.args.func()
 
+    def _initConfig(self):
+        self.config = configparser.ConfigParser()
+        if self.args.config:
+            locations = [self.args.config]
+        else:
+            locations = ['/etc/openlab/openlab.conf',
+                         '~/openlab.conf',
+                         '/usr/local/etc/openlab/openlab.conf']
+
+        for fp in locations:
+            if os.path.exists(os.path.expanduser(fp)):
+                self.config.read(os.path.expanduser(fp))
+                return
+        raise Exception("Unable to locate config file in %s" % locations)
+
     def _main(self):
         self.parser = self.create_parser()
         self.args = self.parser.parse_args()
+        self._initConfig()
         self.run()
 
     @classmethod

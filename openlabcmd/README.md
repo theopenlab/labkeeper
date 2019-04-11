@@ -4,7 +4,12 @@ This is the command line tool for OpenLab management.
 
 ## How to use
 
-You can install from source or just use `pip install openlabcmd`. 
+You can install from source or just use `pip install openlabcmd`.
+
+Before use `openlabcmd`, you should create or update the config file
+`openlab.conf`. Use `-c` to specified one. The tool will try to find
+the file in paths `/etc/openlab/openlab.conf`, `~/openlab.conf` and
+`/usr/local/etc/openlab/openlab.conf` if it's not provided by user.
 
 ## Supported features
 
