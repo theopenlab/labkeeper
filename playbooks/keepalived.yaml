@@ -60,11 +60,7 @@
 
     - name: install script dependency
       pip:
-        name: "{{ item }}"
-      with_items:
-        - PyGithub
-        - argparse
-        - datetime
+        name: ['PyGithub', 'argparse', 'datetime']
 
     - name: Start keepalived service
       service: name=keepalived state=started
@@ -104,13 +100,7 @@
 
     - name: install script dependency
       pip:
-        name: "{{ item }}"
-      with_items:
-        - PyGithub
-        - argparse
-        - requests
-        - html
-        - datetime
+        name: ['PyGithub', 'argparse', 'requests', 'html', 'datetime']
 
     - name: Start keepalived service
       service: name=keepalived state=started

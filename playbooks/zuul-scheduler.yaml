@@ -24,6 +24,26 @@
         version: 1.11.0
         executable: pip3
 
+    - name: Ensure openlab-zuul-jobs key directory has been created
+      file:
+        path: "{{ openlab_zuul_jobs_key_dest|dirname }}"
+        group: zuul
+        owner: zuul
+        state: directory
+      when:
+        - openlab_zuul_jobs_key_dest is defined
+
+    - name: Copy openlab-zuul-jobs key into place
+      copy:
+        dest:  "{{ openlab_zuul_jobs_key_dest }}"
+        group: zuul
+        mode: 0600
+        owner: zuul
+        src: "{{ openlab_zuul_jobs_key_src }}"
+      when:
+        - openlab_zuul_jobs_key_dest is defined
+        - openlab_zuul_jobs_key_src is defined
+
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul
@@ -32,9 +52,7 @@
           - service
         zuul_file_zuul_scheduler_service_config_manage: true
         zuul_file_zuul_scheduler_service_manage: true
-        zuul_service_zuul_scheduler_enabled: yes
         zuul_service_zuul_scheduler_manage: true
-        zuul_service_zuul_scheduler_state: "{{ service_state|default('started') }}"
 
     - name: Setup openstack.logrotate role.
       include_role:
@@ -49,10 +67,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run zuul-scheduler validation.
-      include_role:
-        name: test.zuul-scheduler
-      vars:
-        zuul_service_zuul_scheduler_state: "{{ service_state|default('started') }}"

@@ -25,9 +25,7 @@
           - service
         zuul_file_zuul_web_service_config_manage: true
         zuul_file_zuul_web_service_manage: true
-        zuul_service_zuul_web_enabled: yes
         zuul_service_zuul_web_manage: true
-        zuul_service_zuul_web_state: "{{ service_state|default('started') }}"
 
     - name: Config zuul web javascript
       shell: |
@@ -54,10 +52,3 @@
               - rotate 7
               - daily
               - notifempty
-
-  post_tasks:
-    - name: Run zuul-web validation.
-      include_role:
-        name: test.zuul-web
-      vars:
-        zuul_service_zuul_web_state: "{{ service_state|default('started') }}"

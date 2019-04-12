@@ -20,7 +20,7 @@ all:
             nodepool-builder-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                nodepool_service_nodepool_builder_state: stopped
           vars:
             nodepool_builder_id: "8fcf0492-b972-45cc-828f-efd6b301b46e"
         nodepool-launcher:
@@ -30,7 +30,7 @@ all:
             nodepool-launcher-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                nodepool_service_nodepool_launcher_state: stopped
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/allinone-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
@@ -43,7 +43,7 @@ all:
             zuul-scheduler-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                zuul_service_zuul_scheduler_state: stopped
         zuul-executor:
           children:
             zuul-executor-master:
@@ -51,7 +51,7 @@ all:
             zuul-executor-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                zuul_service_zuul_executor_state: stopped
         zuul-web:
           children:
             zuul-web-master:
@@ -59,7 +59,7 @@ all:
             zuul-web-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                zuul_service_zuul_web_state: stopped
         zuul-merger:
           children:
             zuul-merger-master:
@@ -67,7 +67,7 @@ all:
             zuul-merger-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                zuul_service_zuul_merger_state: stopped
         zuul-fingergw:
           children:
             zuul-fingergw-master:
@@ -75,15 +75,13 @@ all:
             zuul-fingergw-slave:
               hosts: allinone02
               vars:
-                service_state: stopped
+                zuul_service_zuul_fingergw_state: stopped
         zuul-log-server:
           children:
             logserver-master:
               hosts: allinone01
             logserver-slave:
               hosts: allinone02
-              vars:
-                service_state: stopped
         zuul-master:
           hosts: allinone01
           vars:
@@ -116,7 +114,7 @@ all:
         gear-slave:
           hosts: allinone02
           vars:
-            service_state: stopped
+            gear_service_gear_state: stopped
     statsd:
       children:
         statsd-master:
@@ -124,7 +122,7 @@ all:
         statsd-slave:
           hosts: allinone02
           vars:
-            service_state: stopped
+            statsd_service_statsd_state: stopped
     zookeeper:
       children:
         zk-master:
@@ -156,7 +154,7 @@ all:
         apache-slave:
           hosts: allinone02
           vars:
-            service_state: stopped
+            apache_service_state: stopped
 
     # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
     # to test post issue and change the github app webhook.
