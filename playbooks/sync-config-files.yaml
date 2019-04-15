@@ -76,6 +76,7 @@
         name: "labsync nodepool config files"
         minute: "0"
         hour: "1"
+        weekday: "1,2,3,4,5"
         job: "bash /home/ubuntu/nodepool_files_sync.sh {{ github_username }} {{ github_useremail }} {{ github_token }} >> /var/log/sync.log 2>&1"
 
 - name: Cron task of sync config files for zuul
@@ -97,4 +98,5 @@
         name: "labsync zuul config files"
         minute: "0"
         hour: "0"
+        weekday: "1,2,3,4,5"
         job: "bash /home/ubuntu/zuul_files_sync.sh {{ github_username }} {{ github_useremail }} {{ github_token }} >> /var/log/sync.log 2>&1"
