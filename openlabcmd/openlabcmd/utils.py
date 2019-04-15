@@ -32,6 +32,7 @@ _headers_table_mapping = {
     ]),
     'service': OrderedDict([
         ("name", "Name"),
+        ("node_name", "Node_Name"),
         ("node_role", "Node_Role"),
         ("alarmed", "Alarmed"),
         ("alarmed_at", "Alarmed_At"),

@@ -26,27 +26,31 @@ class ServiceStatus(object):
     INITIALIZING = 'initializing'
     UP = 'up'
     DOWN = 'down'
-    Restarting = 'restarting'
+    RESTARTING = 'restarting'
+
+    @property
+    def all_status(self):
+        return [self.INITIALIZING, self.UP, self.DOWN, self.RESTARTING]
 
 
 class Service(object):
-    def __init__(self, name, node_role):
+    def __init__(self, name, node_role, alarmed=None, alarmed_at=None,
+                 restarted=None, restarted_at=None, is_necessary=None,
+                 status=None, **kwargs):
         self.name = name
-        self.alarmed = False
-        self.alarmed_at = None
-        self.updated_at = None
-        self.restarted = False
-        self.restarted_at = None
-        self.is_necessary = None
         self.node_role = node_role
-        self.status = ServiceStatus.INITIALIZING
+        self.alarmed = alarmed or False
+        self.alarmed_at = alarmed_at
+        self.restarted = restarted or False
+        self.restarted_at = restarted_at
+        self.is_necessary = is_necessary
+        self.status = status or ServiceStatus.INITIALIZING
 
     def to_zk_data(self):
         node_dict = {
             'name': self.name,
             'alarmed': self.alarmed,
             'alarmed_at': self.alarmed_at,
-            'updated_at': self.updated_at,
             'restarted': self.restarted,
             'restarted_at': self.restarted_at,
             'is_necessary': self.is_necessary,
@@ -54,6 +58,10 @@ class Service(object):
             'status': self.status
         }
         return json.dumps(node_dict).encode('utf8')
+
+    @ classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
 
 class NecessaryService(Service):
