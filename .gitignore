@@ -3,6 +3,7 @@ ChangeLog
 doc/build/
 # Roles installed from galaxy
 .tox/
+*.pyc
 
 openlab.pem
 vault-password.txt

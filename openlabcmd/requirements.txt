@@ -1,2 +1,4 @@
 pbr>=1.3
 PyYAML>=5.1
+kazoo
+prettytable
