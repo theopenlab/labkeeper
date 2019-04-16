@@ -65,8 +65,10 @@
               exclude-unprotected-branches: true
           - theopenlab/labkeeper:
               exclude-unprotected-branches: true
-          - Yikun/containerd
-          - Yikun/envoy
+          - theopenlab/containerd:
+              exclude-unprotected-branches: true
+          - theopenlab/envoy:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
