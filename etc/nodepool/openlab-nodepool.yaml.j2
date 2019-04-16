@@ -56,7 +56,7 @@ providers:
         config-drive: true
     pools:
       - name: main
-        max-ram: 106496 #163840-7vm reserved
+        max-ram: 114688 #163840-6vm reserved
         availability-zones:
           - ca-ymq-2
         networks:
@@ -182,41 +182,6 @@ providers:
             # 1C-2G-20G
             flavor-name: 'm1.small'
 
-  #PACKET
-  # limits: 10 vms, 80 Cores, 81920 M Ram
-  - name: packet-openlab
-    cloud: packet
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 1
-    diskimages: []
-      #- name: ubuntu-xenial
-      #  config-drive: true
-      #- name: ubuntu-trusty
-      #  config-drive: true
-    pools:
-      - name: main
-        max-cores: 80
-        max-servers: -1 #Disable for now based on email from John Studarus
-        networks:
-          - openlabzuul-net
-        labels:
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 8C-8G-80G
-            flavor-name: 'zuul-flavor'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 8C-8G-80G
-            flavor-name: 'zuul-flavor'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 1C-2G-20G
-            flavor-name: 'm1.small'
-
   #Huaweicloud
   # limits: 500 vms, 4000 Cores, 8192000 M Ram
   - name: huaweicloud-openlab
@@ -238,30 +203,30 @@ providers:
         config-drive: true
     pools:
       - name: main
-        max-servers: -1
+        max-servers: 1
         networks:
           - openlab-net
         security-groups:
           - openlab-sg
         labels:
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 4C-8G-100G
-            flavor-name: 's3.xlarge.2'
-            boot-from-volume: true
-            volume-size: 100
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 4C-8G-100G
-            flavor-name: 's3.xlarge.2'
-            boot-from-volume: true
-            volume-size: 100
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 1C-2G-40G
-            flavor-name: 's3.medium.2'
-            boot-from-volume: true
-            volume-size: 40
+          #- name: ubuntu-xenial
+          #  diskimage: ubuntu-xenial
+          #  # 4C-8G-100G
+          #  flavor-name: 's3.xlarge.2'
+          #  boot-from-volume: true
+          #  volume-size: 100
+          #- name: ubuntu-trusty
+          #  diskimage: ubuntu-trusty
+          #  # 4C-8G-100G
+          #  flavor-name: 's3.xlarge.2'
+          #  boot-from-volume: true
+          #  volume-size: 100
+          #- name: ubuntu-xenial-ut
+          #  diskimage: ubuntu-xenial
+          #  # 1C-2G-40G
+          #  flavor-name: 's3.medium.2'
+          #  boot-from-volume: true
+          #  volume-size: 40
           - name: ubuntu-xenial-huaweicloud
             diskimage: ubuntu-xenial
             # 4C-8G-100G
