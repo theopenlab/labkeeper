@@ -40,7 +40,7 @@
         local_interface: "{{ local_default_interface.stdout }}"
 
     - name: Copy necessary scripts
-      template: src={{ item.src }} dest={{ item.dest }} mode=0755
+      template:
         src: "{{ labkeeper_config_git_dest }}/keepalived/kp_local_loop.py"
         dest: /etc/keepalived/kp_local_loop.py
         mode: 0755
