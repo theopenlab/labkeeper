@@ -19,11 +19,16 @@ def add_cli_args():
                         )
     parser.add_argument('--switch-role',
                         action='store_true',
-                        help='switch the master/slave role of current deployment',
+                        help='switch the master/slave role of current deployment, '
+                             'this will re-config a existing OpenLab environment to '
+                             'switch the "master/slave" role of hosts',
                         )
     parser.add_argument('--new-slave',
                         action='store_true',
-                        help='deploy the slave part of a CI cluster freshly',
+                        help='deploy the slave part of a CI cluster freshly, you need '
+                             'to specify the new slave hosts IP addresses with "--new-ip" '
+                             'argument, for example: '
+                             '--new-ip zuul02=192.168.5.5 --new-ip nodepool02=192.168.6.6',
                         )
     parser.add_argument('-e', '--extra-vars',
                         metavar="<key=value>",
@@ -34,11 +39,15 @@ def add_cli_args():
     parser.add_argument('--new-ip',
                         metavar="<key=value>",
                         action='append',
-                        help='specify new ip address for current inventory',
+                        help='specify new ip address for current inventory, this argument '
+                             'need to use with key-value pairs combined with "=", the key '
+                             'must be the host name defined in the inventory yaml files, '
+                             'e.g. zuul01, nodepool02, allinone01.',
                         )
     parser.add_argument('--with-vars',
                         action='store_true',
-                        help='show the hosts graph of ansible inventory with vars',
+                        help='show the hosts graph of ansible inventory with vars, specify with '
+                             'key-value pairs combined with "="',
                         )
     parser.add_argument('--graph',
                         action='store_true',
