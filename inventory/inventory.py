@@ -44,7 +44,7 @@ def parse_inventory():
     return updated_inventories, old_ips, new_ips
 
 
-def main(argv=sys.argv[1:]):
+def main():
     parser = argparse.ArgumentParser()
     args_group = parser.add_mutually_exclusive_group(required=True)
     args_group.add_argument('--list', action='store_true',
@@ -67,4 +67,4 @@ def main(argv=sys.argv[1:]):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

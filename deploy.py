@@ -14,8 +14,8 @@ def add_cli_args():
                         help='OpenLab deployment type',
                         )
     parser.add_argument('-u', '--user',
-                        default='ubuntu',
-                        help='the Ansible remote user performing deployment',
+                        help='the Ansible remote user performing deployment, '
+                             'default is ubuntu configured in ansible.cfg',
                         )
     parser.add_argument('--switch-role',
                         action='store_true',
@@ -64,7 +64,7 @@ def add_cli_args():
     return parser
 
 
-def main(argv=sys.argv[1:]):
+def main():
     parsed_args = add_cli_args().parse_args()
     os.environ['OL_TYPE'] = parsed_args.type
     cmd = ['ansible-playbook', '-i', 'inventory/inventory.py', 'playbooks/site.yaml']
@@ -114,4 +114,4 @@ def main(argv=sys.argv[1:]):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())
