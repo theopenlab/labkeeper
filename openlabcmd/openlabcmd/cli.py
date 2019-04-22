@@ -117,22 +117,30 @@ class OpenLabCmd(object):
 
     def _add_ha_service_cmd(self, parser):
         # openlab ha service
-        cmd_ha_service = parser.add_parser('service', help='Manage HA service.')
+        cmd_ha_service = parser.add_parser('service',
+                                           help='Manage HA service.')
         cmd_ha_service_subparsers = cmd_ha_service.add_subparsers(
             title='service', dest='service')
         # openlab ha service list
         cmd_ha_service_list = cmd_ha_service_subparsers.add_parser(
             'list', help='List all services.')
         cmd_ha_service_list.set_defaults(func=self.ha_service_list)
+        cmd_ha_service_list.add_argument(
+            '--node', action='append',
+            help='Filter the services with the specified node name.')
+        cmd_ha_service_list.add_argument(
+            '--role', action='append',
+            choices=['master', 'slave', 'zookeeper'],
+            help='Filter the services with the specified node role.')
         # openlab ha service get
         cmd_ha_service_get = cmd_ha_service_subparsers.add_parser(
-            'get', help='Get a services.')
+            'get', help='Get a service.')
         cmd_ha_service_get.set_defaults(func=self.ha_service_get)
         cmd_ha_service_get.add_argument('name', help='service name.')
         cmd_ha_service_get.add_argument(
             '--role', choices=['master', 'slave', 'zookeeper'],
             help="The role of the node where the service run. It must be "
-                 "sepcified if the service is 'mysql' or 'zookeeper'.")
+                 "specified if the service is in %s." % service.MIXED_SERVICE)
 
     def _add_ha_cmd(self, parser):
         # openlab ha
@@ -272,7 +280,7 @@ class OpenLabCmd(object):
 
     @_zk_wrapper
     def ha_service_list(self):
-        result = self.zk.list_services()
+        result = self.zk.list_services(self.args.node, self.args.role)
         if self.args.format == 'pretty':
             print(utils.format_output('service', result))
         else:
@@ -283,7 +291,8 @@ class OpenLabCmd(object):
         if (self.args.name.lower() in service.MIXED_SERVICE and
                 not self.args.role):
             raise argparse.ArgumentTypeError(
-                'Role must be specified if service is mysql or zookeeper.')
+                'Role must be specified if service is in '
+                '%s.' % service.MIXED_SERVICE)
         result = self.zk.get_service(self.args.name.lower(), self.args.role)
         if self.args.format == 'pretty':
             print(utils.format_output('service', result))

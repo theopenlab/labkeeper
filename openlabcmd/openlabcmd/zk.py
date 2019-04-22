@@ -35,8 +35,22 @@ class ZooKeeper(object):
                                          "object.")
         self._last_retry_log = 0
 
-    def _bytesToDict(self, data):
-        return json.loads(data.decode('utf8'))
+    def _bytesToDict(self, node_data, include_created_at=False,
+                     include_updated_at=False):
+        """ Convert zookeeper node data into dict."""
+        node_dict = node_data[0]
+        # ctime and mtime is millisecond in zk.
+        ctime, mtime = node_data[1].ctime, node_data[1].mtime
+
+        return_info = json.loads(node_dict.decode('utf8'))
+        if include_created_at:
+            return_info['created_at'] = datetime.datetime.fromtimestamp(
+                ctime / 1000).isoformat()
+        if include_updated_at:
+            return_info['updated_at'] = datetime.datetime.fromtimestamp(
+                mtime / 1000).isoformat()
+
+        return return_info
 
     def _connection_listener(self, state):
         if state == KazooState.LOST:
@@ -117,19 +131,15 @@ class ZooKeeper(object):
                 nodes.append(node_info)
         except kze.NoNodeError:
             return []
-        return sorted(nodes)
+        return sorted(nodes, key=lambda x: x['name'])
 
     @_client_check_wrapper
     def get_node(self, node_name):
         try:
             node_info = self.client.get('/ha/%s' % node_name)
-            # ctime and mtime is millisecond in zk.
-            ctime, mtime = node_info[1].ctime, node_info[1].mtime
-            node_info = self._bytesToDict(node_info[0])
-            node_info['created_at'] = datetime.datetime.fromtimestamp(
-                ctime/1000).isoformat()
-            node_info['updated_at'] = datetime.datetime.fromtimestamp(
-                mtime/1000).isoformat()
+
+            node_info = self._bytesToDict(node_info, include_created_at=True,
+                                          include_updated_at=True)
             return node_info
         except kze.NoNodeError:
             raise exceptions.ClientError('Node %s not found.' % node_name)
@@ -162,7 +172,8 @@ class ZooKeeper(object):
                                  service_type == 'necessary' else
                                  service.UnnecessaryService)
                 for service_name in service_names:
-                    new_service = service_class(service_name, role)
+                    new_service = service_class(service_name,
+                                                node_role.split('_')[0])
                     self.client.create(
                         new_service_path + '/%s' % service_name,
                         value=new_service.to_zk_data())
@@ -193,7 +204,7 @@ class ZooKeeper(object):
             node_info['role'] = role
 
         node_info.update(kwargs)
-        new_node = node.Node.from_dict(**node_info)
+        new_node = node.Node.from_dict(node_info)
         self.client.set(path, value=new_node.to_zk_data())
 
         node_info = self.get_node(node_name)
@@ -206,37 +217,117 @@ class ZooKeeper(object):
         self.client.delete(path, recursive=True)
 
     @_client_check_wrapper
-    def list_services(self):
+    def list_services(self, node_name_filter=None, node_role_filter=None):
+        """
+        List the services in the HA deployment.
+        :param node_name_filter: The node filter.
+        :type node_name_filter: list or string.
+        :param node_role_filter: The node filter.
+        :type node_role_filter: list or string.
+        :return: the services list.
+        """
+        if node_name_filter:
+            if isinstance(node_name_filter, str):
+                node_name_filter = [node_name_filter]
+            if not isinstance(node_name_filter, list):
+                raise exceptions.ValidationError("node_name_filter should be "
+                                                 "a list or string.")
+        if node_role_filter:
+            if isinstance(node_role_filter, str):
+                node_role_filter = [node_role_filter]
+            if not isinstance(node_role_filter, list):
+                raise exceptions.ValidationError("node_role_filter should be "
+                                                 "a list or string.")
+
         result = []
         for exist_node in self.list_nodes():
+            if node_name_filter and exist_node['name'] not in node_name_filter:
+                continue
+            if node_role_filter and exist_node['role'] not in node_role_filter:
+                continue
             path = '/ha/%s/%s_service' % (exist_node['name'],
                                           exist_node['role'])
             for service_name in self.client.get_children(path):
                 service_path = path + '/' + service_name
                 service_info = self.client.get(service_path)
-                service_info = self._bytesToDict(service_info[0])
+                service_info = self._bytesToDict(service_info,
+                                                 include_updated_at=True)
+                service_info['node_name'] = exist_node['name']
                 result.append(service_info)
-        return sorted(result)
+        return sorted(result, key=lambda x: x['node_name'])
 
-    @_client_check_wrapper
-    def get_service(self, service_name, role=None):
-        if not role:
-            if (service_name in
-                    service.service_mapping['master_service']['necessary'] +
-                    service.service_mapping['master_service']['unnecessary']):
-                role = 'master'
-            elif (service_name in
-                  service.service_mapping['slave_service']['necessary'] +
-                  service.service_mapping['slave_service']['unnecessary']):
-                role = 'slave'
-            else:
-                exceptions.ClientError("Can't find service %s" % service_name)
+    def _get_service_role(self, service_name):
+        """Get service's node role."""
+        # NOTE(wxy): This function doesn't work for the common services like
+        # 'Mysql' and 'Zookeeper'. For the common services, cmd users should
+        # specify the role by hand. For cli user, the command  can be something
+        # like: `openlab ha service get zookeeper --role slave`. For library
+        # user, he can call the code `get_service('zookeeper', role='slave')`.
 
+        if (service_name in
+                service.service_mapping['master_service']['necessary'] +
+                service.service_mapping['master_service']['unnecessary']):
+            return 'master'
+        elif (service_name in
+              service.service_mapping['slave_service']['necessary'] +
+              service.service_mapping['slave_service']['unnecessary']):
+            return 'slave'
+
+        raise exceptions.ClientError("Can't find service %s" % service_name)
+
+    def _get_service_path_and_node(self, service_name, role):
         for exist_node in self.list_nodes():
             if exist_node['role'] == role:
                 path = '/ha/%s/%s_service/%s' % (exist_node['name'], role,
                                                  service_name)
-                result = self.client.get(path)
-                result = self._bytesToDict(result[0])
-                return result
+                return path, exist_node
         raise exceptions.ClientError("Can't find service %s" % service_name)
+
+    @_client_check_wrapper
+    def get_service(self, service_name, role=None):
+        if not role:
+            role = self._get_service_role(service_name)
+        path, srv_node = self._get_service_path_and_node(service_name, role)
+        result = self.client.get(path)
+        result = self._bytesToDict(result, include_updated_at=True)
+        result['node_name'] = srv_node['name']
+        return result
+
+    @_client_check_wrapper
+    def update_service(self, service_name, role=None, alarmed=None,
+                       restarted=None, status=None, **kwargs):
+        old_service = self.get_service(service_name, role)
+        if not role:
+            if service_name in service.MIXED_SERVICE:
+                raise exceptions.ValidationError(
+                    "Role must be specified if service is in "
+                    "%s." % service.MIXED_SERVICE)
+            role = self._get_service_role(service_name)
+        path, _ = self._get_service_path_and_node(service_name, role)
+        current_time = datetime.datetime.now().isoformat()
+
+        if alarmed is not None:
+            if not isinstance(alarmed, bool):
+                raise exceptions.ValidationError('alarmed should be boolean '
+                                                 'value.')
+            old_service['alarmed'] = alarmed
+            old_service['alarmed_at'] = current_time
+        if restarted is not None:
+            if not isinstance(restarted, bool):
+                raise exceptions.ValidationError('restarted should be '
+                                                 'boolean value.')
+            old_service['restarted'] = restarted
+            old_service['restarted_at'] = current_time
+        if status:
+            if status not in service.ServiceStatus.all_status:
+                raise exceptions.ValidationError(
+                    'status should be in %s.' %
+                    service.ServiceStatus.all_status)
+            old_service['status'] = status
+
+        old_service.update(kwargs)
+        new_service = service.Service.from_dict(old_service)
+        self.client.set(path, value=new_service.to_zk_data())
+
+        new_service = self.get_service(service_name, role)
+        return new_service
