@@ -106,7 +106,7 @@ def main(argv=sys.argv[1:]):
         cmd = ['python', 'inventory/inventory.py', '--old-host-ips']
 
     ol_env_msg = '\n'.join(['%s=%s' % (k, os.environ[k]) for k in os.environ if k.startswith('OL_')])
-    print ("OpenLab deployment ENV:\n%s" % ol_env_msg)
+    print("OpenLab deployment ENV:\n%s" % ol_env_msg)
     print('Ansible command:\n%s' % ' '.join(cmd))
     print("*" * 100)
 

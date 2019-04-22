@@ -56,7 +56,7 @@ def main(argv=sys.argv[1:]):
     parsed_args = parser.parse_args()
     if not os.environ.get('OL_TYPE'):
         raise Exception('ERROR: You must specify a deploy type with "OL_TYPE" '
-                        'environment varialbe!')
+                        'environment variable!')
     updated_inventories, old_ips, new_ips = parse_inventory()
     if parsed_args.list:
         print(json.dumps(updated_inventories, indent=4))
