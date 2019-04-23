@@ -14,118 +14,21 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 20
-    max-ready-age: 14400
-  - name: ubuntu-trusty
-    min-ready: 4
-    max-ready-age: 14400
-  - name: ubuntu-xenial-ut
-    min-ready: 3
-    max-ready-age: 14400
-  - name: ubuntu-xenial-vexxhost
-    min-ready: 4
-    max-ready-age: 14400
-  - name: ubuntu-xenial-huaweicloud
     min-ready: 0
-    max-ready-age: 14400
-  - name: ubuntu-xenial-arm64
-    min-ready: 1
-    max-ready-age: 14400
   - name: ubuntu-xenial-gpu
     min-ready: 0
-    max-ready-age: 14400
+  - name: ubuntu-trusty
+    min-ready: 0
 
 providers:
-  #VEXXHOST
-  # limits: -1 vms, -1 Cores, 163840 M Ram
-  - name: vexxhost-openlab
-    cloud: vexxhost
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 5
-    cloud-images:
-      - name: ubuntu-xenial-arm64
-        image-name: openlab-ubuntu-xenial-arm64
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-      - name: ubuntu-trusty
-        config-drive: true
-    pools:
-      - name: main
-        max-ram: 114688 #163840-6vm reserved
-        availability-zones:
-          - ca-ymq-2
-        networks:
-          - int-net
-        labels:
-          - name: ubuntu-xenial-vexxhost
-            diskimage: ubuntu-xenial
-            # 8C-8G-200G
-            flavor-name: 'v1-standard-8'
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 8C-8G-200G
-            flavor-name: 'v1-standard-8'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 8C-8G-200G
-            flavor-name: 'v1-standard-8'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 2C-2G-0G
-            flavor-name: 'v2-highcpu-2'
-          - name: ubuntu-xenial-arm64
-            cloud-image: ubuntu-xenial-arm64
-            # 8C-8G-80G NOTE: have to use v2 flavor to boot ARM instance
-            flavor-name: 'v2-highcpu-8'
-
-  #ChameleonCloud
-  # limits: 15 vms, 80 Cores, 80000 M Ram
-  - name: chameleon-openlab
-    cloud: chameleon
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 1
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-      - name: ubuntu-trusty
-        config-drive: true
-    pools:
-      - name: main
-        max-ram: 80000
-        networks:
-          - openlab-net
-        labels:
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 1C-2G-20G
-            flavor-name: 'm1.small'
-
   #CityNetwork
   # limits: 50 vms, 100 Cores, 256000 M Ram
-  - name: citynetwork-openlab
+  - name: citynetworkallinone
     cloud: citynetwork
     driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
+    image-name-format: 'openlaballinone-{image_name}-{timestamp}'
+    launch-timeout: 900
+    boot-timeout: 600
     max-concurrency: 5
     diskimages:
       - name: ubuntu-xenial
@@ -133,8 +36,8 @@ providers:
       - name: ubuntu-trusty
         config-drive: true
     pools:
-      - name: main
-        max-cores: 80
+      - name: ubuntu-xenial
+        max-cores: 12
         networks:
           - openlab-net
         labels:
@@ -144,105 +47,9 @@ providers:
           - name: ubuntu-trusty
             diskimage: ubuntu-trusty
             flavor-name: '4C-8GB-100GB'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            flavor-name: '1C-2GB-50GB'
-
-  #SWITCH
-  # limits: 8 vms, 40 Cores, 81920 M Ram
-  - name: switch-openlab
-    cloud: switch
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 5
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-      - name: ubuntu-trusty
-        config-drive: true
-    pools:
-      - name: main
-        max-servers: 8
-        networks:
-          - openlab-net
-        labels:
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 1C-2G-20G
-            flavor-name: 'm1.small'
-
-  #Huaweicloud
-  # limits: 500 vms, 4000 Cores, 8192000 M Ram
-  - name: huaweicloud-openlab
-    cloud: huaweicloud
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 1
-    cloud-images:
-      - name: ubuntu-xenial-gpu-v100
-        image-name: 'openlab-ubuntu-xenial-gpu-v100'
-        config-drive: true
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-      - name: ubuntu-trusty
-        config-drive: true
-    pools:
-      - name: main
-        max-servers: 1
-        networks:
-          - openlab-net
-        security-groups:
-          - openlab-sg
-        labels:
-          #- name: ubuntu-xenial
-          #  diskimage: ubuntu-xenial
-          #  # 4C-8G-100G
-          #  flavor-name: 's3.xlarge.2'
-          #  boot-from-volume: true
-          #  volume-size: 100
-          #- name: ubuntu-trusty
-          #  diskimage: ubuntu-trusty
-          #  # 4C-8G-100G
-          #  flavor-name: 's3.xlarge.2'
-          #  boot-from-volume: true
-          #  volume-size: 100
-          #- name: ubuntu-xenial-ut
-          #  diskimage: ubuntu-xenial
-          #  # 1C-2G-40G
-          #  flavor-name: 's3.medium.2'
-          #  boot-from-volume: true
-          #  volume-size: 40
-          - name: ubuntu-xenial-huaweicloud
-            diskimage: ubuntu-xenial
-            # 4C-8G-100G
-            flavor-name: 's3.xlarge.2'
-            boot-from-volume: true
-            volume-size: 100
-          - name: ubuntu-xenial-gpu
-            cloud-image: ubuntu-xenial-gpu-v100
-            # 8C-64G-100G
-            flavor-name: 'p2v.2xlarge.8'
-            boot-from-volume: true
-            volume-size: 100
 
 diskimages:
   - name: ubuntu-xenial
-    rebuild-age: 172800 # 2 days
     pause: true
     elements:
       - ubuntu
@@ -270,7 +77,6 @@ diskimages:
       ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
 
   - name: ubuntu-trusty
-    rebuild-age: 172800 # 2 days
     pause: true
     elements:
       - ubuntu
@@ -292,37 +98,6 @@ diskimages:
       DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
       DIB_DEV_USER_PWDLESS_SUDO: '1'
       DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
-      GIT_HTTP_LOW_SPEED_TIME: '300'
-      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
-      ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
-
-  - name: ubuntu-xenial-arm64
-    rebuild-age: 172800 # 2 days
-    #NOTE: don't build ARM image in x86 node, add config to avoid image refering error
-    pause: true
-    elements:
-      - block-device-efi
-      - ubuntu-minimal
-      - vm
-      - simple-init
-      - nodepool-base
-      - cache-devstack
-      - initialize-urandom
-      - growroot
-      - infra-package-needs
-    release: xenial
-    env-vars:
-      TMPDIR: /opt/dib_tmp
-      DIB_CHECKSUM: '1'
-      DIB_IMAGE_CACHE: /opt/dib_cache
-      DIB_IMAGE_SIZE: '80'
-      DIB_APT_LOCAL_CACHE: '0'
-      DIB_DISABLE_APT_CLEANUP: '1'
-      DIB_DISTRIBUTION_MIRROR: 'http://mirror.london.linaro-london.openstack.org/ubuntu-ports'
-      DIB_DEBOOTSTRAP_EXTRA_ARGS: '--no-check-gpg'
-      DIB_DEBIAN_COMPONENTS: 'main,universe'
-      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
-      DIB_DEV_USER_PWDLESS_SUDO: '1'
       GIT_HTTP_LOW_SPEED_TIME: '300'
       GIT_HTTP_LOW_SPEED_LIMIT: '1000'
       ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
