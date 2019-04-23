@@ -64,7 +64,7 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
    *NOTE:* this deployment tool need python and ansible related packages installed in ansible
    controller host, if not, you can run `./tools/install_requirements.sh` to install.
 
-5. After finishing deploying, please update the github app webhook URL in your github app, e.g. modify the [allinoneopenlab app](https://github.com/settings/apps/liu-openlab-ci) or [theopenlab app](https://github.com/organizations/theopenlab/settings/apps/theopenlab-ci) webhook URL.
+5. After finishing deploying, please update the github app webhook URL in your github app, e.g. modify the [theopenlab app](https://github.com/organizations/theopenlab/settings/apps/theopenlab-ci) webhook URL.
 
 6. Update the log server `fqdn` and host key(`secrets.yaml`) in the jobs config repo (`openlab-zuul-jobs`).
 

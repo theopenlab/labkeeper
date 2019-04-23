@@ -15,12 +15,12 @@ def add_cli_args():
                         )
     parser.add_argument('-u', '--user',
                         help='the Ansible remote user performing deployment, '
-                             'default is ubuntu configured in ansible.cfg',
+                             'default is "ubuntu" configured in ansible.cfg',
                         )
     parser.add_argument('--switch-role',
                         action='store_true',
                         help='switch the master/slave role of current deployment, '
-                             'this will re-config a existing OpenLab environment to '
+                             'this will re-config an existing OpenLab environment to '
                              'switch the "master/slave" role of hosts',
                         )
     parser.add_argument('--new-slave',
