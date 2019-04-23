@@ -145,11 +145,16 @@ class ZooKeeper(object):
             raise exceptions.ClientError('Node %s not found.' % node_name)
 
     @_client_check_wrapper
-    def create_node(self, name, role, type, ip):
+    def create_node(self, name, role, n_type, ip):
+        existed_nodes = self.list_nodes()
+        for existed_node in existed_nodes:
+            if existed_node['role'] == role and existed_node['type'] == n_type:
+                raise exceptions.ClientError(
+                    "The role and type of the node should be unique.")
+
         path = '/ha/%s' % name
-        new_node = node.Node(name, role, type, ip)
+        new_node = node.Node(name, role, n_type, ip)
         try:
-            # TODO(wxy): Add unique check.
             self.client.create(path,
                                value=new_node.to_zk_data(),
                                makepath=True)
@@ -165,8 +170,12 @@ class ZooKeeper(object):
         self.client.create(slave_service_path)
         self.client.create(zookeeper_service_path)
 
-        for node_role, node_services in service.service_mapping.items():
+        for node_role, all_services in service.service_mapping.items():
             new_service_path = path + '/%s' % node_role
+            try:
+                node_services = all_services[n_type]
+            except KeyError:
+                continue
             for service_type, service_names in node_services.items():
                 service_class = (service.NecessaryService if
                                  service_type == 'necessary' else
@@ -256,54 +265,32 @@ class ZooKeeper(object):
                 result.append(service_info)
         return sorted(result, key=lambda x: x['node_name'])
 
-    def _get_service_role(self, service_name):
-        """Get service's node role."""
-        # NOTE(wxy): This function doesn't work for the common services like
-        # 'Mysql' and 'Zookeeper'. For the common services, cmd users should
-        # specify the role by hand. For cli user, the command  can be something
-        # like: `openlab ha service get zookeeper --role slave`. For library
-        # user, he can call the code `get_service('zookeeper', role='slave')`.
-
-        if (service_name in
-                service.service_mapping['master_service']['necessary'] +
-                service.service_mapping['master_service']['unnecessary']):
-            return 'master'
-        elif (service_name in
-              service.service_mapping['slave_service']['necessary'] +
-              service.service_mapping['slave_service']['unnecessary']):
-            return 'slave'
-
-        raise exceptions.ClientError("Can't find service %s" % service_name)
-
-    def _get_service_path_and_node(self, service_name, role):
+    def _get_service_path_and_node(self, service_name, role, n_type):
         for exist_node in self.list_nodes():
-            if exist_node['role'] == role:
+            if exist_node['role'] == role and exist_node['type'] == n_type:
                 path = '/ha/%s/%s_service/%s' % (exist_node['name'], role,
                                                  service_name)
                 return path, exist_node
         raise exceptions.ClientError("Can't find service %s" % service_name)
 
     @_client_check_wrapper
-    def get_service(self, service_name, role=None):
-        if not role:
-            role = self._get_service_role(service_name)
-        path, srv_node = self._get_service_path_and_node(service_name, role)
-        result = self.client.get(path)
+    def get_service(self, service_name, role, n_type):
+        path, srv_node = self._get_service_path_and_node(service_name, role,
+                                                         n_type)
+        try:
+            result = self.client.get(path)
+        except kze.NoNodeError:
+            raise exceptions.ClientError('Service %s not found.' %
+                                         service_name)
         result = self._bytesToDict(result, include_updated_at=True)
         result['node_name'] = srv_node['name']
         return result
 
     @_client_check_wrapper
-    def update_service(self, service_name, role=None, alarmed=None,
+    def update_service(self, service_name, role, n_type, alarmed=None,
                        restarted=None, status=None, **kwargs):
-        old_service = self.get_service(service_name, role)
-        if not role:
-            if service_name in service.MIXED_SERVICE:
-                raise exceptions.ValidationError(
-                    "Role must be specified if service is in "
-                    "%s." % service.MIXED_SERVICE)
-            role = self._get_service_role(service_name)
-        path, _ = self._get_service_path_and_node(service_name, role)
+        old_service = self.get_service(service_name, role, n_type)
+        path, _ = self._get_service_path_and_node(service_name, role, n_type)
         current_time = datetime.datetime.now().isoformat()
 
         if alarmed is not None:
@@ -329,5 +316,5 @@ class ZooKeeper(object):
         new_service = service.Service.from_dict(old_service)
         self.client.set(path, value=new_service.to_zk_data())
 
-        new_service = self.get_service(service_name, role)
+        new_service = self.get_service(service_name, role, n_type)
         return new_service

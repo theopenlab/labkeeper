@@ -1,6 +1,7 @@
 import argparse
 import configparser
 import os
+import subprocess
 import sys
 import yaml
 
@@ -138,9 +139,11 @@ class OpenLabCmd(object):
         cmd_ha_service_get.set_defaults(func=self.ha_service_get)
         cmd_ha_service_get.add_argument('name', help='service name.')
         cmd_ha_service_get.add_argument(
-            '--role', choices=['master', 'slave', 'zookeeper'],
-            help="The role of the node where the service run. It must be "
-                 "specified if the service is in %s." % service.MIXED_SERVICE)
+            '--role', required=True, choices=['master', 'slave', 'zookeeper'],
+            help="The role of the node where the service run.")
+        cmd_ha_service_get.add_argument(
+            '--type', required=True, choices=['zuul', 'nodepool', 'zookeeper'],
+            help="The type of the node where the service run.")
 
     def _add_ha_cmd(self, parser):
         # openlab ha
@@ -288,12 +291,8 @@ class OpenLabCmd(object):
 
     @_zk_wrapper
     def ha_service_get(self):
-        if (self.args.name.lower() in service.MIXED_SERVICE and
-                not self.args.role):
-            raise argparse.ArgumentTypeError(
-                'Role must be specified if service is in '
-                '%s.' % service.MIXED_SERVICE)
-        result = self.zk.get_service(self.args.name.lower(), self.args.role)
+        result = self.zk.get_service(self.args.name.lower(), self.args.role,
+                                     self.args.type)
         if self.args.format == 'pretty':
             print(utils.format_output('service', result))
         else:
@@ -303,6 +302,10 @@ class OpenLabCmd(object):
         # no arguments, print help messaging, then exit with error(1)
         if not self.args.command:
             self.parser.print_help()
+            return 1
+        if not getattr(self.args, 'func', None):
+            help_message = subprocess.getoutput("%s -h" % ' '.join(sys.argv))
+            print(help_message)
             return 1
         try:
             self.args.func()
