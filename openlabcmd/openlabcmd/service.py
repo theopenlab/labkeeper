@@ -3,19 +3,32 @@ import json
 # NOTE(wxy): Add more if needed.
 service_mapping = {
     'master_service': {
-        'necessary': ['zuul-scheduler', 'zuul-executor', 'zuul-web', 'gearman',
-                      'mysql', 'apache', 'nodepool-launcher'],
-        'unnecessary': ['zuul-merger', 'zuul-fingergw', 'zuul-timer-tasks',
-                        'nodepool-timer-tasks', 'nodepool-builder',
-                        'zookeeper']
+        'zuul': {
+            'necessary': ['zuul-scheduler', 'zuul-executor', 'zuul-web',
+                          'gearman', 'mysql', 'apache'],
+            'unnecessary': ['zuul-merger', 'zuul-fingergw', 'zuul-timer-tasks']
+        },
+        'nodepool': {
+            'necessary': ['nodepool-launcher'],
+            'unnecessary': ['nodepool-timer-tasks', 'nodepool-builder',
+                            'zookeeper']
+        }
     },
     'slave_service': {
-        'necessary': [],
-        'unnecessary': ['mysql', 'rsync', 'zookeeper']
+        'zuul': {
+            'necessary': [],
+            'unnecessary': ['mysql', 'rsync']
+        },
+        'nodepool': {
+            'necessary': [],
+            'unnecessary': ['zookeeper', 'rsync']
+        }
     },
     'zookeeper_service': {
-        'necessary': [],
-        'unnecessary': ['zookeeper']
+        'zookeeper': {
+            'necessary': [],
+            'unnecessary': ['zookeeper']
+        }
     },
 }
 
