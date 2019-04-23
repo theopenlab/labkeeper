@@ -26,11 +26,12 @@ function pull_and_config_labkeeper()
     fi
     if [ ! -d ~/inotify/labkeeper/ ];then
         echo "pull labkeeper repo"
-        hub clone https://github.com/theopenlab/labkeeper ~/inotify/labkeeper
+        hub clone https://github.com/theopenlab-ci/labkeeper ~/inotify/labkeeper
         echo "clone labkeeper repo success!"
         cd ~/inotify/labkeeper
         hub config user.name ${github_username}
         hub config user.email ${github_useremail}
+        hub remote add upstream  https://github.com/theopenlab/labkeeper
         echo "pull and config labkeeper success!"
     fi
     echo "The repo labkeeper is already there!"
