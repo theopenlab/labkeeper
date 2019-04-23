@@ -319,10 +319,10 @@ class ZooKeeper(object):
             old_service['restarted'] = restarted
             old_service['restarted_at'] = current_time
         if status:
-            if status not in service.ServiceStatus.all_status:
+            if status not in service.ServiceStatus().all_status:
                 raise exceptions.ValidationError(
                     'status should be in %s.' %
-                    service.ServiceStatus.all_status)
+                    service.ServiceStatus().all_status)
             old_service['status'] = status
 
         old_service.update(kwargs)

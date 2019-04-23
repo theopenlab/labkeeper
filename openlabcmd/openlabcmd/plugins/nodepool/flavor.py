@@ -1,4 +1,4 @@
-import commands
+import subprocess
 
 import yaml
 
@@ -13,7 +13,7 @@ class FlavorPlugin(Plugin):
         self.failed = False
         self.reasons = []
         sg = 'openstack --os-cloud %s flavor list -f yaml -c VCPUs -c RAM -c Disk -c Name' % self.cloud
-        res = commands.getoutput(sg)
+        res = subprocess.getoutput(sg)
         flavors = yaml.load(res, Loader=yaml.FullLoader)
 
         # Find 4U8G, 8U8G, 1U2G, 2U2G flavor

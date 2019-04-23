@@ -1,4 +1,4 @@
-import commands
+import subprocess
 
 from openlabcmd.plugins.base import Plugin
 from openlabcmd.plugins.recover import Recover
@@ -13,7 +13,7 @@ class SecurityGroupPlugin(Plugin):
         self.failed = False
         self.reasons = []
         sg = 'openstack --os-cloud %s security group show openlab-sg' % self.cloud
-        ret, res = commands.getstatusoutput(sg)
+        ret, res = subprocess.getstatusoutput(sg)
         if ret != 0:
             self.failed = True
             if "More than one SecurityGroup exists" in res:
@@ -29,7 +29,7 @@ class SecurityGroupPlugin(Plugin):
         --ingress -f value \
         -c "IP Protocol" -c "IP Range" -c "Port Range" -c "Ethertype" -c "Remote Security Group" \
         |grep 0.0.0.0 |grep None' % self.cloud
-        res = commands.getoutput(tcp_rule)
+        res = subprocess.getoutput(tcp_rule)
         if "tcp 0.0.0.0/0 19885:19885 None" not in res:
             self.failed = True
             self.reasons.append(Recover.SECURITY_GROUP_19885)
