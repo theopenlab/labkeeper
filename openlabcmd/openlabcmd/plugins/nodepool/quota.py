@@ -1,4 +1,4 @@
-import commands
+import subprocess
 
 from openlabcmd.plugins.base import Plugin
 
@@ -15,6 +15,6 @@ class QuotaPlugin(Plugin):
         # print basic quota info
         quota = 'openstack --os-cloud %s quota show -f yaml ' \
                 '-c cores -c ram -c volumes -c networks -c subnets -c floating-ips' % self.cloud
-        res = commands.getoutput(quota)
+        res = subprocess.getoutput(quota)
 
         self.reasons.append(res)

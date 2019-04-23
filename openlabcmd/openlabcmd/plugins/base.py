@@ -1,4 +1,4 @@
-import commands
+import subprocess
 import six
 
 from openlabcmd.plugins.recover import RECOVER_MAPS
@@ -97,7 +97,7 @@ class Plugin(object):
         for r_code in self.reasons:
             if r_code in RECOVER_MAPS:
                 recover_cmd = RECOVER_MAPS[r_code]['recover'] % self.cloud
-                ret, res = commands.getstatusoutput(recover_cmd)
+                ret, res = subprocess.getstatusoutput(recover_cmd)
                 if not ret:
                     self._print_recover_line(True, recover_cmd)
                 else:
