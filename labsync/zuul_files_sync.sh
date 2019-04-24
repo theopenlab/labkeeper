@@ -34,7 +34,12 @@ hub pull
 modify_time=`date +%Y%m%d%H%M`
 branch_name="update${modify_time}"
 message="[Zuul_Sync] Sync_${modify_time}_modified_by_${github_username}"
-hub checkout -b ${branch_name}
+hub remote update
+# sync update for forked repo
+hub merge upstream/master
+hub push origin
+# checkout a new branch based on upstream
+hub checkout -b ${branch_name} upstream/master
 echo "copy file to labkeeper"
 cp /etc/zuul/main.yaml $online_file
 
