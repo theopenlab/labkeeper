@@ -69,6 +69,10 @@
               exclude-unprotected-branches: true
           - theopenlab/envoy:
               exclude-unprotected-branches: true
+          - containerd/containerd:
+              exclude-unprotected-branches: false
+          - envoyproxy/envoy:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
