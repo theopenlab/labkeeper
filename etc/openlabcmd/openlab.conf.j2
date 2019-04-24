@@ -1,0 +1,5 @@
+[check]
+cloud_conf = /etc/openstack/clouds.yaml
+
+[ha]
+zookeeper_hosts = {{ groups['zookeeper'] | map('extract', hostvars, 'ansible_host') | join(', ') }}

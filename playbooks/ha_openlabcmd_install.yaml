@@ -1,0 +1,20 @@
+---
+- name: Install and config openlabcmd
+  hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave, zk03
+  become: yes
+  tasks:
+    - name: Install openlabcmd
+      pip:
+        name: openlabcmd
+
+    - name: Config openlabcmd
+      template:
+        src: "{{ labkeeper_config_git_dest }}/openlabcmd/openlab.conf.j2"
+        dest: /etc/openlab/openlab.conf
+
+    - name: Init HA node
+      shell: |
+        openlab ha node init --role '{{ node_role }}' --type  '{{ node_type }}' \
+        --ip '{{ hostvars[inventory_hostname]['ansible_host'] }}' $(hostname)
+      args:
+        executable: /bin/bash
