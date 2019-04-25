@@ -47,7 +47,6 @@ SYSTEMCTL_DISABLE = 'disable'
 SYSTEMCTL_ACTIONS = (SYSTEMCTL_STATUS, SYSTEMCTL_RESTART, SYSTEMCTL_STOP,
                      SYSTEMCTL_START, SYSTEMCTL_ENABLE, SYSTEMCTL_DISABLE)
 
-
 GLOBAL_NODE = None
 GLOBAL_ZK = None
 
@@ -57,6 +56,8 @@ RSYNCD_PID_PATH = '/var/run/rsyncd.pid'
 
 
 def get_local_hostname():
+    #(TODO) remove after labkeeper vm instance name is the same with the
+    # openlabcmd node name format, like {cloud}-openlab-{role}.
     return socket.gethostname()
 
 
@@ -223,9 +224,6 @@ class Node(object):
     def is_necessary_service(self, service_name):
         return service_name in self.necessary_service_names
 
-    def is_maintained(self):
-        return self.status == 'maintaining'
-
     def post_alarmed_if_possible(self):
         if not self.alarmed:
             zk_cli = get_zk_cli()
@@ -247,7 +245,6 @@ def get_zk_cli():
 def load_from_zk():
     zk_cli = get_zk_cli()
     node_name = get_local_hostname()
-    zk_cli.connect()
     zk_node = zk_cli.get_node(node_name)
     local_node = Node(zk_node['name'], zk_node['role'],
                       zk_node['type'], zk_node['ip'],
@@ -263,16 +260,13 @@ def load_from_zk():
                     service['status']))
         if service['is_necessary']:
             local_node.necessary_service_names.append(service['name'])
-
-    global GLOBAL_NODE
-    GLOBAL_NODE = local_node
-    return GLOBAL_NODE
+    return local_node
 
 
 def get_local_node():
     global GLOBAL_NODE
     if not GLOBAL_NODE:
-        return load_from_zk()
+        GLOBAL_NODE = load_from_zk()
     return GLOBAL_NODE
 
 
@@ -285,6 +279,10 @@ def process():
     if local_node.role != 'zookeeper':
         oppo_node_process()
 
+    # At the end of the script, we'd better to close zk session.
+    zk_cli = get_zk_cli()
+    zk_cli.close()
+
 
 def local_node_service_process(node_obj):
     for service_obj in node_obj.services:
@@ -294,21 +292,19 @@ def local_node_service_process(node_obj):
 
 
 def treat_single_service(service_obj, node_obj):
-    if node_obj.is_maintained():
-        return
-
     if service_obj.is_abnormal():
         if service_obj.restarted:
-            if node_obj.is_necessary_service(service_obj.name):
+            if service_obj.is_necessary:
                 # Report an issue towards deployment as a necessary
                 # service down
                 # Master/Slave Switch
                 switch_process(node_obj)
-                notify_issue(node_obj, affect_services=service_obj,
-                             affect_range='node',
-                             more_specific='necessary_error')
-                service_obj.post_alarmed_if_possible()
-                node_obj.post_alarmed_if_possible()
+                if not node_obj.alarmed:
+                    notify_issue(node_obj, affect_services=service_obj,
+                                 affect_range='node',
+                                 more_specific='necessary_error')
+                    service_obj.post_alarmed_if_possible()
+                    node_obj.post_alarmed_if_possible()
             else:
                 # Have report the issue yet?
                 # Yes
@@ -325,9 +321,10 @@ def treat_single_service(service_obj, node_obj):
                         # Master/Slave Switch
                         if node_obj.role == 'master':
                             switch_process(node_obj)
-                            notify_issue(node_obj, affect_range='node',
-                                         more_specific='slave_switch')
-                            node_obj.post_alarmed_if_possible()
+                            if not node_obj.alarmed:
+                                notify_issue(node_obj, affect_range='node',
+                                             more_specific='slave_switch')
+                                node_obj.post_alarmed_if_possible()
                     # -- No
                     # report node heartbeat
                     else:
@@ -340,10 +337,11 @@ def treat_single_service(service_obj, node_obj):
                 # unnecessary service down.
                 # Then report node heartbeat.
                 else:
-                    notify_issue(node_obj, affect_services=service_obj,
-                                 affect_range='service',
-                                 more_specific='unecessary_svc')
-                    service_obj.post_alarmed_if_possible()
+                    if not service_obj.alarmed:
+                        notify_issue(node_obj, affect_services=service_obj,
+                                     affect_range='service',
+                                     more_specific='unecessary_svc')
+                        service_obj.post_alarmed_if_possible()
         else:
             # (TODO) rsync, gearman, zuul-timer-tasks,
             # nodepool-timer-tasks are not
@@ -390,6 +388,22 @@ def check_opp_master_is_good():
     return True
 
 
+def check_and_process_orphan_master():
+    zk_cli = get_zk_cli()
+    orphans = []
+    for zk_node in zk_cli.list_nodes():
+        if (zk_node['role'] == 'master' and
+              zk_node['status'] == 'down'):
+            orphans.append(Node(zk_node['name'], zk_node['role'],
+                                zk_node['type'], zk_node['ip'],
+                                zk_node['heartbeat'], zk_node['alarmed'],
+                                zk_node['status']))
+
+    for orphan in orphans:
+        zk_cli = get_zk_cli()
+        zk_cli.update_node(orphan.name, role='slave')
+
+
 def script_load_pre_check(node_obj):
     if (node_obj.status == 'up' and node_obj.role == 'slave' and
             not check_opp_master_is_good()):
@@ -400,11 +414,12 @@ def script_load_pre_check(node_obj):
         change_dns()
         zk_cli = get_zk_cli()
         zk_cli.update_node(node_obj.name, role='master', status='up')
-        notify_issue(node_obj, affect_range='node',
-                     more_specific='slave_switch')
-        node_obj.post_alarmed_if_possible()
+        if not node_obj.alarmed:
+            notify_issue(node_obj, affect_range='node',
+                         more_specific='slave_switch')
+            node_obj.post_alarmed_if_possible()
 
-    if node_obj.status == 'down' and node_obj.role == 'master':
+    elif node_obj.status == 'down' and node_obj.role == 'master':
         # This is the first step when other master nodes, when check
         # self status is down, that means there must be 1 master node is
         # failed and hit the M/S switch. So what we gonna do is shuting down
@@ -412,6 +427,15 @@ def script_load_pre_check(node_obj):
         shut_down_all_services(node_obj)
         zk_cli = get_zk_cli()
         zk_cli.update_node(node_obj.name, role='slave')
+
+    # This is for make sure that, once a master node is down(
+    # can not ping or keepalived down)
+    # A origin master node will still hang on master down status.
+    # So this will fit it if any alived keepalived can process it.
+    # If not, openlabcmd will hit the duplicated master issue during update
+    # service.
+    else:
+        check_and_process_orphan_master()
 
 
 def switch_process(node_obj):
@@ -435,7 +459,7 @@ def switch_process(node_obj):
         for svc in node_obj.services:
             if svc.is_abnormal():
                 svc_status.append(False)
-        if not any(svc_status):
+        if not any(svc_status) and not node_obj.alarmed:
             notify_issue(node_obj, affect_range='node',
                          more_specific='slave_error')
             node_obj.post_alarmed_if_possible()
@@ -480,16 +504,20 @@ def oppo_node_check(oppo_node_objs):
         # check pingable and heartbeat is OK
         if (not ping(oppo_node_obj.ip) or
                 oppo_node_obj.is_check_heart_beat_overtime()):
-            if oppo_node_obj.role == 'master':
+            if oppo_node_obj.role == 'master' and oppo_node_obj.status == 'up':
                 # Report the issue towards deployment as oppo host is master
                 # Master/Slave Switch
-                local_node = get_local_node()
-                switch_process(local_node)
+                # So current node is slave, we need to set the oppo side ones
+                # to down
+                zk_cli = get_zk_cli()
+                for oppo in oppo_node_objs:
+                    zk_cli.update_node(oppo.name, status='down')
             # else:
             # Report the issue towards deployment as the oppo host is slave
-            notify_issue(oppo_node_obj,
-                         affect_range='node',
-                         more_specific='oppo_check')
+            if not oppo_node_obj.alarmed:
+                notify_issue(oppo_node_obj,
+                             affect_range='node',
+                             more_specific='oppo_check')
             break
 
 
@@ -518,8 +546,8 @@ def format_body_for_issue(node_obj, affect_services=None,
             body += "And try to login the cloud to check whether the " \
                     "resource exists.\n"
         elif more_specific == 'slave_error':
-            body += "The data plane services of node %(name)s in slave " \
-                    "deployment hit errors.\n"
+            body += "The data plane services of node %s in slave " \
+                    "deployment hit errors.\n" % node_obj.name
             svcs = []
             for svc in node_obj.services:
                 svcs.append(svc.name)
