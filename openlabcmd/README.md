@@ -46,7 +46,7 @@ CRUD for node
   ```
 * openlab ha node init
   ```
-  usage: openlab ha node init [-h] --type {nodepool,zuul,zookeeper-only}
+  usage: openlab ha node init [-h] --type {nodepool,zuul,zookeeper}
                               --role {master,slave} --ip IP name
 
   positional arguments:
@@ -55,9 +55,9 @@ CRUD for node
 
   optional arguments:
     -h, --help            show this help message and exit
-    --type {nodepool,zuul,zookeeper-only}
+    --type {nodepool,zuul,zookeeper}
                           The new node type. Choose from 'nodepool', 'zuul' and
-                          'zookeeper-only'
+                          'zookeeper'
     --role {master,slave}
                           The new node role. It should be either 'master' or
                           'slave'.
