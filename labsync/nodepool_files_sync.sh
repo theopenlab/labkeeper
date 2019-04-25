@@ -83,6 +83,7 @@ if [[ $is_modified ]];then
     export GITHUB_TOKEN=${github_token}
     hub pull-request -m "${message}"
     echo "Create pull request to theopenlab/labkeeper success!"
-    hub checkout master
-    hub branch -D ${branch_name}
 fi
+
+hub checkout master
+hub branch -D ${branch_name}
