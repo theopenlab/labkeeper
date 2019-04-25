@@ -36,6 +36,16 @@ all:
               hosts: nodepool02
               vars:
                 nodepool_service_nodepool_launcher_state: stopped
+        nodepool-master:
+          hosts: nodepool01
+          vars:
+            node_role: "master"
+            node_type: "nodepool"
+        nodepool-slave:
+          hosts: nodepool02
+          vars:
+            node_role: "slave"
+            node_type: "nodepool"
       vars:
         nodepool_file_nodepool_yaml_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-nodepool.yaml.j2"
         nodepool_clouds_src: "{{ labkeeper_config_git_dest }}/nodepool/openlab-clouds.yaml.j2"
@@ -90,10 +100,14 @@ all:
         zuul-master:
           hosts: zuul01
           vars:
+            node_role: "master"
+            node_type: "zuul"
             zuul_public_ip: 10.3.0.1
         zuul-slave:
           hosts: zuul02
           vars:
+            node_role: "slave"
+            node_type: "zuul"
             zuul_public_ip: 10.3.0.2
       vars:
         github_app_id: 6778
@@ -141,6 +155,8 @@ all:
         zk-03:
           hosts: zk03
           vars:
+            node_role: "zookeeper"
+            node_type: "zookeeper"
             zk_myid: 3
     mysql:
       children:
