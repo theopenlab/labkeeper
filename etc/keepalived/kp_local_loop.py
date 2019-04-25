@@ -197,7 +197,6 @@ class Node(object):
 
         self.hb_interval_time = HEARTBEAT_INTERNAL
         self.services = []
-        self.necessary_service_names = []
 
     def report_heart_beat(self):
         hb = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -220,9 +219,6 @@ class Node(object):
             return False
         current_time = datetime.datetime.utcnow().replace(tzinfo=iso8601.UTC)
         return current_time > over_time
-
-    def is_necessary_service(self, service_name):
-        return service_name in self.necessary_service_names
 
     def post_alarmed_if_possible(self):
         if not self.alarmed:
@@ -258,8 +254,6 @@ def load_from_zk():
                     service['restarted_at'], service['is_necessary'],
                     service['node_role'], local_node.type,
                     service['status']))
-        if service['is_necessary']:
-            local_node.necessary_service_names.append(service['name'])
     return local_node
 
 
@@ -281,7 +275,7 @@ def process():
 
     # At the end of the script, we'd better to close zk session.
     zk_cli = get_zk_cli()
-    zk_cli.close()
+    zk_cli.disconnect()
 
 
 def local_node_service_process(node_obj):
@@ -360,8 +354,9 @@ def shut_down_all_services(node_obj):
 
 
 def setup_necessary_services_and_check(node_obj):
-    for service in node_obj.necessary_service_names:
-        run_systemctl_command(SYSTEMCTL_START, service)
+    for service in node_obj.services:
+        if service.is_necessary:
+            run_systemctl_command(SYSTEMCTL_START, service)
 
     # local deplay 5 seconds
     time.sleep(5)
