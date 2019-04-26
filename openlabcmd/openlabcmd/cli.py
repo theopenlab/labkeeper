@@ -7,7 +7,6 @@ import yaml
 
 from openlabcmd import exceptions
 from openlabcmd.plugins import base
-from openlabcmd import service
 from openlabcmd import utils
 from openlabcmd.utils import _color
 from openlabcmd import zk
@@ -71,12 +70,12 @@ class OpenLabCmd(object):
         cmd_ha_node_get.add_argument('name', help='The node hostname.')
         # openlab ha node create
         cmd_ha_node_create = cmd_ha_node_subparsers.add_parser(
-            'init', help='Create a new node. This command usually should be'
-                         'called by CI environment deploy tools when creating'
+            'init', help='Create a new node. This command usually should be '
+                         'called by CI environment deploy tools when creating '
                          'a new system. Operators should be careful for this '
-                         'command. One case for this command may like: the'
+                         'command. One case for this command may like: the '
                          'data in zookeeper is broken or missing, but the '
-                         'node works well. So that operators need to rebuild '
+                         'node works well, so that operators need to rebuild '
                          'the node info.')
         cmd_ha_node_create.set_defaults(func=self.ha_node_create)
         cmd_ha_node_create.add_argument(
@@ -104,7 +103,7 @@ class OpenLabCmd(object):
                                      help='Set the node to maintained status.')
         cmd_ha_node_set.add_argument(
             '--role', choices=['master', 'slave'],
-            help="Update node role. It should be either 'master' or 'slave'."
+            help="Update node role. It should be either 'master' or 'slave'. "
                  "Be careful to update the role, you should not update role "
                  "except emergency situations, because it will impact "
                  "checking scope of HA monitor , HA monitor will check and "
@@ -249,11 +248,11 @@ class OpenLabCmd(object):
         if self.args.type == 'zookeeper':
             if self.args.role != 'zookeeper':
                 raise argparse.ArgumentTypeError(
-                    'zookeeper node must zookeeper type.')
+                    'zookeeper node must  be zookeeper type.')
         else:
             if self.args.role == 'zookeeper':
                 raise argparse.ArgumentTypeError(
-                    'zookeeper node must zookeeper type.')
+                    'zookeeper node must be zookeeper type.')
 
         result = self.zk.create_node(self.args.name, self.args.role,
                                      self.args.type, self.args.ip)
