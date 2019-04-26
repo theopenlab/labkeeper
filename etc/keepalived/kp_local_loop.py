@@ -610,7 +610,7 @@ def notify_issue(affect_node, affect_services=None, affect_range=None,
 
 
 def match_record(name, res):
-    if res['name'] == 'logs-bak':
+    if res['name'] in ['logs-bak', 'test-logs-bak']:
         return (name == res['name'] and res['type'] == "A" and
                 TARGET_ORI_BK_IP == res['content'])
     return (name == res['name'] and
