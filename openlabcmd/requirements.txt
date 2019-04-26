@@ -1,3 +1,4 @@
+configparser
 enum;python_version=='2.7'
 kazoo
 pbr>=1.3

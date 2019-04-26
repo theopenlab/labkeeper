@@ -7,6 +7,9 @@
       pip:
         name: openlabcmd
 
+    - name: Ensures openlabcmd config dir exists
+      file: path=/etc/openlab state=directory
+
     - name: Config openlabcmd
       template:
         src: "{{ labkeeper_config_git_dest }}/openlabcmd/openlab.conf.j2"
