@@ -164,6 +164,8 @@ all:
           hosts: allinone01
         keepalived-slave:
           hosts: allinone02
+        keepalived-zk03:
+          hosts: zk03
       vars:
         use_test_url: true
         use_test_account: true

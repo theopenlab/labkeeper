@@ -12,7 +12,7 @@
 # under the License.
 ---
 - name: Install keepalived
-  hosts: keepalived, zk03
+  hosts: keepalived
   become: yes
   tasks:
     - name: Install keepalived

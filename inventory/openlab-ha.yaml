@@ -164,10 +164,16 @@ all:
             apache_service_state: stopped
     keepalived:
       children:
-        keepalived-master:
+        keepalived-zuul-master:
           hosts: zuul01
-        keepalived-slave:
+        keepalived-zuul-slave:
           hosts: zuul02
+        keepalived-nodepool-master:
+          hosts: nodepool01
+        keepalived-nodepool-slave:
+          hosts: nodepool02
+        keepalived-zk03:
+          hosts: zk03
       vars:
         use_test_url: true
         use_test_account: true
