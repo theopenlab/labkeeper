@@ -22,19 +22,30 @@ HEARTBEAT_INTERNAL = {{ heartbeat_internal }}
 # Simpledns provider
 base_api_url = 'https://api.dnsimple.com/v2/'
 DOMAIN_NAME = 'openlabtesting.org'
+{% if use_test_url %}
+DOMAIN_NAME1 = 'test-status.openlabtesting.org'
+DOMAIN_NAME2 = 'test-logs.openlabtesting.org'
+DOMAIN_NAME_BK = 'test-logs-bak.openlabtesting.org'
+{% else %}
 DOMAIN_NAME1 = 'status.openlabtesting.org'
 DOMAIN_NAME2 = 'logs.openlabtesting.org'
 DOMAIN_NAME_BK = 'logs-bak.openlabtesting.org'
+{% endif %}
+TOKEN = "{{ dns_access_token }}"
+ACCOUNT_ID = {{ dns_account_id }}
 TARGET_ORI_IP = "{{ ori_master_ip }}"
 TARGET_ORI_BK_IP = "{{ ori_backup_ip }}"
 TARGET_CHANGE_IP = "{{ slave_ip }}"
 TARGET_CHANGE_BK_IP = "{{ slave_backup_ip }}"
-TOKEN = "{{ dns_access_token }}"
-ACCOUNT_ID = {{ dns_account_id }}
 
 # Post user info
+{% if use_test_account %}
+ISSUE_USER_TOKEN = "{{ test_github_token }}"
+REPO_NAME = "{{ test_repo_name }}"
+{% else %}
 ISSUE_USER_TOKEN = "{{ github_token }}"
 REPO_NAME = 'theopenlab/openlab'
+{% endif %}
 
 # General constants
 SYSTEMCTL_STATUS = 'status'
@@ -660,7 +671,7 @@ def change_dns():
                              data=data,
                              headers=headers)
         result = json.loads(s=res.content.decode('utf8'))['data']
-        if result['name'] != 'logs-bak':
+        if result['name'] not in ['logs-bak', 'test-logs-bak']:
             if (res.status_code == 200 and
                     result['content'] == TARGET_CHANGE_IP):
                 print("Success Update -- Domain %s from %s to %s" % (

@@ -54,15 +54,7 @@
 
     - name: install script dependency
       pip:
-        name: "{{ item }}"
-      with_items:
-        - six
-        - iso8601
-        - requests
-        - json
-        - configparser
-        - PyGithub
-        - openlabcmd
+        name: ['six', 'iso8601', 'requests', 'json', 'configparser', 'PyGithub', 'openlabcmd']
 
     - name: Start keepalived service
       service: name=keepalived state=started
