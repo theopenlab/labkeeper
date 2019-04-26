@@ -12,7 +12,7 @@
 # under the License.
 ---
 - name: Install keepalived
-  hosts: keepalived
+  hosts: keepalived, zk03
   become: yes
   tasks:
     - name: Install keepalived
@@ -45,7 +45,7 @@
         dest: /etc/keepalived/kp_local_loop.py
         mode: 0755
       vars:
-        zk_cli_conf: "{{ labkeeper_config_git_dest }}/openlabcmd/etc/openlab.conf"
+        zk_cli_conf: "/etc/openlab/openlab.conf"
         heartbeat_internal: 100
         ori_master_ip: "{{ hostvars[groups['zuul-web-master'][0]].ansible_host }}"
         ori_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
