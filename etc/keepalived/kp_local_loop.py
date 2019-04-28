@@ -161,11 +161,17 @@ class Service(object):
             self.status = cur_status
             zk_cli = get_zk_cli()
             kwargs = {}
-            if self.restarted and self.status == 'up':
-                kwargs['restarted'] = None
-                kwargs['restarted_at'] = None
-                self.restarted = None
-                self.restarted_at = None
+            if self.status == 'up':
+                if self.restarted:
+                    kwargs['restarted'] = False
+                    kwargs['restarted_at'] = None
+                    self.restarted = False
+                    self.restarted_at = None
+                if self.alarmed:
+                    kwargs['alarmed'] = False
+                    kwargs['alarmed_at'] = None
+                    self.alarmed = False
+                    self.alarmed_at = None
             zk_cli.update_service(self.name, self.node_role, self.node_type,
                                   status=self.status, **kwargs)
         return self.status != 'up'
