@@ -1,35 +1,35 @@
-- src: git+https://git.openstack.org/openstack/ansible-role-diskimage-builder
+- src: git+https://opendev.org/windmill/ansible-role-diskimage-builder
   name: openstack.diskimage-builder
 
-- src: git+https://git.openstack.org/openstack/ansible-role-gearman
+- src: git+https://opendev.org/windmill/ansible-role-gear
   name: openstack.gearman
 
-- src: git+https://git.openstack.org/openstack/ansible-role-logrotate
+- src: git+https://opendev.org/windmill/ansible-role-logrotate
   name: openstack.logrotate
 
-- src: git+https://git.openstack.org/openstack/ansible-role-nodepool
+- src: git+https://opendev.org/windmill/ansible-role-nodepool
   name: openstack.nodepool
 
-- src: git+https://git.openstack.org/openstack/ansible-role-shade
+- src: git+https://opendev.org/x/ansible-role-shade
   name: openstack.shade
 
-- src: git+https://git.openstack.org/openstack/ansible-role-ssh
+- src: git+https://opendev.org/windmill/ansible-role-ssh
   name: openstack.ssh
 
-- src: git+https://git.openstack.org/openstack/ansible-role-statsd
+- src: git+https://opendev.org/windmill/ansible-role-statsd
   name: openstack.statsd
 
-- src: git+https://git.openstack.org/openstack/ansible-role-sudoers
+- src: git+https://opendev.org/windmill/ansible-role-sudoers
   name: openstack.sudoers
 
-- src: git+https://git.openstack.org/openstack/ansible-role-virtualenv
+- src: git+https://opendev.org/windmill/ansible-role-virtualenv
   name: openstack.virtualenv
 
-- src: git+https://git.openstack.org/openstack/ansible-role-zookeeper
+- src: git+https://opendev.org/windmill/ansible-role-zookeeper
   name: openstack.zookeeper
 
-- src: git+https://git.openstack.org/openstack/ansible-role-zuul
+- src: git+https://opendev.org/windmill/ansible-role-zuul
   name: openstack.zuul
 
-- name: openstack.openstacksdk
-  src: git+https://git.openstack.org/openstack/ansible-role-openstacksdk
+- src: git+https://opendev.org/windmill/ansible-role-openstacksdk
+  name: openstack.openstacksdk
