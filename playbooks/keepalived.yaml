@@ -35,7 +35,6 @@
         src: "{{ labkeeper_config_git_dest }}/keepalived/keepalived.conf.j2"
         dest: /etc/keepalived/keepalived.conf
       vars:
-        kp_opposite_ip: "{{ hostvars[groups['keepalived-slave'][0]].ansible_host }}"
         local_kp_script: "/etc/keepalived/kp_local_loop.py"
         local_interface: "{{ local_default_interface.stdout }}"
 
