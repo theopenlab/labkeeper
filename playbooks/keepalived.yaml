@@ -18,12 +18,6 @@
     - name: Install keepalived
       package: name=keepalived
 
-    - name: Copy openlab key to keepalived nodes
-      copy:
-        src: "{{ labkeeper_src_dir }}/openlab.pem"
-        dest: /etc/keepalived/openlab.pem
-        mode: 0600
-
     - name: Enable ip_vs module
       shell: |
         modprobe ip_vs
@@ -32,10 +26,6 @@
       args:
         executable: /bin/bash
 
-- name: Config keepalived master
-  hosts: keepalived-master
-  become: yes
-  tasks:
     - name: Get interface of default route
       shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
       register: local_default_interface
@@ -45,62 +35,25 @@
         src: "{{ labkeeper_config_git_dest }}/keepalived/keepalived.conf.j2"
         dest: /etc/keepalived/keepalived.conf
       vars:
-        keepalived_role: MASTER
-        kp_opposite_ip: "{{ hostvars[groups['keepalived-slave'][0]].ansible_host }}"
-        notify_down_action: "/etc/keepalived/master_notify.sh"
+        local_kp_script: "/etc/keepalived/kp_local_loop.py"
         local_interface: "{{ local_default_interface.stdout }}"
 
-    # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
-    # to test post issue and change the github app webhook.
     - name: Copy necessary scripts
-      template: src={{ item.src }} dest={{ item.dest }} mode=0755
-      with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/master_notify.sh.j2", dest: "/etc/keepalived/master_notify.sh" }
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/notify_upstream.py", dest: "/etc/keepalived/notify_upstream.py" }
-
-    - name: install script dependency
-      pip:
-        name: ['PyGithub', 'argparse', 'datetime']
-
-    - name: Start keepalived service
-      service: name=keepalived state=started
-
-- name: Config keepalived slave
-  hosts: keepalived-slave
-  become: yes
-  tasks:
-    - name: Get interface of default route
-      shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
-      register: local_default_interface
-
-    - name: Generate keepalived conf
       template:
-        src: "{{ labkeeper_config_git_dest }}/keepalived/keepalived.conf.j2"
-        dest: /etc/keepalived/keepalived.conf
+        src: "{{ labkeeper_config_git_dest }}/keepalived/kp_local_loop.py"
+        dest: /etc/keepalived/kp_local_loop.py
+        mode: 0755
       vars:
-        keepalived_role: BACKUP
-        kp_opposite_ip: "{{ hostvars[groups['keepalived-master'][0]].ansible_host }}"
-        notify_down_action: "/etc/keepalived/start_slave_svcs.sh"
-        local_interface: "{{ local_default_interface.stdout }}"
-
-    # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
-    # to test post issue and change the github app webhook.
-    - name: Copy necessary scripts
-      template: src={{ item.src }} dest={{ item.dest }} mode=0755
-      with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/master_notify.sh.j2", dest: "/etc/keepalived/master_notify.sh" }
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/notify_upstream.py", dest: "/etc/keepalived/notify_upstream.py" }
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/slave_notify.sh.j2", dest: "/etc/keepalived/slave_notify.sh" }
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/change_app_webhook.py", dest: "/etc/keepalived/change_app_webhook.py" }
-      vars:
-        nodepool_master_ip: "{{ hostvars[groups['nodepool-builder-master'][0]].ansible_host }}"
-        nodepool_slave_ip: "{{ hostvars[groups['nodepool-builder-slave'][0]].ansible_host }}"
-        zuul_master_ip: "{{ hostvars[groups['zuul-scheduler-master'][0]].ansible_host }}"
-        zuul_slave_ip: "{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"
+        zk_cli_conf: "/etc/openlab/openlab.conf"
+        heartbeat_internal: 100
+        ori_master_ip: "{{ hostvars[groups['zuul-web-master'][0]].ansible_host }}"
+        ori_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
+        slave_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
+        slave_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
 
     - name: install script dependency
       pip:
-        name: ['PyGithub', 'argparse', 'requests', 'html', 'datetime']
+        name: ['six', 'iso8601', 'requests', 'configparser', 'PyGithub', 'openlabcmd']
 
     - name: Start keepalived service
       service: name=keepalived state=started

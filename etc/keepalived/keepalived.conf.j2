@@ -1,5 +1,5 @@
 vrrp_instance VirtIP_10 {
-    state {{ keepalived_role }}
+    state BACKUP
     interface {{ local_interface }}
     virtual_router_id 10
     priority 100
@@ -20,22 +20,21 @@ virtual_server 100.1.1.1 80 {
     persistence_timeout 5
     protocol TCP
 
-    real_server {{ kp_opposite_ip }} 80 {
+    real_server 1.1.1.1 80 {
         weight 100
         connect_timeout 3
         retry 3
-        delay_before_retry 10
-        notify_down {{ notify_down_action }}
-        #MISC_CHECK {
-        #    # PERIOD check MASTER NODE local services are OK.
-        #    misc_path "/root/check_master.sh"
-        #    misc_timeout 5
-        #}
-        TCP_CHECK {
-            connection_timeout 5
-            retry 5
-            connect_port 22
-            delay_before_retry 3
+        delay_before_retry 100
+        MISC_CHECK {
+            # PERIOD check local NODE are OK.
+            misc_path "{{ local_kp_script }}"
+            misc_timeout 50
         }
+        #TCP_CHECK {
+        #    connection_timeout 5
+        #    retry 5
+        #    connect_port 22
+        #    delay_before_retry 3
+        #}
     }
 }
