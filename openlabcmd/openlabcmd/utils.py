@@ -56,9 +56,9 @@ def format_output(headers_table_name, objs):
         for obj in objs:
             values = []
             for k in headers_table:
-                if isinstance(obj[k], list):
-                    values.append(','.join(obj[k]))
+                if isinstance(getattr(obj, k), list):
+                    values.append(','.join(getattr(obj, k)))
                 else:
-                    values.append(obj[k])
+                    values.append(getattr(obj, k))
             t.add_row(values)
     return t

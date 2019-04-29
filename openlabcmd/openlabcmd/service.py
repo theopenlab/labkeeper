@@ -1,8 +1,9 @@
+import datetime
 import json
 
 # NOTE(wxy): Add more if needed.
 service_mapping = {
-    'master_service': {
+    'master': {
         'zuul': {
             'necessary': ['zuul-scheduler', 'zuul-executor', 'zuul-web',
                           'gearman', 'mysql', 'apache'],
@@ -14,7 +15,7 @@ service_mapping = {
                             'zookeeper']
         }
     },
-    'slave_service': {
+    'slave': {
         'zuul': {
             'necessary': [],
             'unnecessary': ['mysql', 'rsync']
@@ -24,7 +25,7 @@ service_mapping = {
             'unnecessary': ['zookeeper', 'rsync']
         }
     },
-    'zookeeper_service': {
+    'zookeeper': {
         'zookeeper': {
             'necessary': [],
             'unnecessary': ['zookeeper']
@@ -47,43 +48,61 @@ class ServiceStatus(object):
 
 
 class Service(object):
-    def __init__(self, name, node_role, alarmed=None, alarmed_at=None,
-                 restarted=None, restarted_at=None, is_necessary=None,
-                 status=None, **kwargs):
+    def __init__(self, name, node_role, node_name=None, alarmed=None,
+                 alarmed_at=None, restarted=None, restarted_at=None,
+                 is_necessary=None, status=None, created_at=None,
+                 updated_at=None, **kwargs):
         self.name = name
         self.node_role = node_role
+        self.node_name = node_name
         self.alarmed = alarmed or False
         self.alarmed_at = alarmed_at
         self.restarted = restarted or False
         self.restarted_at = restarted_at
         self.is_necessary = is_necessary
         self.status = status or ServiceStatus.INITIALIZING
+        self.created_at = created_at
+        self.updated_at = updated_at
 
-    def to_zk_data(self):
+    def to_zk_bytes(self):
         node_dict = {
             'name': self.name,
+            'node_role': self.node_role,
+            'node_name': self.node_name,
             'alarmed': self.alarmed,
             'alarmed_at': self.alarmed_at,
             'restarted': self.restarted,
             'restarted_at': self.restarted_at,
             'is_necessary': self.is_necessary,
-            'node_role': self.node_role,
             'status': self.status
         }
         return json.dumps(node_dict).encode('utf8')
 
-    @ classmethod
-    def from_dict(cls, d):
-        return cls(**d)
+    def to_dict(self):
+        return self.__dict__
+
+    def update(self, update_dict):
+        for k, v in update_dict.items():
+            if getattr(self, k, None):
+                setattr(self, k, v)
+
+    @classmethod
+    def from_zk_bytes(cls, zk_bytes):
+        service_dict = json.loads(zk_bytes[0].decode('utf8'))
+        # mtime is millisecond in zk.
+        mtime = zk_bytes[1].mtime
+        service_dict['updated_at'] = datetime.datetime.fromtimestamp(
+                mtime / 1000).isoformat()
+        return cls(**service_dict)
 
 
 class NecessaryService(Service):
-    def __init__(self, name, node_role):
-        super(NecessaryService, self).__init__(name, node_role)
+    def __init__(self, name, node_role, node_name):
+        super(NecessaryService, self).__init__(name, node_role, node_name)
         self.is_necessary = True
 
 
 class UnnecessaryService(Service):
-    def __init__(self, name, node_role):
-        super(UnnecessaryService, self).__init__(name, node_role)
+    def __init__(self, name, node_role, node_name):
+        super(UnnecessaryService, self).__init__(name, node_role, node_name)
         self.is_necessary = False
