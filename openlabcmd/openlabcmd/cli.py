@@ -232,7 +232,7 @@ class OpenLabCmd(object):
         if self.args.format == 'pretty':
             print(utils.format_output('node', result))
         else:
-            print(result)
+            print(result.to_dict())
 
     @_zk_wrapper
     def ha_node_get(self):
@@ -241,7 +241,7 @@ class OpenLabCmd(object):
         if self.args.format == 'pretty':
             print(utils.format_output('node', result))
         else:
-            print(result)
+            print(result.to_dict())
 
     @_zk_wrapper
     def ha_node_create(self):
@@ -260,7 +260,7 @@ class OpenLabCmd(object):
         if self.args.format == 'pretty':
             print(utils.format_output('node', result))
         else:
-            print(result)
+            print(result.to_dict())
 
     @_zk_wrapper
     def ha_node_update(self):
@@ -273,7 +273,7 @@ class OpenLabCmd(object):
         if self.args.format == 'pretty':
             print(utils.format_output('node', result))
         else:
-            print(result)
+            print(result.to_dict())
 
     @_zk_wrapper
     def ha_node_delete(self):
@@ -286,7 +286,7 @@ class OpenLabCmd(object):
         if self.args.format == 'pretty':
             print(utils.format_output('service', result))
         else:
-            print(result)
+            print(result.to_dict())
 
     @_zk_wrapper
     def ha_service_get(self):
@@ -295,7 +295,7 @@ class OpenLabCmd(object):
         if self.args.format == 'pretty':
             print(utils.format_output('service', result))
         else:
-            print(result)
+            print(result.to_dict())
 
     def run(self):
         # no arguments, print help messaging, then exit with error(1)

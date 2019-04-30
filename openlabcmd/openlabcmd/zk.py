@@ -1,6 +1,5 @@
 import configparser
 import datetime
-import json
 import logging
 import time
 
@@ -34,23 +33,6 @@ class ZooKeeper(object):
             raise exceptions.ClientError("config should be a ConfigParser "
                                          "object.")
         self._last_retry_log = 0
-
-    def _bytesToDict(self, node_data, include_created_at=False,
-                     include_updated_at=False):
-        """ Convert zookeeper node data into dict."""
-        node_dict = node_data[0]
-        # ctime and mtime is millisecond in zk.
-        ctime, mtime = node_data[1].ctime, node_data[1].mtime
-
-        return_info = json.loads(node_dict.decode('utf8'))
-        if include_created_at:
-            return_info['created_at'] = datetime.datetime.fromtimestamp(
-                ctime / 1000).isoformat()
-        if include_updated_at:
-            return_info['updated_at'] = datetime.datetime.fromtimestamp(
-                mtime / 1000).isoformat()
-
-        return return_info
 
     def _connection_listener(self, state):
         if state == KazooState.LOST:
@@ -125,46 +107,28 @@ class ZooKeeper(object):
     def list_nodes(self):
         path = '/ha'
         try:
-            nodes = []
+            nodes_objs = []
             for exist_node in self.client.get_children(path):
-                node_info = self.get_node(exist_node)
-                nodes.append(node_info)
+                node_obj = self.get_node(exist_node)
+                nodes_objs.append(node_obj)
         except kze.NoNodeError:
             return []
-        return sorted(nodes, key=lambda x: x['name'])
+        return sorted(nodes_objs, key=lambda x: x.name)
 
     @_client_check_wrapper
     def get_node(self, node_name):
         try:
-            node_info = self.client.get('/ha/%s' % node_name)
-
-            node_info = self._bytesToDict(node_info, include_created_at=True,
-                                          include_updated_at=True)
-            return node_info
+            node_bytes = self.client.get('/ha/%s' % node_name)
+            node_obj = node.Node.from_zk_bytes(node_bytes)
+            return node_obj
         except kze.NoNodeError:
             raise exceptions.ClientError('Node %s not found.' % node_name)
 
-    @_client_check_wrapper
-    def create_node(self, name, role, n_type, ip):
-        existed_nodes = self.list_nodes()
-        for existed_node in existed_nodes:
-            if existed_node['role'] == role and existed_node['type'] == n_type:
-                raise exceptions.ClientError(
-                    "The role and type of the node should be unique.")
-
-        path = '/ha/%s' % name
-        new_node = node.Node(name, role, n_type, ip)
-        try:
-            self.client.create(path,
-                               value=new_node.to_zk_data(),
-                               makepath=True)
-        except kze.NodeExistsError:
-            raise exceptions.ClientError("The node %s is already existed."
-                                         % name)
-
-        master_service_path = path + '/master_service'
-        slave_service_path = path + '/slave_service'
-        zookeeper_service_path = path + '/zookeeper_service'
+    def _init_service(self, node_name, node_type):
+        path = '/ha/%s' % node_name
+        master_service_path = path + '/master'
+        slave_service_path = path + '/slave'
+        zookeeper_service_path = path + '/zookeeper'
 
         self.client.create(master_service_path)
         self.client.create(slave_service_path)
@@ -173,7 +137,7 @@ class ZooKeeper(object):
         for node_role, all_services in service.service_mapping.items():
             new_service_path = path + '/%s' % node_role
             try:
-                node_services = all_services[n_type]
+                node_services = all_services[node_type]
             except KeyError:
                 continue
             for service_type, service_names in node_services.items():
@@ -182,42 +146,59 @@ class ZooKeeper(object):
                                  service.UnnecessaryService)
                 for service_name in service_names:
                     new_service = service_class(service_name,
-                                                node_role.split('_')[0])
+                                                node_role, node_name)
                     self.client.create(
                         new_service_path + '/%s' % service_name,
-                        value=new_service.to_zk_data())
+                        value=new_service.to_zk_bytes())
 
-        node_info = self.get_node(name)
-        return node_info
+    @_client_check_wrapper
+    def create_node(self, name, role, n_type, ip):
+        existed_nodes = self.list_nodes()
+        for existed_node in existed_nodes:
+            if existed_node.role == role and existed_node.role == n_type:
+                raise exceptions.ClientError(
+                    "The role and type of the node should be unique.")
+
+        path = '/ha/%s' % name
+        new_node = node.Node(name, role, n_type, ip)
+        try:
+            self.client.create(path,
+                               value=new_node.to_zk_bytes(),
+                               makepath=True)
+        except kze.NodeExistsError:
+            raise exceptions.ClientError("The node %s is already existed."
+                                         % name)
+        self._init_service(name, n_type)
+        node_obj = self.get_node(name)
+        return node_obj
 
     @_client_check_wrapper
     def update_node(self, node_name, maintain=None, role=None, **kwargs):
         path = '/ha/%s' % node_name
-        node_info = self.get_node(node_name)
+        node_obj = self.get_node(node_name)
         if maintain is not None:
             if maintain:
-                if node_info['status'] == node.NodeStatus.UP:
-                    node_info['status'] = node.NodeStatus.MAINTAINING
+                if node_obj.status == node.NodeStatus.UP:
+                    node_obj.status = node.NodeStatus.MAINTAINING
                 else:
                     raise exceptions.ClientError(
                         "The node must be in 'up' status when trying to "
                         "maintain it.")
             else:
-                if node_info['status'] == node.NodeStatus.MAINTAINING:
-                    node_info['status'] = node.NodeStatus.UP
+                if node_obj.status == node.NodeStatus.MAINTAINING:
+                    node_obj.status = node.NodeStatus.UP
                 else:
                     raise exceptions.ClientError(
                         "The node must be in 'maintaining' status when trying "
                         "to un-maintain it.")
         if role:
-            node_info['role'] = role
+            node_obj.role = role
 
-        node_info.update(kwargs)
-        new_node = node.Node.from_dict(node_info)
-        self.client.set(path, value=new_node.to_zk_data())
+        node_obj.update(kwargs)
+        self.client.set(path, value=node_obj.to_zk_bytes())
 
-        node_info = self.get_node(node_name)
-        return node_info
+        node_obj = self.get_node(node_name)
+        return node_obj
 
     @_client_check_wrapper
     def delete_node(self, node_name):
@@ -250,26 +231,22 @@ class ZooKeeper(object):
 
         result = []
         for exist_node in self.list_nodes():
-            if node_name_filter and exist_node['name'] not in node_name_filter:
+            if node_name_filter and exist_node.name not in node_name_filter:
                 continue
-            if node_role_filter and exist_node['role'] not in node_role_filter:
+            if node_role_filter and exist_node.role not in node_role_filter:
                 continue
-            path = '/ha/%s/%s_service' % (exist_node['name'],
-                                          exist_node['role'])
+            path = '/ha/%s/%s' % (exist_node.name, exist_node.role)
             for service_name in self.client.get_children(path):
                 service_path = path + '/' + service_name
-                service_info = self.client.get(service_path)
-                service_info = self._bytesToDict(service_info,
-                                                 include_updated_at=True)
-                service_info['node_name'] = exist_node['name']
-                result.append(service_info)
-        return sorted(result, key=lambda x: x['node_name'])
+                service_bytes = self.client.get(service_path)
+                service_obj = service.Service.from_zk_bytes(service_bytes)
+                result.append(service_obj)
+        return sorted(result, key=lambda x: x.node_name)
 
     def _get_service_path_and_node(self, service_name, role, n_type):
         for exist_node in self.list_nodes():
-            if exist_node['role'] == role and exist_node['type'] == n_type:
-                path = '/ha/%s/%s_service/%s' % (exist_node['name'], role,
-                                                 service_name)
+            if exist_node.role == role and exist_node.type == n_type:
+                path = '/ha/%s/%s/%s' % (exist_node.name, role, service_name)
                 return path, exist_node
         raise exceptions.ClientError("Can't find service %s" % service_name)
 
@@ -278,13 +255,12 @@ class ZooKeeper(object):
         path, srv_node = self._get_service_path_and_node(service_name, role,
                                                          n_type)
         try:
-            result = self.client.get(path)
+            service_bytes = self.client.get(path)
         except kze.NoNodeError:
             raise exceptions.ClientError('Service %s not found.' %
                                          service_name)
-        result = self._bytesToDict(result, include_updated_at=True)
-        result['node_name'] = srv_node['name']
-        return result
+        service_obj = service.Service.from_zk_bytes(service_bytes)
+        return service_obj
 
     @_client_check_wrapper
     def update_service(self, service_name, role, n_type, alarmed=None,
@@ -297,24 +273,23 @@ class ZooKeeper(object):
             if not isinstance(alarmed, bool):
                 raise exceptions.ValidationError('alarmed should be boolean '
                                                  'value.')
-            old_service['alarmed'] = alarmed
-            old_service['alarmed_at'] = current_time
+            old_service.alarmed = alarmed
+            old_service.alarmed_at = current_time
         if restarted is not None:
             if not isinstance(restarted, bool):
                 raise exceptions.ValidationError('restarted should be '
                                                  'boolean value.')
-            old_service['restarted'] = restarted
-            old_service['restarted_at'] = current_time
+            old_service.restarted = restarted
+            old_service.restarted_at = current_time
         if status:
             if status not in service.ServiceStatus().all_status:
                 raise exceptions.ValidationError(
                     'status should be in %s.' %
                     service.ServiceStatus().all_status)
-            old_service['status'] = status
+            old_service.status = status
 
         old_service.update(kwargs)
-        new_service = service.Service.from_dict(old_service)
-        self.client.set(path, value=new_service.to_zk_data())
+        self.client.set(path, value=old_service.to_zk_bytes())
 
         new_service = self.get_service(service_name, role, n_type)
         return new_service
