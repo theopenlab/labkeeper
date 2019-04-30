@@ -97,14 +97,12 @@ Get or list the service running in cluster.
 * openlab ha service list
 * openlab ha service get
   ```
-  usage: openlab ha service get [-h] [--role {master,slave,zookeeper}] name
+  usage: openlab ha service get [-h] --node NODE name
 
   positional arguments:
     name                  service name.
 
   optional arguments:
     -h, --help            show this help message and exit
-    --role {master,slave,zookeeper}
-                          The role of the node where the service run. It must be
-                          sepcified if the service is 'mysql' or 'zookeeper'.
+    --node NODE  The node where the service run.
   ```

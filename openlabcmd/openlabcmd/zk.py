@@ -145,8 +145,7 @@ class ZooKeeper(object):
                                  service_type == 'necessary' else
                                  service.UnnecessaryService)
                 for service_name in service_names:
-                    new_service = service_class(service_name,
-                                                node_role, node_name)
+                    new_service = service_class(service_name, node_name)
                     self.client.create(
                         new_service_path + '/%s' % service_name,
                         value=new_service.to_zk_bytes())
@@ -243,17 +242,11 @@ class ZooKeeper(object):
                 result.append(service_obj)
         return sorted(result, key=lambda x: x.node_name)
 
-    def _get_service_path_and_node(self, service_name, role, n_type):
-        for exist_node in self.list_nodes():
-            if exist_node.role == role and exist_node.type == n_type:
-                path = '/ha/%s/%s/%s' % (exist_node.name, role, service_name)
-                return path, exist_node
-        raise exceptions.ClientError("Can't find service %s" % service_name)
-
     @_client_check_wrapper
-    def get_service(self, service_name, role, n_type):
-        path, srv_node = self._get_service_path_and_node(service_name, role,
-                                                         n_type)
+    def get_service(self, service_name, node_name):
+        service_node = self.get_node(node_name)
+        path = '/ha/%s/%s/%s' % (service_node.name, service_node.role,
+                                 service_name)
         try:
             service_bytes = self.client.get(path)
         except kze.NoNodeError:
@@ -263,10 +256,12 @@ class ZooKeeper(object):
         return service_obj
 
     @_client_check_wrapper
-    def update_service(self, service_name, role, n_type, alarmed=None,
+    def update_service(self, service_name, node_name, alarmed=None,
                        restarted=None, status=None, **kwargs):
-        old_service = self.get_service(service_name, role, n_type)
-        path, _ = self._get_service_path_and_node(service_name, role, n_type)
+        old_service = self.get_service(service_name, node_name)
+        service_node = self.get_node(node_name)
+        path = '/ha/%s/%s/%s' % (service_node.name, service_node.role,
+                                 service_name)
         current_time = datetime.datetime.utcnow().isoformat()
 
         if alarmed is not None:
@@ -291,5 +286,5 @@ class ZooKeeper(object):
         old_service.update(kwargs)
         self.client.set(path, value=old_service.to_zk_bytes())
 
-        new_service = self.get_service(service_name, role, n_type)
+        new_service = self.get_service(service_name, node_name)
         return new_service
