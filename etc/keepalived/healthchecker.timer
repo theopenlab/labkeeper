@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Openlab HA health checker scripts periodically
+
+[Timer]
+OnActiveSec=10s
+OnBootSec=300s
+OnStartupSec=10s
+OnUnitActiveSec=30s
+
+[Install]
+WantedBy=timers.target

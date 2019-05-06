@@ -16,8 +16,8 @@ from openlabcmd import zk
 # ZK client config file
 ZK_CLI_CONF = "{{ zk_cli_conf }}"
 
-# Heartbeat Interanl time(seconds)
-HEARTBEAT_INTERNAL = {{ heartbeat_internal }}
+# Heartbeat Internal timeout(seconds)
+HEARTBEAT_INTERNAL_TIMEOUT = {{ heartbeat_internal }}
 
 # Simpledns provider
 base_api_url = 'https://api.dnsimple.com/v2/'
@@ -155,6 +155,8 @@ class Service(object):
         self.status = status
 
     def is_abnormal(self):
+        if self.status == 'error':
+            return
         cur_status = service_check(SYSTEMCTL_STATUS, self.name,
                                    self.node_role, self.node_type)
         if self.status != cur_status:
@@ -212,7 +214,7 @@ class Node(object):
         self.alarmed = alarmed
         self.status = status
 
-        self.hb_interval_time = HEARTBEAT_INTERNAL
+        self.hb_interval_time = HEARTBEAT_INTERNAL_TIMEOUT
         self.services = []
 
     def report_heart_beat(self):
@@ -311,7 +313,8 @@ def treat_single_service(service_obj, node_obj):
                 # Master/Slave Switch
                 switch_process(node_obj)
                 if not node_obj.alarmed:
-                    notify_issue(node_obj, affect_services=service_obj,
+                    notify_issue(node_obj, node_obj,
+                                 affect_services=service_obj,
                                  affect_range='node',
                                  more_specific='necessary_error')
                     service_obj.post_alarmed_if_possible()
@@ -333,7 +336,8 @@ def treat_single_service(service_obj, node_obj):
                         if node_obj.role == 'master':
                             switch_process(node_obj)
                             if not node_obj.alarmed:
-                                notify_issue(node_obj, affect_range='node',
+                                notify_issue(node_obj, node_obj,
+                                             affect_range='node',
                                              more_specific='slave_switch')
                                 node_obj.post_alarmed_if_possible()
                     # -- No
@@ -349,7 +353,8 @@ def treat_single_service(service_obj, node_obj):
                 # Then report node heartbeat.
                 else:
                     if not service_obj.alarmed:
-                        notify_issue(node_obj, affect_services=service_obj,
+                        notify_issue(node_obj, node_obj,
+                                     affect_services=service_obj,
                                      affect_range='service',
                                      more_specific='unecessary_svc')
                         service_obj.post_alarmed_if_possible()
@@ -427,7 +432,7 @@ def script_load_pre_check(node_obj):
         zk_cli = get_zk_cli()
         zk_cli.update_node(node_obj.name, role='master', status='up')
         if not node_obj.alarmed:
-            notify_issue(node_obj, affect_range='node',
+            notify_issue(node_obj, node_obj, affect_range='node',
                          more_specific='slave_switch')
             node_obj.post_alarmed_if_possible()
 
@@ -472,7 +477,7 @@ def switch_process(node_obj):
             if svc.is_abnormal():
                 svc_status.append(False)
         if not any(svc_status) and not node_obj.alarmed:
-            notify_issue(node_obj, affect_range='node',
+            notify_issue(node_obj, node_obj, affect_range='node',
                          more_specific='slave_error')
             node_obj.post_alarmed_if_possible()
 
@@ -512,10 +517,27 @@ def get_the_oppo_nodes():
 
 
 def oppo_node_check(oppo_node_objs):
+    local_node = get_local_node()
     for oppo_node_obj in oppo_node_objs:
         # check pingable and heartbeat is OK
-        if (not ping(oppo_node_obj.ip) or
+        # Case clean:
+        # Case 1: If the oppo node can pingable but heartbeat is overtime
+        #      -- This case must be the kp error, as no heartbeat upload, but
+        #      -- the host is alived.
+        # Case 2: If the oppo node can not pingable and heartbeart is not
+        #         overtime.
+        #      -- This case must be network error, it makes this script can not
+        #      -- access the opposite node.
+
+        # Case 1
+        if (ping(oppo_node_obj.ip) and
                 oppo_node_obj.is_check_heart_beat_overtime()):
+            raise Exception("keepalived error.")
+        elif (not ping(oppo_node_obj.ip) and
+              not oppo_node_obj.is_check_heart_beat_overtime()):
+            raise Exception("network error.")
+        elif (not ping(oppo_node_obj.ip) and
+              oppo_node_obj.is_check_heart_beat_overtime()):
             if oppo_node_obj.role == 'master' and oppo_node_obj.status == 'up':
                 # Report the issue towards deployment as oppo host is master
                 # Master/Slave Switch
@@ -527,7 +549,7 @@ def oppo_node_check(oppo_node_objs):
             # else:
             # Report the issue towards deployment as the oppo host is slave
             if not oppo_node_obj.alarmed:
-                notify_issue(oppo_node_obj,
+                notify_issue(local_node, oppo_node_obj,
                              affect_range='node',
                              more_specific='oppo_check')
             break
@@ -538,14 +560,26 @@ def oppo_node_process():
     oppo_node_check(op_nodes)
 
 
-def format_body_for_issue(node_obj, affect_services=None,
+def format_body_for_issue(issuer_node, node_obj, affect_services=None,
                           affect_range=None, more_specific=None):
-    body = "For recover the ENV, you need to do the " \
-           "following things manually.\n"
+    title = "[OPENLAB HA][%s] "
+    body = "Issuer Host Info:\n" \
+           "===============\n" \
+           "  name: %(name)s\n" \
+           "  role: %(role)s\n" \
+           "  ip: %(ip)s\n" % {
+        "name": issuer_node.name,
+        "role": issuer_node.role,
+        "ip": issuer_node.ip
+    }
+
+    body += "\nReason:\n" \
+            "===============\n"
     if affect_range == 'node':
         if more_specific == 'oppo_check':
             body += "The target node %(name)s in %(role)s deployment is " \
-                    "failed to be accessed with IP %(ip)s.\n" % (
+                    "failed to be accessed with IP %(ip)s or fetching its " \
+                    "heartbeat.\n" % (
                 {'name': node_obj.name,
                  'role': node_obj.role,
                  'ip': node_obj.ip})
@@ -553,10 +587,13 @@ def format_body_for_issue(node_obj, affect_services=None,
                 body += "HA tools already switch to slave deployment, " \
                         "please try a simple job to check whether " \
                         "everything is OK.\n"
-            body += "Have a try:\n" \
+            body += "\nSuggestion:\n" \
+                    "===============\n" \
                     "ssh ubuntu@%s\n" % node_obj.ip
             body += "And try to login the cloud to check whether the " \
                     "resource exists.\n"
+            title += "%s check %s failed, need to recover manually." % (
+                issuer_node.role, node_obj.role)
         elif more_specific == 'slave_error':
             body += "The data plane services of node %s in slave " \
                     "deployment hit errors.\n" % node_obj.name
@@ -564,10 +601,12 @@ def format_body_for_issue(node_obj, affect_services=None,
             for svc in node_obj.services:
                 svcs.append(svc.name)
             body += "The affected services including:\n %s\n" % " ".join(svcs)
-            body += "Have a try:\n" \
+            body += "\nSuggestion:\n" \
                     "ssh ubuntu@%s\n" % node_obj.ip
             for s in svcs:
                 body += "systemctl %s %s\n" % (SYSTEMCTL_RESTART, s)
+            title += "slave node %s has down, need to recover manually." % (
+                node_obj.name)
         elif more_specific in ['slave_switch', 'necessary_error']:
             body += "HA tools already switch to slave deployment, please " \
                     "try a simple job to check whether everything is OK.\n"
@@ -580,7 +619,13 @@ def format_body_for_issue(node_obj, affect_services=None,
                         "error.\n"
                 body += "Error service:\n"
                 body += "%s\n" % affect_services.name
-            body += "Have a try:\n" \
+                title += "%s node - %s 's necessary services %s are dead. HA " \
+                         "switch going." % (node_obj.role, node_obj.name,
+                                            affect_services.name)
+            else:
+                title += "%s node - %s is dead. HA " \
+                         "switch going." % (node_obj.role, node_obj.name)
+            body += "\nSuggestion:\n" \
                     "ssh ubuntu@%s\n" \
                     "cd go-to-labkeeper-directory\n" \
                     "./deploy.sh -d new-slave\n" % node_obj.ip
@@ -591,27 +636,28 @@ def format_body_for_issue(node_obj, affect_services=None,
                     "check.\n" % ({'service_name': affect_services.name,
                                    'name': node_obj.name,
                                    'ip': node_obj.ip})
-            body += "Have a try:\n" \
+            body += "\nSuggestion:\n" \
                     "ssh ubuntu@%s\n" \
                     "systemctl %s %s\n" \
                     "journalctl -u %s\n" % (node_obj.ip, SYSTEMCTL_STATUS,
                                             affect_services.name,
                                             affect_services.name)
-    return body
+            title += "%s node - %s 's unnecessary services %s are dead, " \
+                     "need to recover manually." % (
+                node_obj.role, node_obj.name, affect_services.name)
+    return title, body
 
 
-def notify_issue(affect_node, affect_services=None, affect_range=None,
-                 more_specific=None):
-    body = format_body_for_issue(
-        affect_node, affect_services=affect_services,
+def notify_issue(issuer_node, affect_node, affect_services=None,
+                 affect_range=None, more_specific=None):
+    title, body = format_body_for_issue(
+        issuer_node, affect_node, affect_services=affect_services,
         affect_range=affect_range, more_specific=more_specific)
     g = Github(login_or_token=ISSUE_USER_TOKEN)
     repo = g.get_repo(REPO_NAME)
     repo.create_issue(
-        title="[FATAL][%s] The online openlab deployment <%s> has Down, "
-              "Please recovery asap!" % (
-                  datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-                  affect_node.role),
+        title= title % (
+                  datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
         body=body)
 
 

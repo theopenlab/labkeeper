@@ -1,0 +1,5 @@
+[Unit]
+Description=Healthchecker
+
+[Service]
+ExecStart=/etc/healthchecker/healthchecker.sh
