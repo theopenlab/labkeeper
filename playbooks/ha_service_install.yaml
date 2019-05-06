@@ -11,37 +11,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- name: Install keepalived
-  hosts: keepalived
+- name: HA service deployment
+  hosts: ha_service
   become: yes
   tasks:
-    - name: Install keepalived
-      package: name=keepalived
+    - name: Create HA Timer Unit
+      copy:
+        src: "{{ labkeeper_config_git_dest }}/ha_service/ha_service.timer"
+        dest: /etc/systemd/system/ha_service.timer
 
-    - name: Enable ip_vs module
-      shell: |
-        modprobe ip_vs
-        modprobe ip_vs_wrr
-        lsmod |grep ip_vs
-      args:
-        executable: /bin/bash
-
-    - name: Get interface of default route
-      shell: ip route |grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p'
-      register: local_default_interface
-
-    - name: Generate keepalived conf
-      template:
-        src: "{{ labkeeper_config_git_dest }}/keepalived/keepalived.conf.j2"
-        dest: /etc/keepalived/keepalived.conf
-      vars:
-        local_kp_script: "/etc/keepalived/kp_local_loop.py"
-        local_interface: "{{ local_default_interface.stdout }}"
+    - name: Create HA Service Unit
+      copy:
+        src: "{{ labkeeper_config_git_dest }}/ha_service/ha_service.service"
+        dest: /etc/systemd/system/ha_service.service
 
     - name: Copy necessary scripts
       template:
-        src: "{{ labkeeper_config_git_dest }}/keepalived/kp_local_loop.py"
-        dest: /etc/keepalived/kp_local_loop.py
+        src: "{{ labkeeper_config_git_dest }}/ha_service/kp_local_loop.py"
+        dest: /etc/openlab/kp_local_loop.py
         mode: 0755
       vars:
         zk_cli_conf: "/etc/openlab/openlab.conf"
@@ -55,5 +42,8 @@
       pip:
         name: ['six', 'iso8601', 'requests', 'configparser', 'PyGithub', 'openlabcmd']
 
-    - name: Start keepalived service
-      service: name=keepalived state=started
+    - name: Start HA timer Unit
+      systemd:
+        name: ha_service.timer
+        state: started
+        enabled: yes

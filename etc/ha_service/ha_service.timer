@@ -1,0 +1,6 @@
+[Unit]
+Description=OpenLab HA Timer Service
+
+[Timer]
+OnActiveSec=10s
+OnUnitActiveSec=1m

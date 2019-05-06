@@ -30,8 +30,8 @@
 - import_playbook: zuul-log-server.yaml
 - import_playbook: ha_log_cfg_sync.yaml
 - import_playbook: ha_openlabcmd_install.yaml
+- import_playbook: ha_service_install.yaml
 - import_playbook: apache.yaml
-- import_playbook: keepalived.yaml
 - import_playbook: sync-config-files.yaml
   when: labsync_enabled|default(false)|bool
 - import_playbook: conf-new-slave.yaml

@@ -176,17 +176,17 @@ all:
           hosts: zuul02
           vars:
             apache_service_state: stopped
-    keepalived:
+    ha_service:
       children:
-        keepalived-zuul-master:
+        ha_service-zuul-master:
           hosts: zuul01
-        keepalived-zuul-slave:
+        ha_service-zuul-slave:
           hosts: zuul02
-        keepalived-nodepool-master:
+        ha_service-nodepool-master:
           hosts: nodepool01
-        keepalived-nodepool-slave:
+        ha_service-nodepool-slave:
           hosts: nodepool02
-        keepalived-zk03:
+        ha_service-zk03:
           hosts: zk03
       vars:
         use_test_url: true
