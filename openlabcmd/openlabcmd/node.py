@@ -15,7 +15,7 @@ class Node(object):
         self.role = role
         self.type = type
         self.ip = ip
-        self.heartbeat = heartbeat or 0
+        self.heartbeat = heartbeat or '0'
         self.alarmed = alarmed or False
         self.status = status or NodeStatus.INITIALIZING
 

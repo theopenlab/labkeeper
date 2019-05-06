@@ -46,17 +46,14 @@
         - { src: "{{ labkeeper_config_git_dest }}/healthchecker/healthchecker.timer", dest: '/etc/systemd/system/healthchecker.timer'}
         - { src: "{{ labkeeper_config_git_dest }}/healthchecker/healthchecker.service", dest: '/etc/systemd/system/healthchecker.service' }
 
-    - name: Enable healthchecker service
-      systemd:
-        name: healthchecker.service
-        enabled: yes
-        masked: no
-
+    # As systemd ansible module bugs not fix #36585 and #48786
     - name: Enable healthchecker Timer
-      systemd:
-        name: healthchecker.timer
-        enabled: yes
-        masked: no
+      shell: |
+        set -xe
+        sudo systemctl enable healthchecker.service
+        sudo systemctl enable healthchecker.timer
+      args:
+        executable: /bin/bash
 
     - name: Start healthchecker
       service: name=healthchecker.timer state=started

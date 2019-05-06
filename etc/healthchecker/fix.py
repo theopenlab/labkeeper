@@ -8,6 +8,14 @@ import six
 import configparser
 from github import Github
 from openlabcmd import zk
+import logging
+
+logging.basicConfig(filename="/etc/healthchecker/healthchecker.log",
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+LOG = logging.getLogger("fix.py")
 
 # ZK client config file
 ZK_CLI_CONF = "{{ zk_cli_conf }}"
@@ -56,12 +64,13 @@ def run_systemctl_command(command, service):
         # 0 means OK
         # if using status command, 0 means active, non-zero means error status.
         subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+        LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
         if command == SYSTEMCTL_STATUS:
             return 'up'
     except subprocess.CalledProcessError as e:
-        print("Failed to %(cmd)s %(srvc)s service: "
-              "%(err)s %(out)s", {'cmd': command, 'srvc': service,
-                                  'err': e, 'out': e.output})
+        LOG.error("Failed to %(cmd)s %(srvc)s service: "
+                  "%(err)s %(out)s", {'cmd': command, 'srvc': service,
+                                      'err': e, 'out': e.output})
         if command == SYSTEMCTL_STATUS:
             return 'down'
 
@@ -98,11 +107,17 @@ def post_alarmed_if_possible(obj):
         zk_cli = get_zk_cli()
         if 'node' in obj.__name__.lower():
             zk_cli.update_node(obj.name, alarmed=True)
+            LOG.info("%()s Node %(name)s updated with %(status)s "
+                     "alarmed=True",
+                     {'name': obj.name,
+                      'role': obj.role})
             obj.alarmed = True
         elif 'service' in obj.__name__.lower():
             local_node = get_local_node()
             updated_svc = zk_cli.update_service(
                 obj.name, local_node.role, local_node.type, alarmed=True)
+            LOG.info("Service %(name)s updated with alarmed=True",
+                     {'name': obj.name})
             obj.alarmed = True
             obj.alarmed_at = updated_svc.alarmed_at
 
@@ -181,6 +196,7 @@ def format_body_for_issue(issuer_node, node_obj, affect_services=None,
                 svcs.append(svc.name)
             body += "The affected services including:\n %s\n" % " ".join(svcs)
             body += "\nSuggestion:\n" \
+                    "===============\n" \
                     "ssh ubuntu@%s\n" % node_obj.ip
             for s in svcs:
                 body += "systemctl %s %s\n" % (SYSTEMCTL_RESTART, s)
@@ -205,9 +221,34 @@ def format_body_for_issue(issuer_node, node_obj, affect_services=None,
                 title += "%s node - %s is dead. HA " \
                          "switch going." % (node_obj.role, node_obj.name)
             body += "\nSuggestion:\n" \
+                    "===============\n" \
                     "ssh ubuntu@%s\n" \
                     "cd go-to-labkeeper-directory\n" \
                     "./deploy.sh -d new-slave\n" % node_obj.ip
+        elif more_specific in ['healthchecker_error', 'network_error']:
+            if more_specific == 'healthchecker_error':
+                title += "%s node %s - healthchecker are dead." % (
+                    node_obj.role, node_obj.name)
+                body += "healthchecker not working anymore, please " \
+                        "login to fix it.\n"
+                body += "\nSuggestion:\n" \
+                        "===============\n" \
+                        "ssh ubuntu@%s\n" \
+                        "systemctl status healthchecker.timer\n" \
+                        "systemctl status healthchecker.service\n" \
+                        "systemctl enable healthchecker.service\n" \
+                        "systemctl enable healthchecker.timer\n" \
+                        "systemctl start healthchecker.timer\n" \
+                        "systemctl list-timers --all\n" % node_obj.ip
+            elif more_specific == 'network_error':
+                title += "%s node %s - Hit network error." % (
+                    node_obj.role, node_obj.name)
+                body += "Can not access node %s by ip %s using PING, " \
+                        "but healthchecker on it still works.\n" % (
+                    node_obj.name, node_obj.ip)
+                body += "\nSuggestion:\n" \
+                        "===============\n" \
+                        "Please check its security group setting.\n"
         elif affect_range == 'service':
             if more_specific == 'unecessary_svc':
                 body += "A unecessary serivce %(service_name)s on the node " \
@@ -216,6 +257,7 @@ def format_body_for_issue(issuer_node, node_obj, affect_services=None,
                                        'name': node_obj.name,
                                        'ip': node_obj.ip})
                 body += "\nSuggestion:\n" \
+                        "===============\n" \
                         "ssh ubuntu@%s\n" \
                         "systemctl %s %s\n" \
                         "journalctl -u %s\n" % (node_obj.ip, SYSTEMCTL_STATUS,
@@ -226,6 +268,7 @@ def format_body_for_issue(issuer_node, node_obj, affect_services=None,
                              node_obj.role, node_obj.name,
                              affect_services.name)
         return title, body
+
 
 def notify_issue(issuer_node, affect_node, affect_services=None,
                  affect_range=None, more_specific=None):
@@ -238,6 +281,10 @@ def notify_issue(issuer_node, affect_node, affect_services=None,
         title= title % (
                   datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
         body=body)
+    LOG.info("Post a Issue for %(title)s with reason %(reason)s.",
+             {'title': title % (
+                  datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+              'reason': more_specific})
 
 
 def script_load_pre_check(node_obj):
@@ -291,6 +338,8 @@ def treat_single_service(service_obj, node_obj):
                                         'nodepool-timer-tasks']:
                 # restart the specific service
                 service_restart(SYSTEMCTL_RESTART, service_obj.name)
+                LOG.info("Service %(name)s restarted already.",
+                         {'name': service_obj.name})
         elif service_obj.status == 'down':
             if service_obj.is_necessary:
                 if not node_obj.alarmed:
@@ -357,10 +406,14 @@ def oppo_node_check(oppo_node_objs):
         # Case 1
         if (ping(oppo_node_obj.ip) and
                 is_check_heart_beat_overtime(oppo_node_obj)):
-            raise Exception("keepalived error.")
+            if not oppo_node_obj.alarmed:
+                notify_issue(local_node, oppo_node_obj, affect_range='node',
+                             more_specific='healthchecker_error')
         elif (not ping(oppo_node_obj.ip) and
               is_check_heart_beat_overtime(oppo_node_obj)):
-            raise Exception("network error.")
+            if not oppo_node_obj.alarmed:
+                notify_issue(local_node, oppo_node_obj, affect_range='node',
+                             more_specific='network_error')
         elif (not ping(oppo_node_obj.ip) and
               is_check_heart_beat_overtime(oppo_node_obj)):
             if not oppo_node_obj.alarmed:
@@ -374,6 +427,9 @@ def fix():
     local_node = get_local_node()
     script_load_pre_check(local_node)
     if local_node.status in ['maintaining', 'down']:
+        LOG.debug('Node %(name)s status is %(status)s, Skipping refresh.',
+                  {'name': local_node.name,
+                   'status': local_node.status.upper()})
         return
     local_node_service_process(local_node)
     if local_node.role != 'zookeeper':

@@ -8,6 +8,14 @@ import iso8601
 import six
 import configparser
 from openlabcmd import zk
+import logging
+
+logging.basicConfig(filename="/etc/healthchecker/healthchecker.log",
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+LOG = logging.getLogger("refresh.py")
 
 # ZK client config file
 ZK_CLI_CONF = "{{ zk_cli_conf }}"
@@ -80,12 +88,13 @@ def run_systemctl_command(command, service):
         # 0 means OK
         # if using status command, 0 means active, non-zero means error status.
         subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+        LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
         if command == SYSTEMCTL_STATUS:
             return 'up'
     except subprocess.CalledProcessError as e:
-        print("Failed to %(cmd)s %(srvc)s service: "
-              "%(err)s %(out)s", {'cmd': command, 'srvc': service,
-                                  'err': e, 'out': e.output})
+        LOG.error("Failed to %(cmd)s %(srvc)s service: "
+                  "%(err)s %(out)s", {'cmd': command, 'srvc': service,
+                                      'err': e, 'out': e.output})
         if command == SYSTEMCTL_STATUS:
             return 'down'
 
@@ -113,13 +122,21 @@ def ping(ipaddr):
 def is_service_abnormal(service_obj, node_obj):
     cur_status = service_check(SYSTEMCTL_STATUS, service_obj.name,
                                node_obj.role, node_obj.type)
+    LOG.debug("Service %(name)s check result: %(status)s",
+              {'name': service_obj.name, 'status': cur_status})
     if service_obj.status != cur_status:
 
         if service_obj.restarted:
             if cur_status == 'down' and service_obj.status == 'restarting':
                 service_obj.status = 'error'
+                LOG.debug("Service %(name)s set %(status)s status.",
+                          {'name': service_obj.name,
+                           'status': service_obj.status.upper()})
             elif cur_status == 'down' and service_obj.status == 'error':
                 service_obj.status = cur_status
+                LOG.debug("Service %(name)s set %(status)s status.",
+                          {'name': service_obj.name,
+                           'status': service_obj.status.upper()})
             else:
                 service_obj.status = cur_status
         else:
@@ -139,6 +156,9 @@ def is_service_abnormal(service_obj, node_obj):
                 service_obj.alarmed_at = None
         zk_cli.update_service(service_obj.name, node_obj.role, node_obj.type,
                               status=service_obj.status, **kwargs)
+        LOG.info("Service %(name)s updated with %(status)s status.",
+                 {'name': service_obj.name,
+                  'status': service_obj.status.upper()})
     return service_obj.status != 'up'
 
 
@@ -148,6 +168,10 @@ def post_restarted_if_possible(service_obj, node_obj):
         updated_svc = zk_cli.update_service(
             service_obj.name, node_obj.role, node_obj.type,
             restarted=True, status='restarting')
+        LOG.info("Service %(name)s updated with %(status)s status "
+                 "and restarted=True",
+                 {'name': service_obj.name,
+                  'status':'restarting'.upper()})
         service_obj.restarted = True
         service_obj.restarted_at = updated_svc.restarted_at
 
@@ -159,6 +183,8 @@ def report_heart_beat(node_obj):
     if node_obj.status == 'initializing':
         update_dict['status'] = 'up'
     zk_cli.update_node(node_obj.name, **update_dict)
+    LOG.debug("Report node %(name)s heartbeat %(hb)s",
+              {'name': node_obj.name, 'hb':hb})
     node_obj.heartbeat = hb
 
 
@@ -199,6 +225,9 @@ def refresh():
     local_node = get_local_node()
     # script_load_pre_check(local_node)
     if local_node.status in ['maintaining', 'down']:
+        LOG.debug('Node %(name)s status is %(status)s, Skipping refresh.',
+                  {'name': local_node.name,
+                   'status': local_node.status.upper()})
         return
     local_node_service_process(local_node)
     if local_node.role != 'zookeeper':
@@ -241,6 +270,9 @@ def local_node_service_process(node_obj):
 
 def treat_single_service(service_obj, node_obj):
     if is_service_abnormal(service_obj, node_obj):
+        LOG.debug("Service %(name)s is abnormal. It's status is %(status)s.",
+                  {'name': service_obj.name,
+                   'status': service_obj.status.upper()})
         if service_obj.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
                                     'nodepool-timer-tasks']:
             post_restarted_if_possible(service_obj, node_obj)
@@ -259,13 +291,7 @@ def oppo_node_check(oppo_node_objs):
         #      -- access the opposite node.
 
         # Case 1
-        if (ping(oppo_node_obj.ip) and
-                is_check_heart_beat_overtime(oppo_node_obj)):
-            raise Exception("keepalived error.")
-        elif (not ping(oppo_node_obj.ip) and
-              not is_check_heart_beat_overtime(oppo_node_obj)):
-            raise Exception("network error.")
-        elif (not ping(oppo_node_obj.ip) and
+        if (not ping(oppo_node_obj.ip) and
               is_check_heart_beat_overtime(oppo_node_obj)):
             if oppo_node_obj.role == 'master' and oppo_node_obj.status == 'up':
                 # Report the issue towards deployment as oppo host is master
@@ -275,6 +301,10 @@ def oppo_node_check(oppo_node_objs):
                 zk_cli = get_zk_cli()
                 for oppo in oppo_node_objs:
                     zk_cli.update_node(oppo.name, status='down')
+                    LOG.info("OPPO %(role)s node %(name)s updated with "
+                             "%(status)s status.",
+                             {'role': oppo.role, 'name': oppo.name,
+                              'status': 'down'.upper()})
             break
 
 

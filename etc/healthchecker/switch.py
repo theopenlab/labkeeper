@@ -11,6 +11,14 @@ import requests
 import json
 import configparser
 from openlabcmd import zk
+import logging
+
+logging.basicConfig(filename="/etc/healthchecker/healthchecker.log",
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+LOG = logging.getLogger("switch.py")
 
 # ZK client config file
 ZK_CLI_CONF = "{{ zk_cli_conf }}"
@@ -98,12 +106,13 @@ def run_systemctl_command(command, service):
         # 0 means OK
         # if using status command, 0 means active, non-zero means error status.
         subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
+        LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
         if command == SYSTEMCTL_STATUS:
             return 'up'
     except subprocess.CalledProcessError as e:
-        print("Failed to %(cmd)s %(srvc)s service: "
-              "%(err)s %(out)s", {'cmd': command, 'srvc': service,
-                                  'err': e, 'out': e.output})
+        LOG.error("Failed to %(cmd)s %(srvc)s service: "
+                  "%(err)s %(out)s", {'cmd': command, 'srvc': service,
+                                      'err': e, 'out': e.output})
         if command == SYSTEMCTL_STATUS:
             return 'down'
 
@@ -149,6 +158,9 @@ def switch():
     local_node = get_local_node()
     script_load_pre_check(local_node)
     if local_node.status in ['maintaining', 'down']:
+        LOG.debug('Node %(name)s status is %(status)s, Skipping refresh.',
+                  {'name': local_node.name,
+                   'status': local_node.status.upper()})
         return
     local_node_service_process(local_node)
 
@@ -213,6 +225,7 @@ def setup_necessary_services_and_check(node_obj):
             if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
                                     'nodepool-timer-tasks']:
                 service_action(SYSTEMCTL_START, service)
+                LOG.info("Start Service %(name)s.", {'name': service.name})
 
     # local deplay 5 seconds
     time.sleep(5)
@@ -222,10 +235,13 @@ def setup_necessary_services_and_check(node_obj):
     for service in service_objs:
         result[service.name] = service_check(
             SYSTEMCTL_STATUS, service.name, node_obj.role, node_obj.type)
+        LOG.info("Started Service %(name)s status checking: %(status)s",
+                 {'name': service.name,
+                  'status': result[service.name].upper()})
 
     for svc_name, res in result.items():
         if res != 0:
-            print("%s is failed to start with return code %s" % (
+            LOG.error("%s is failed to start with return code %s" % (
                 svc_name, res))
 
 def check_opp_master_is_good():
@@ -250,6 +266,10 @@ def check_and_process_orphan_master():
     for orphan in orphans:
         zk_cli = get_zk_cli()
         zk_cli.update_node(orphan.name, role='slave')
+        LOG.info("M/S switching: orphan node, %(role)s node %(name)s is "
+                 "finishd from master to slave. And update it with "
+                 "role=slave.",
+                 {'role': orphan.role, 'name': orphan.name})
 
 
 def script_load_pre_check(node_obj):
@@ -262,6 +282,10 @@ def script_load_pre_check(node_obj):
         change_dns()
         zk_cli = get_zk_cli()
         zk_cli.update_node(node_obj.name, role='master', status='up')
+        LOG.info("M/S switching: local node, %(role)s node %(name)s is "
+                 "finishd from slave to master. And update it with "
+                 "role=master and status=up.",
+                 {'role': node_obj.role, 'name': node_obj.name})
 
     elif node_obj.status == 'down' and node_obj.role == 'master':
         # This is the first step when other master nodes, when check
@@ -271,7 +295,10 @@ def script_load_pre_check(node_obj):
         shut_down_all_services(node_obj)
         zk_cli = get_zk_cli()
         zk_cli.update_node(node_obj.name, role='slave')
-
+        LOG.info("M/S switching: local node, %(role)s node %(name)s is "
+                 "finishd from master to slave. And update it with "
+                 "role=slave.",
+                 {'role': node_obj.role, 'name': node_obj.name})
     # This is for make sure that, once a master node is down(
     # can not ping or keepalived down)
     # A origin master node will still hang on master down status.
@@ -291,8 +318,16 @@ def switch_process(node_obj):
         shut_down_all_services(node_obj)
         same_nodes = get_the_same_nodes()
         zk_cli.update_node(node_obj.name, role='slave', status='down')
+        LOG.info("M/S switching: local node, %(role)s node %(name)s is "
+                 "finishd from master to slave. And update it with "
+                 "role=slave and status=down.",
+                 {'role': node_obj.role, 'name': node_obj.name})
         for node in same_nodes:
             zk_cli.update_node(node.name, status='down')
+            LOG.info("M/S switching: remote same node,"
+                     "%(role)s node %(name)s begins from master to slave. "
+                     "And update it with status=down.",
+                     {'role': node.role, 'name': node.name})
 
 
 def get_the_same_nodes():
@@ -336,8 +371,8 @@ def change_dns():
                'Accept': 'application/json'}
     res = requests.get(base_api_url + 'accounts', headers=headers)
     if res.status_code != 200:
-        print("Failed to get the accounts")
-        print("Details: code-status %s\n         message: %s" % (
+        LOG.error("Failed to get the accounts")
+        LOG.error("Details: code-status %s\n         message: %s" % (
             res.status_code, res.reason))
         return
     accounts = json.loads(s=res.content.decode('utf8'))['data']
@@ -347,7 +382,7 @@ def change_dns():
             account_id = account['id']
             break
     if not account_id:
-        print("Failed to get the account_id")
+        LOG.error("Failed to get the account_id")
         return
 
     target_dict = {DOMAIN_NAME1: {}, DOMAIN_NAME2: {}, DOMAIN_NAME_BK: {}}
@@ -356,8 +391,8 @@ def change_dns():
             account_id, DOMAIN_NAME, target_domain.split(DOMAIN_NAME)[0][:-1]),
                            headers=headers)
         if res.status_code != 200:
-            print("Failed to get the records by name %s" % target_domain)
-            print("Details: code-status %s\n         message: %s" % (
+            LOG.error("Failed to get the records by name %s" % target_domain)
+            LOG.error("Details: code-status %s\n         message: %s" % (
                 res.status_code, res.reason))
             return
         records = json.loads(s=res.content.decode('utf8'))['data']
@@ -368,11 +403,11 @@ def change_dns():
                 target_dict[target_domain]['id'] = record_id
                 break
         if not record_id:
-            print("Failed to get the record_id by name %s" % target_domain)
+            LOG.error("Failed to get the record_id by name %s" % target_domain)
             return
 
     if not any(target_dict.values()):
-        print("Can't not get any records.")
+        LOG.error("Can't not get any records.")
         return
 
     headers['Content-Type'] = 'application/json'
@@ -388,26 +423,26 @@ def change_dns():
         if result['name'] not in ['logs-bak', 'test-logs-bak']:
             if (res.status_code == 200 and
                     result['content'] == TARGET_CHANGE_IP):
-                print("Success Update -- Domain %s from %s to %s" % (
+                LOG.info("Success Update -- Domain %s from %s to %s" % (
                     target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
             else:
-                print("Fail Update -- Domain %s from %s to %s" % (
+                LOG.error("Fail Update -- Domain %s from %s to %s" % (
                     target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
-                print("Details: code-status %s\n         message: %s" % (
+                LOG.error("Details: code-status %s\n         message: %s" % (
                     res.status_code, res.reason))
                 return
         else:
             if (res.status_code == 200 and
                     result['content'] == TARGET_CHANGE_BK_IP):
-                print("Success Update -- Domain %s from %s to %s" % (
+                LOG.info("Success Update -- Domain %s from %s to %s" % (
                     target_domain, TARGET_ORI_BK_IP, TARGET_CHANGE_BK_IP))
             else:
-                print("Fail Update -- Domain %s from %s to %s" % (
+                LOG.error("Fail Update -- Domain %s from %s to %s" % (
                     target_domain, TARGET_ORI_BK_IP, TARGET_CHANGE_BK_IP))
-                print("Details: code-status %s\n         message: %s" % (
+                LOG.error("Details: code-status %s\n         message: %s" % (
                     res.status_code, res.reason))
                 return
-
+    LOG.info("Finish update DNS entry.")
 
 if __name__ == '__main__':
     switch()
