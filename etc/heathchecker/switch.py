@@ -160,7 +160,8 @@ def switch():
 def local_node_service_process(node_obj):
     zk_cli = get_zk_cli()
     service_objs = zk_cli.list_services(
-        node_name_filter=node_obj.name, node_role_filter=node_obj.role)
+        node_name_filter=str(node_obj.name),
+        node_role_filter=str(node_obj.role))
     for service_obj in service_objs:
         treat_single_service(service_obj, node_obj)
 
@@ -194,7 +195,8 @@ def treat_single_service(service_obj, node_obj):
 def shut_down_all_services(node_obj):
     zk_cli = get_zk_cli()
     service_objs = zk_cli.list_services(
-        node_name_filter=node_obj.name, node_role_filter=node_obj.role)
+        node_name_filter=str(node_obj.name),
+        node_role_filter=str(node_obj.role))
     for service in service_objs:
         if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
                                 'nodepool-timer-tasks']:
@@ -204,7 +206,8 @@ def shut_down_all_services(node_obj):
 def setup_necessary_services_and_check(node_obj):
     zk_cli = get_zk_cli()
     service_objs = zk_cli.list_services(
-        node_name_filter=node_obj.name, node_role_filter=node_obj.role)
+        node_name_filter=str(node_obj.name),
+        node_role_filter=str(node_obj.role))
     for service in service_objs:
         if service.is_necessary:
             if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',

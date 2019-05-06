@@ -120,6 +120,8 @@ def is_service_abnormal(service_obj, node_obj):
                 service_obj.status = 'error'
             elif cur_status == 'down' and service_obj.status == 'error':
                 service_obj.status = cur_status
+            else:
+                service_obj.status = cur_status
         else:
             service_obj.status = cur_status
         zk_cli = get_zk_cli()
@@ -147,7 +149,7 @@ def post_restarted_if_possible(service_obj, node_obj):
             service_obj.name, node_obj.role, node_obj.type,
             restarted=True, status='restarting')
         service_obj.restarted = True
-        service_obj.restarted_at = updated_svc['restarted_at']
+        service_obj.restarted_at = updated_svc.restarted_at
 
 
 def report_heart_beat(node_obj):
@@ -212,7 +214,7 @@ def get_the_oppo_nodes():
     oppo_nodes = []
     local_node_obj = get_local_node()
     for zk_node in zk_cli.list_nodes():
-        if zk_node['role'] == local_node_obj.role:
+        if zk_node.role == local_node_obj.role:
             continue
         elif (zk_node.role in ['master', 'slave'] and
               zk_node.status != 'down'):
@@ -229,7 +231,8 @@ def oppo_node_process():
 def local_node_service_process(node_obj):
     zk_cli = get_zk_cli()
     service_objs = zk_cli.list_services(
-        node_name_filter=node_obj.name, node_role_filter=node_obj.role)
+        node_name_filter=str(node_obj.name),
+        node_role_filter=str(node_obj.role))
     for service_obj in service_objs:
         treat_single_service(service_obj, node_obj)
 
@@ -237,7 +240,7 @@ def local_node_service_process(node_obj):
 
 
 def treat_single_service(service_obj, node_obj):
-    if not is_service_abnormal(service_obj, node_obj):
+    if is_service_abnormal(service_obj, node_obj):
         if service_obj.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
                                     'nodepool-timer-tasks']:
             post_restarted_if_possible(service_obj, node_obj)

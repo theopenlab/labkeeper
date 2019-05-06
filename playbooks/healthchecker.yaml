@@ -12,7 +12,7 @@
 # under the License.
 ---
 - name: Install healthchecker
-  hosts: keepalived
+  hosts: healthchecker
   become: yes
   tasks:
     - name: New a healthchecker directory
@@ -24,10 +24,10 @@
     - name: Copy necessary scripts
       template: src={{ item.src }} dest={{ item.dest }} mode=0755
       with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/healthchecker.sh", dest: '/etc/healthchecker/healthchecker.sh'}
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/refresh.py", dest: '/etc/healthchecker/refresh.py' }
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/fix.py", dest: '/etc/healthchecker/fix.py'}
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/switch.py", dest: '/etc/healthchecker/switch.py' }
+        - { src: "{{ labkeeper_config_git_dest }}/healthchecker/healthchecker.sh", dest: '/etc/healthchecker/healthchecker.sh'}
+        - { src: "{{ labkeeper_config_git_dest }}/healthchecker/refresh.py", dest: '/etc/healthchecker/refresh.py' }
+        - { src: "{{ labkeeper_config_git_dest }}/healthchecker/fix.py", dest: '/etc/healthchecker/fix.py'}
+        - { src: "{{ labkeeper_config_git_dest }}/healthchecker/switch.py", dest: '/etc/healthchecker/switch.py' }
       vars:
         zk_cli_conf: "/etc/openlab/openlab.conf"
         heartbeat_internal: 100
@@ -43,8 +43,14 @@
     - name: config healthchecker
       copy: src={{ item.src }} dest={{ item.dest }}
       with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/healthchecker.timer", dest: '/etc/systemd/system/'}
-        - { src: "{{ labkeeper_config_git_dest }}/keepalived/healthchecker.service", dest: '/etc/system/system/' }
+        - { src: "{{ labkeeper_config_git_dest }}/healthchecker/healthchecker.timer", dest: '/etc/systemd/system/healthchecker.timer'}
+        - { src: "{{ labkeeper_config_git_dest }}/healthchecker/healthchecker.service", dest: '/etc/systemd/system/healthchecker.service' }
+
+    - name: Enable healthchecker service
+      systemd:
+        name: healthchecker.service
+        enabled: yes
+        masked: no
 
     - name: Enable healthchecker Timer
       systemd:

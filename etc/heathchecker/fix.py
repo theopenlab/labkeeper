@@ -104,7 +104,7 @@ def post_alarmed_if_possible(obj):
             updated_svc = zk_cli.update_service(
                 obj.name, local_node.role, local_node.type, alarmed=True)
             obj.alarmed = True
-            obj.alarmed_at = updated_svc['alarmed_at']
+            obj.alarmed_at = updated_svc.alarmed_at
 
 def get_zk_cli():
     global GLOBAL_ZK
@@ -133,7 +133,7 @@ def get_the_same_nodes():
         if (zk_node.role != local_node_obj.role or
                 zk_node.name == local_node_obj.name):
             continue
-        elif zk_node['role'] in ['master', 'slave']:
+        elif zk_node.role in ['master', 'slave']:
             same_nodes.append(zk_node)
 
     return same_nodes
@@ -278,7 +278,8 @@ def oppo_node_process():
 def local_node_service_process(node_obj):
     zk_cli = get_zk_cli()
     service_objs = zk_cli.list_services(
-        node_name_filter=node_obj.name, node_role_filter=node_obj.role)
+        node_name_filter=str(node_obj.name),
+        node_role_filter=str(node_obj.role))
     for service_obj in service_objs:
         treat_single_service(service_obj, node_obj)
 
