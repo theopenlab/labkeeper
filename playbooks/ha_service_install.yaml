@@ -40,7 +40,7 @@
 
     - name: install script dependency
       pip:
-        name: ['six', 'iso8601', 'requests', 'configparser', 'PyGithub', 'openlabcmd']
+        name: ['six', 'iso8601', 'requests', 'PyGithub']
 
     - name: Start HA timer Unit
       systemd:
