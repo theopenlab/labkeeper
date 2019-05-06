@@ -1,6 +1,8 @@
 import datetime
 import json
 
+import pytz
+
 # NOTE(wxy): Add more if needed.
 service_mapping = {
     'master': {
@@ -89,10 +91,10 @@ class Service(object):
     @classmethod
     def from_zk_bytes(cls, zk_bytes):
         service_dict = json.loads(zk_bytes[0].decode('utf8'))
-        # mtime is millisecond in zk.
-        mtime = zk_bytes[1].mtime
+        # mtime is millisecond in zk. Convert to second.
+        mtime = zk_bytes[1].mtime / 1000
         service_dict['updated_at'] = datetime.datetime.fromtimestamp(
-                mtime / 1000).isoformat()
+                mtime, pytz.utc).isoformat()
         return cls(**service_dict)
 
 

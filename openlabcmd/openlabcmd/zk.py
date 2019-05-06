@@ -267,7 +267,7 @@ class ZooKeeper(object):
                        restarted=None, status=None, **kwargs):
         old_service = self.get_service(service_name, role, n_type)
         path, _ = self._get_service_path_and_node(service_name, role, n_type)
-        current_time = datetime.datetime.now().isoformat()
+        current_time = datetime.datetime.utcnow().isoformat()
 
         if alarmed is not None:
             if not isinstance(alarmed, bool):
