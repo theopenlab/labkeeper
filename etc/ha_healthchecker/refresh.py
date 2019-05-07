@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os
 import socket
@@ -10,7 +10,7 @@ import configparser
 from openlabcmd import zk
 import logging
 
-logging.basicConfig(filename="/etc/healthchecker/healthchecker.log",
+logging.basicConfig(filename="/etc/openlab/ha_healthchecker/ha_healthchecker.log",
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',

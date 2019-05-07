@@ -158,13 +158,13 @@ all:
 
     # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
     # to test post issue and change the github app webhook.
-    healthchecker:
+    ha_healthchecker:
       children:
-        healthchecker-master:
+        ha_healthchecker-master:
           hosts: allinone01
-        healthchecker-slave:
+        ha_healthchecker-slave:
           hosts: allinone02
-        healthchecker-zk03:
+        ha_healthchecker-zk03:
           hosts: zk03
       vars:
         use_test_url: true

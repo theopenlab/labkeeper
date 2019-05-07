@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import socket
 import subprocess
@@ -10,7 +10,7 @@ from github import Github
 from openlabcmd import zk
 import logging
 
-logging.basicConfig(filename="/etc/healthchecker/healthchecker.log",
+logging.basicConfig(filename="/etc/openlab/ha_healthchecker/ha_healthchecker.log",
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
@@ -227,24 +227,24 @@ def format_body_for_issue(issuer_node, node_obj, affect_services=None,
                     "./deploy.sh -d new-slave\n" % node_obj.ip
         elif more_specific in ['healthchecker_error', 'network_error']:
             if more_specific == 'healthchecker_error':
-                title += "%s node %s - healthchecker are dead." % (
+                title += "%s node %s - ha_healthchecker are dead." % (
                     node_obj.role, node_obj.name)
-                body += "healthchecker not working anymore, please " \
+                body += "ha_healthchecker not working anymore, please " \
                         "login to fix it.\n"
                 body += "\nSuggestion:\n" \
                         "===============\n" \
                         "ssh ubuntu@%s\n" \
-                        "systemctl status healthchecker.timer\n" \
-                        "systemctl status healthchecker.service\n" \
-                        "systemctl enable healthchecker.service\n" \
-                        "systemctl enable healthchecker.timer\n" \
-                        "systemctl start healthchecker.timer\n" \
+                        "systemctl status ha_healthchecker.timer\n" \
+                        "systemctl status ha_healthchecker.service\n" \
+                        "systemctl enable ha_healthchecker.service\n" \
+                        "systemctl enable ha_healthchecker.timer\n" \
+                        "systemctl start ha_healthchecker.timer\n" \
                         "systemctl list-timers --all\n" % node_obj.ip
             elif more_specific == 'network_error':
                 title += "%s node %s - Hit network error." % (
                     node_obj.role, node_obj.name)
                 body += "Can not access node %s by ip %s using PING, " \
-                        "but healthchecker on it still works.\n" % (
+                        "but ha_healthchecker on it still works.\n" % (
                     node_obj.name, node_obj.ip)
                 body += "\nSuggestion:\n" \
                         "===============\n" \

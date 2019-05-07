@@ -1,0 +1,5 @@
+[Unit]
+Description=HA Healthchecker
+
+[Service]
+ExecStart=/etc/openlab/ha_healthchecker/healthchecker.sh

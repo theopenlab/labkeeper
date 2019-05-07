@@ -176,17 +176,17 @@ all:
           hosts: zuul02
           vars:
             apache_service_state: stopped
-    healthchecker:
+    ha_healthchecker:
       children:
-        healthchecker-zuul-master:
+        ha_healthchecker-zuul-master:
           hosts: zuul01
-        healthchecker-zuul-slave:
+        ha_healthchecker-zuul-slave:
           hosts: zuul02
-        healthchecker-nodepool-master:
+        ha_healthchecker-nodepool-master:
           hosts: nodepool01
-        healthchecker-nodepool-slave:
+        ha_healthchecker-nodepool-slave:
           hosts: nodepool02
-        healthchecker-zk03:
+        ha_healthchecker-zk03:
           hosts: zk03
       vars:
         use_test_url: true
