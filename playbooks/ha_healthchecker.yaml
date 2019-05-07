@@ -1,0 +1,60 @@
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+- name: Install ha_healthchecker
+  hosts: ha_healthchecker
+  become: yes
+  tasks:
+    - name: New a ha_healthchecker directory
+      file:
+        path: /etc/openlab/ha_healthchecker/
+        mode: 0755
+        state: directory
+
+    - name: Copy necessary scripts
+      template: src={{ item.src }} dest={{ item.dest }} mode=0755
+      with_items:
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.sh", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.sh'}
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/refresh.py", dest: '/etc/openlab/ha_healthchecker/refresh.py' }
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/fix.py", dest: '/etc/openlab/ha_healthchecker/fix.py'}
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/switch.py", dest: '/etc/openlab/ha_healthchecker/switch.py' }
+      vars:
+        zk_cli_conf: "/etc/openlab/openlab.conf"
+        heartbeat_internal: 300
+        ori_master_ip: "{{ hostvars[groups['zuul-web-master'][0]].ansible_host }}"
+        ori_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
+        slave_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
+        slave_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
+
+    - name: install script dependency
+      pip:
+        name: ['six', 'iso8601', 'requests', 'configparser', 'PyGithub', 'openlabcmd', 'logging']
+        executable: pip3
+
+    - name: config ha_healthchecker
+      copy: src={{ item.src }} dest={{ item.dest }}
+      with_items:
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.timer", dest: '/etc/systemd/system/ha_healthchecker.timer'}
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service", dest: '/etc/systemd/system/ha_healthchecker.service' }
+
+    # As systemd ansible module bugs not fix #36585 and #48786
+    - name: Enable ha_healthchecker Timer
+      shell: |
+        set -xe
+        sudo systemctl enable ha_healthchecker.service
+        sudo systemctl enable ha_healthchecker.timer
+      args:
+        executable: /bin/bash
+
+    - name: Start ha_healthchecker
+      service: name=ha_healthchecker.timer state=started
