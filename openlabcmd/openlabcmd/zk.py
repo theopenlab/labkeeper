@@ -186,6 +186,7 @@ class ZooKeeper(object):
             else:
                 if node_obj.status == node.NodeStatus.MAINTAINING:
                     node_obj.status = node.NodeStatus.UP
+                    node_obj.heartbeat = datetime.datetime.utcnow()
                 else:
                     raise exceptions.ClientError(
                         "The node must be in 'maintaining' status when trying "

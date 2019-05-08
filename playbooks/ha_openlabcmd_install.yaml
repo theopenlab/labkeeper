@@ -6,6 +6,7 @@
     - name: Install openlabcmd
       pip:
         name: openlabcmd
+        executable: pip3
 
     - name: Ensures openlabcmd config dir exists
       file: path=/etc/openlab state=directory
