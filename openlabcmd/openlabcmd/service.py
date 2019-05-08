@@ -43,10 +43,12 @@ class ServiceStatus(object):
     UP = 'up'
     DOWN = 'down'
     RESTARTING = 'restarting'
+    ERROR = 'error'
 
     @property
     def all_status(self):
-        return [self.INITIALIZING, self.UP, self.DOWN, self.RESTARTING]
+        return [self.INITIALIZING, self.UP, self.DOWN, self.RESTARTING,
+                self.ERROR]
 
 
 class Service(object):

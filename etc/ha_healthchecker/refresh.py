@@ -154,7 +154,7 @@ def is_service_abnormal(service_obj, node_obj):
                 kwargs['alarmed_at'] = None
                 service_obj.alarmed = False
                 service_obj.alarmed_at = None
-        zk_cli.update_service(service_obj.name, node_obj.role, node_obj.type,
+        zk_cli.update_service(service_obj.name, node_obj.name,
                               status=service_obj.status, **kwargs)
         LOG.info("Service %(name)s updated with %(status)s status.",
                  {'name': service_obj.name,
@@ -166,7 +166,7 @@ def post_restarted_if_possible(service_obj, node_obj):
     if not service_obj.restarted:
         zk_cli = get_zk_cli()
         updated_svc = zk_cli.update_service(
-            service_obj.name, node_obj.role, node_obj.type,
+            service_obj.name, node_obj.name,
             restarted=True, status='restarting')
         LOG.info("Service %(name)s updated with %(status)s status "
                  "and restarted=True",

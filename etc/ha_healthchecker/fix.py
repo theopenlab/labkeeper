@@ -105,17 +105,17 @@ def is_alarmed_timeout(svc_obj):
 def post_alarmed_if_possible(obj):
     if not obj.alarmed:
         zk_cli = get_zk_cli()
-        if 'node' in obj.__name__.lower():
+        if 'node' in obj.__class__.__name__.lower():
             zk_cli.update_node(obj.name, alarmed=True)
             LOG.info("%()s Node %(name)s updated with %(status)s "
                      "alarmed=True",
                      {'name': obj.name,
                       'role': obj.role})
             obj.alarmed = True
-        elif 'service' in obj.__name__.lower():
+        elif 'service' in obj.__class__.__name__.lower():
             local_node = get_local_node()
             updated_svc = zk_cli.update_service(
-                obj.name, local_node.role, local_node.type, alarmed=True)
+                obj.name, local_node.name, alarmed=True)
             LOG.info("Service %(name)s updated with alarmed=True",
                      {'name': obj.name})
             obj.alarmed = True

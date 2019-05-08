@@ -38,7 +38,7 @@
 
     - name: install script dependency
       pip:
-        name: ['six', 'iso8601', 'requests', 'configparser', 'PyGithub', 'openlabcmd', 'logging']
+        name: ['six', 'iso8601', 'requests', 'configparser', 'PyGithub', 'openlabcmd']
         executable: pip3
 
     - name: config ha_healthchecker
