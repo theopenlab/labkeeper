@@ -1,0 +1,15 @@
+[Unit]
+Description=fast remote file copy program daemon
+ConditionPathExists=/etc/rsyncd/rsyncd.conf
+
+[Service]
+Type=forking
+KillMode=process
+ExecStart=/usr/bin/rsync --daemon --config=/etc/rsyncd/rsyncd.conf
+ExecStartPre=-/bin/sh -c 'echo \'root:{{ rsync_password }}\' > /etc/rsyncd/rsyncd.pass'
+ExecStartPre=-/bin/chmod 600 /etc/rsyncd/rsyncd.pass
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/rsyncd.pid
+
+[Install]
+WantedBy=multi-user.target
