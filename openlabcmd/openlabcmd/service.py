@@ -8,7 +8,7 @@ service_mapping = {
     'master': {
         'zuul': {
             'necessary': ['zuul-scheduler', 'zuul-executor', 'zuul-web',
-                          'gearman', 'mysql', 'apache'],
+                          'gearman', 'mysql', 'apache2'],
             'unnecessary': ['zuul-merger', 'zuul-fingergw', 'zuul-timer-tasks']
         },
         'nodepool': {
@@ -43,12 +43,10 @@ class ServiceStatus(object):
     UP = 'up'
     DOWN = 'down'
     RESTARTING = 'restarting'
-    ERROR = 'error'
 
     @property
     def all_status(self):
-        return [self.INITIALIZING, self.UP, self.DOWN, self.RESTARTING,
-                self.ERROR]
+        return [self.INITIALIZING, self.UP, self.DOWN, self.RESTARTING]
 
 
 class Service(object):

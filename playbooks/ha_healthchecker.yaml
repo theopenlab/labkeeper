@@ -24,10 +24,7 @@
     - name: Copy necessary scripts
       template: src={{ item.src }} dest={{ item.dest }} mode=0755
       with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.sh", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.sh'}
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/refresh.py", dest: '/etc/openlab/ha_healthchecker/refresh.py' }
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/fix.py", dest: '/etc/openlab/ha_healthchecker/fix.py'}
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/switch.py", dest: '/etc/openlab/ha_healthchecker/switch.py' }
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.py' }
       vars:
         zk_cli_conf: "/etc/openlab/openlab.conf"
         heartbeat_internal: 300
@@ -38,7 +35,7 @@
 
     - name: install script dependency
       pip:
-        name: ['six', 'iso8601', 'requests', 'PyGithub']
+        name: ['iso8601', 'requests', 'PyGithub']
         executable: pip3
 
     - name: config ha_healthchecker
