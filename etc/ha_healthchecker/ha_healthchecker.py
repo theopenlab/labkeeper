@@ -12,6 +12,7 @@ from github import Github
 import iso8601
 from openlabcmd import zk
 import requests
+import six
 
 
 logging.basicConfig(
@@ -94,17 +95,20 @@ class Base(object):
 
         return proc.returncode == 0
 
+    def _parse_isotime(self, timestr):
+        try:
+            return iso8601.parse_date(timestr)
+        except iso8601.ParseError as e:
+            raise ValueError(six.text_type(e))
+        except TypeError as e:
+            raise ValueError(six.text_type(e))
 
-class Refresher(Base):
-    def __init__(self, zk, heartbeat_timeout):
-        super(Refresher, self).__init__(zk, heartbeat_timeout)
-
-    def _local_node_service_process(self, node_obj):
-        service_objs = self.zk.list_services(node_name_filter=node_obj.name)
-        for service_obj in service_objs:
-            self._refresh_service(service_obj, node_obj)
-
-        self._report_heart_beat(node_obj)
+    def _is_alarmed_timeout(self, obj):
+        over_time = self._parse_isotime(
+            obj.alarmed_at) + datetime.timedelta(
+            days=2)
+        current_time = datetime.datetime.utcnow().replace(tzinfo=iso8601.UTC)
+        return current_time > over_time
 
     def _get_service_status(self, service):
         # gearman is controlled by zuul itself. It's not under systemd.
@@ -130,6 +134,18 @@ class Refresher(Base):
                                           'out': e.output})
             return 'down'
 
+
+class Refresher(Base):
+    def __init__(self, zk, heartbeat_timeout):
+        super(Refresher, self).__init__(zk, heartbeat_timeout)
+
+    def _local_node_service_process(self, node_obj):
+        service_objs = self.zk.list_services(node_name_filter=node_obj.name)
+        for service_obj in service_objs:
+            self._refresh_service(service_obj, node_obj)
+
+        self._report_heart_beat(node_obj)
+
     def _refresh_service(self, service_obj, node_obj):
         cur_status = self._get_service_status(service_obj.name)
         LOG.debug("Service %(name)s check result: %(status)s",
@@ -154,7 +170,7 @@ class Refresher(Base):
             LOG.debug(
                 "Service %(name)s is abnormal. It's status is %(status)s.",
                 {'name': service_obj.name,
-                 'status': service_obj.status.upper()})
+                 'status': cur_status.upper()})
 
     def _report_heart_beat(self, node_obj):
         hb = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -178,8 +194,8 @@ class Refresher(Base):
                 # So current node is slave, we need to set the oppo side ones
                 # to down
                 self.zk.update_node(oppo_node_obj.name, status='down')
-                LOG.info("OPPO %(role)s node %(name)s updated with "
-                         "%(status)s status.",
+                LOG.info("OPPO %(role)s node %(name)s can not reach, updated "
+                         "with %(status)s status.",
                          {'role': oppo_node_obj.role,
                           'name': oppo_node_obj.name,
                           'status': 'down'.upper()})
@@ -199,6 +215,18 @@ class Fixer(Base):
     def __init__(self, zk, heartbeat_timeout):
         super(Fixer, self).__init__(zk, heartbeat_timeout)
 
+    def _post_alarmed(self, obj):
+        if not obj.alarmed:
+            if 'node' in obj.__class__.__name__.lower():
+                self.zk.update_node(obj.name, alarmed=True)
+                LOG.info("%(role)s Node %(name)s updated with alarmed=True",
+                         {'name': obj.name,
+                          'role': obj.role})
+            elif 'service' in obj.__class__.__name__.lower():
+                self.zk.update_service(obj.name, self.node.name, alarmed=True)
+                LOG.info("Service %(name)s updated with alarmed=True",
+                         {'name': obj.name})
+
     def _service_restart(self, service):
         cmd = "systemctl restart {srvc}".format(srvc=service)
         try:
@@ -211,7 +239,7 @@ class Fixer(Base):
                       "%(err)s %(out)s", {'srvc': service,
                                           'err': e, 'out': e.output})
 
-    def _fix_service(self, service_obj, node_obj):
+    def _fix_service(self, service_obj):
         if service_obj.status == 'restarting':
             if service_obj.name == 'gearman':
                 return
@@ -224,14 +252,34 @@ class Fixer(Base):
                      {'name': service_obj.name})
         elif service_obj.status == 'down':
             if not service_obj.alarmed:
-                self._notify_issue(xxxx)
+                if service_obj.is_necessary:
+                    self._notify_issue(self.node, self.node,
+                                       affect_services=service_obj,
+                                       affect_range='node',
+                                       more_specific='necessary_error')
+                    self._post_alarmed(self.node)
+
+                else:
+                    self._notify_issue(self.node, self.node,
+                                       affect_services=service_obj,
+                                       affect_range='node',
+                                       more_specific='unecessary_svc')
                 self.zk.update_service(service_obj.name, self.node.name,
                                        alarmed=True)
+                self._post_alarmed(service_obj)
+            else:
+                if not service_obj.is_necessary and self._is_alarmed_timeout(
+                        service_obj):
+                    if self.node.role == 'master' and not self.node.alarmed:
+                        self._notify_issue(self.node, self.node,
+                                           affect_range='node',
+                                           more_specific='slave_switch')
+                        self._post_alarmed(self.node)
 
-    def _local_node_service_process(self, node_obj):
-        service_objs = self.zk.list_services(node_name_filter=node_obj.name)
+    def _local_node_service_process(self):
+        service_objs = self.zk.list_services(node_name_filter=self.node.name)
         for service_obj in service_objs:
-            self._fix_service(service_obj, node_obj)
+            self._fix_service(service_obj)
 
     def _format_body_for_issue(self, issuer_node, node_obj,
                                affect_services=None,
@@ -394,7 +442,7 @@ class Fixer(Base):
                       {'name': self.node.name,
                        'status': self.node.status.upper()})
             return
-        self._local_node_service_process(self.node)
+        self._local_node_service_process()
         if self.node.role != 'zookeeper':
             self._oppo_node_check(self.oppo_node)
 
@@ -403,33 +451,70 @@ class Switcher(Base):
     def __init__(self, zk, heartbeat_timeout):
         super(Switcher, self).__init__(zk, heartbeat_timeout)
 
-    def _check_service_pid_exist(self, service):
-        if service == 'rsync' and os.path.exists(RSYNCD_PID_PATH):
-            return 'up'
-        elif service == 'gearman' and os.path.exists(GEARMAN_PID_PATH):
-            return 'up'
-        return 'down'
+    def global_analysis(self):
+        all_nodes = self.zk.list_nodes()
 
-    def _service_check(self, command, service, node_role, node_type):
-        if (
-                node_role == 'slave' and service == 'rsync') or service == 'gearman':
-            return self._check_service_pid_exist(service)
-        if node_role == 'master' and service == 'rsync':
-            service = 'cron'
-        # Timer service doesn't support health check.
-        if service in ['zuul-timer-tasks', 'nodepool-timer-tasks']:
-            return 'up'
+        for node in all_nodes:
+            if node.status == 'maintaining':
+                LOG.info("Global checking: there is a maintaining node, "
+                         "it's %(name)s, so can not decide to swtich. "
+                         "Skipping..", {'name': node.name})
 
-        # (TODO) remove after fix in openlabcmd
-        # currently, mysql only run on zuul node.
-        # nodepool node runs nodepool services and zookeeper
-        if node_type == 'nodepool' and service == 'mysql':
-            return 'up'
+                return
 
-        return self._run_systemctl_command(command, service)
+        need_switch = False
+        for node in all_nodes:
+            if node.role == 'master':
+                node_services = self.zk.list_services(
+                    node_name_filter=node.name)
+                err_services = [e for e in node_services if e.status == 'down']
+                if node.status == 'down':
+                    need_switch = True
+                    LOG.info("Global checking: Found %(role)s node %(name)s "
+                             "is in %(status)s. ", {
+                        'name': node.name, 'role': node.role,
+                        'status': 'down'.upper()})
+                    break
+                # Service analysis
+                for err_svc in err_services:
+                    if err_svc.is_necessary:
+                        need_switch = True
+                        LOG.info("Global checking: Found a necessary service "
+                                 "%(service_name)s is in %(service_status)s "
+                                 "status on %(role)s node %(name)s. ", {
+                            'service_name': err_svc.name,
+                            'service_status': err_svc.status.upper(),
+                            'name': node.name, 'role': node.role})
+                        break
+                    elif (not err_svc.is_necessary and
+                          self._is_alarmed_timeout(err_svc)):
+                        need_switch = True
+                        LOG.info("Global checking: Found a necessary service "
+                                 "%(service_name)s is in %(service_status)s "
+                                 "status on %(role)s node %(name)s. ", {
+                            'service_name': err_svc.name,
+                            'service_status': err_svc.status.upper(),
+                            'name': node.name, 'role': node.role})
+                        break
 
-    def _service_action(self, command, service):
-        return self._run_systemctl_command(command, service)
+        if need_switch and not self.node.switch_status:
+            self.zk.update_node(self.node.name, switch_status='start')
+            LOG.info("Global checking result: setting switch_status "
+                     "%(status)s.", {'status': 'start'.upper()})
+
+        if self.node.role == 'slave' and (
+                self.node.switch_status == 'start' and
+                (not self._ping(self.oppo_node.ip) and
+                 not self._is_check_heart_beat_overtime(self.oppo_node))):
+            self.zk.update_node(self.oppo_node.name, role='slave',
+                                switch_status='start')
+            LOG.info("Global checking result: setting switch_status "
+                     "%(status)s and role=slave on OPPO %(role)s "
+                     "node %(name)s.",
+                     {'status': 'start'.upper(),
+                      'role': self.oppo_node.role,
+                      'name': self.oppo_node.name})
+        return need_switch
 
     def _run_systemctl_command(self, command, service):
         cmd = "systemctl {cmd} {srvc}".format(cmd=command, srvc=service)
@@ -447,63 +532,22 @@ class Switcher(Base):
             if command == SYSTEMCTL_STATUS:
                 return 'down'
 
-    def _is_alarmed_timeout(self, svc_obj):
-        over_time = parse_isotime(
-            svc_obj.alarmed_at) + datetime.timedelta(
-            days=2)
-        current_time = datetime.datetime.utcnow().replace(tzinfo=iso8601.UTC)
-        return current_time > over_time
-
-    def _local_node_service_process(self, node_obj):
-        service_objs = self.zk.list_services(
-            node_name_filter=str(node_obj.name),
-            node_role_filter=str(node_obj.role))
-        for service_obj in service_objs:
-            self._treat_single_service(service_obj, node_obj)
-
-    def _treat_single_service(self, service_obj, node_obj):
-        if service_obj.status == 'down':
-            if service_obj.restarted:
-                if service_obj.is_necessary:
-                    # Report an issue towards deployment as a necessary
-                    # service down
-                    # Master/Slave Switch
-                    self._switch_process(node_obj)
-                else:
-                    # Have report the issue yet?
-                    # Yes
-                    if service_obj.alarmed:
-
-                        # --- the issue is timeout ?
-                        # -- Yes
-                        if self._is_alarmed_timeout(service_obj):
-
-                            # $$ this node is master ?
-                            # $$ Yes
-                            # Report an issue towards deployment as a unnecessary
-                            # service issue timeout.
-                            # Master/Slave Switch
-                            if node_obj.role == 'master':
-                                self._switch_process(node_obj)
-
     def _shut_down_all_services(self, node_obj):
         service_objs = self.zk.list_services(
-            node_name_filter=str(node_obj.name),
-            node_role_filter=str(node_obj.role))
+            node_name_filter=node_obj.name)
         for service in service_objs:
             if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
                                     'nodepool-timer-tasks']:
-                self._service_action(SYSTEMCTL_STOP, service.name)
+                self._run_systemctl_command(SYSTEMCTL_STOP, service.name)
 
     def _setup_necessary_services_and_check(self, node_obj):
         service_objs = self.zk.list_services(
-            node_name_filter=str(node_obj.name),
-            node_role_filter=str(node_obj.role))
+            node_name_filter=node_obj.name)
         for service in service_objs:
             if service.is_necessary:
                 if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
                                         'nodepool-timer-tasks']:
-                    self._service_action(SYSTEMCTL_START, service)
+                    self._run_systemctl_command(SYSTEMCTL_START, service)
                     LOG.info("Start Service %(name)s.", {'name': service.name})
 
         # local deplay 5 seconds
@@ -512,8 +556,7 @@ class Switcher(Base):
         # Then we check all services status in 'SLAVE' env.
         result = {}
         for service in service_objs:
-            result[service.name] = self._service_check(
-                SYSTEMCTL_STATUS, service.name, node_obj.role, node_obj.type)
+            result[service.name] = self._get_service_status(service.name)
             LOG.info("Started Service %(name)s status checking: %(status)s",
                      {'name': service.name,
                       'status': result[service.name].upper()})
@@ -522,105 +565,6 @@ class Switcher(Base):
             if res != 0:
                 LOG.error("%s is failed to start with return code %s" % (
                     svc_name, res))
-
-    def _check_opp_master_is_good(self):
-        oppo_nodes = self._get_the_oppo_nodes()
-        all_result = 0
-        for node in oppo_nodes:
-            if node.status == 'down':
-                all_result += 1
-        if all_result > 0 or (all_result == 0 and len(oppo_nodes) < 2):
-            return False
-        return True
-
-    def _check_and_process_orphan_master(self):
-        orphans = []
-        for zk_node in self.zk.list_nodes():
-            if (zk_node.role == 'master' and
-                    zk_node.status == 'down'):
-                orphans.append(zk_node)
-
-        for orphan in orphans:
-            self.zk.update_node(orphan.name, role='slave')
-            LOG.info("M/S switching: orphan node, %(role)s node %(name)s is "
-                     "finishd from master to slave. And update it with "
-                     "role=slave.",
-                     {'role': orphan.role, 'name': orphan.name})
-
-    def _script_load_pre_check(self, node_obj):
-        if (node_obj.status == 'up' and node_obj.role == 'slave' and
-                not self._check_opp_master_is_good()):
-            # setup local services and check services status
-            # at the end of process, we will set this node status to up and
-            # role to MASTER
-            self._setup_necessary_services_and_check(node_obj)
-            self._change_dns()
-            self.zk.update_node(node_obj.name, role='master', status='up')
-            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
-                     "finishd from slave to master. And update it with "
-                     "role=master and status=up.",
-                     {'role': node_obj.role, 'name': node_obj.name})
-
-        elif node_obj.status == 'down' and node_obj.role == 'master':
-            # This is the first step when other master nodes, when check
-            # self status is down, that means there must be 1 master node is
-            # failed and hit the M/S switch. So what we gonna do is shuting down
-            # local services and set self role from master to slave.
-            self._shut_down_all_services(node_obj)
-            self.zk.update_node(node_obj.name, role='slave')
-            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
-                     "finishd from master to slave. And update it with "
-                     "role=slave.",
-                     {'role': node_obj.role, 'name': node_obj.name})
-        # This is for make sure that, once a master node is down(
-        # can not ping or keepalived down)
-        # A origin master node will still hang on master down status.
-        # So this will fit it if any alived keepalived can process it.
-        # If not, openlabcmd will hit the duplicated master issue during update
-        # service.
-        else:
-            self._check_and_process_orphan_master()
-
-    def _switch_process(self, node_obj):
-        if node_obj.role == 'master':
-            # Now, we must hit the services error, not host poweroff,
-            # as the kp is alived, so we need to shut down all the necessary
-            # and unecessary services.
-            self._shut_down_all_services(node_obj)
-            same_nodes = self._get_the_same_nodes()
-            self.zk.update_node(node_obj.name, role='slave', status='down')
-            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
-                     "finishd from master to slave. And update it with "
-                     "role=slave and status=down.",
-                     {'role': node_obj.role, 'name': node_obj.name})
-            for node in same_nodes:
-                self.zk.update_node(node.name, status='down')
-                LOG.info("M/S switching: remote same node,"
-                         "%(role)s node %(name)s begins from master to slave. "
-                         "And update it with status=down.",
-                         {'role': node.role, 'name': node.name})
-
-    def _get_the_same_nodes(self):
-        same_nodes = []
-        for zk_node in self.zk.list_nodes():
-            if (zk_node.role != self.node.role or
-                    zk_node.name == self.node.name):
-                continue
-            elif zk_node.role in ['master', 'slave']:
-                same_nodes.append(zk_node)
-
-        return same_nodes
-
-    def _get_the_oppo_nodes(self):
-        oppo_nodes = []
-        for zk_node in self.zk.list_nodes():
-            if zk_node.role == self.node.role:
-                continue
-            elif (zk_node.role in ['master', 'slave'] and
-                  zk_node.status != 'down'):
-                oppo_nodes.append(zk_node)
-
-        return oppo_nodes
 
     def _match_record(self, name, res):
         if res['name'] in ['logs-bak', 'test-logs-bak']:
@@ -712,12 +656,61 @@ class Switcher(Base):
                             res.status_code, res.reason))
                     return
         LOG.info("Finish update DNS entry.")
-    def _need_switch(self):
-        pass
+
+    def _can_start_switch(self):
+        res = []
+        for zk_node in self.zk.list_nodes():
+            if (zk_node.role != 'zookeeper' and
+                    zk_node.switch_status == 'start'):
+                res.append(zk_node.switch_status)
+        return len(set(res)) == 1 and len(res) == 4
+
+    def _is_switching(self):
+        res = []
+        for zk_node in self.zk.list_nodes():
+            if zk_node.role != 'zookeeper':
+                res.append(zk_node.switch_status)
+        return (len(set(res)) == 2 and
+                'start' in set(res) and
+                'end' in set(res))
+
+    def _do_switch(self):
+        if self.node.role == 'master':
+            self._shut_down_all_services(self.node)
+            self.zk.update_node(self.node.name, role='slave', status='down',
+                                switch_status='end')
+            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
+                     "finishd from master to slave. And update it with "
+                     "role=slave and status=down.",
+                     {'role': self.node.role, 'name': self.node.name})
+
+        elif self.node.role == 'slave':
+            if self.node.type == 'zuul':
+                self._change_dns()
+            self.zk.update_node(self.node.name, role='master',
+                                switch_status='end')
+            self._setup_necessary_services_and_check(self.node)
+            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
+                     "finishd from slave to master. And update it with "
+                     "role=master and switch_status=end.",
+                     {'role': self.node.role, 'name': self.node.name})
+
+    def _is_end(self):
+        res = []
+        for zk_node in self.zk.list_nodes():
+            if zk_node.role != 'zookeeper':
+                res.append(zk_node.switch_status)
+        return 'start' not in res
+
     def run(self):
-        if self._need_switch():
-            self._switch()
-        self._local_node_service_process(self.node)
+        if self.global_analysis():
+            if self._can_start_switch():
+                self._do_switch()
+        if self._is_switching() and self.node.switch_status == 'start':
+            self._do_switch()
+
+        if self._is_end():
+            self.zk.update_node(self.node.name, switch_status=None)
 
 
 class HealthChecker(object):
@@ -740,6 +733,6 @@ if __name__ == '__main__':
     # ZK client config file
     conf = "{{ zk_cli_conf }}"
     # Heartbeat Internal timeout(seconds)
-    heartbeat_timeout = {{heartbeat_internal}}
+    heartbeat_timeout = {{ heartbeat_internal }}
 
     HealthChecker(conf, heartbeat_timeout).run()
