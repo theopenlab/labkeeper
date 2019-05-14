@@ -14,7 +14,10 @@
 ---
 - import_playbook: bastion.yaml
 - import_playbook: prerequisites.yaml
-- import_playbook: statsd.yaml
+# NOTE: Statsd sometimes consume much disk spaces and doesn't release them
+#       normally. Since it is not used by OpenLab at this moment, comment it
+#       out.
+#- import_playbook: statsd.yaml
 - import_playbook: gearman-apt.yaml
 - import_playbook: zookeeper.yaml
 - import_playbook: config-mysql.yaml
