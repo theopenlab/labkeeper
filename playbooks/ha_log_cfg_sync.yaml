@@ -25,15 +25,20 @@
         dest: /etc/rsyncd/rsyncd.conf
 
     - name: Start rsync daemon on slave nodes
+      template:
+        src: "{{ labkeeper_config_git_dest }}/rsync/rsyncd.service"
+        dest: /etc/systemd/system/rsyncd.service
+
+    # As systemd ansible module bugs not fix #36585 and #48786
+    - name: Enable rsyncd
       shell: |
-        # kill rsync daemon if already run
-        killall rsync || true
-        sleep 1
-        echo 'root:{{ rsync_password }}' > /etc/rsyncd/rsyncd.pass
-        chmod 600 /etc/rsyncd/rsyncd.pass
-        rsync --daemon --config=/etc/rsyncd/rsyncd.conf
+        set -xe
+        sudo systemctl enable rsyncd.service
       args:
         executable: /bin/bash
+
+    - name: Start rsyncd
+      service: name=rsyncd.service state=started
 
     - name: Teardown crontab tasks if existed(when slave master switched)
       cron:
@@ -87,7 +92,7 @@
       copy:
         dest: /etc/rsync/cron_sync_zuul_cfg.sh
         content: |
-          #/bin/bash
+          #!/bin/bash
           rsync -auvtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /etc/zuul/main.yaml \
           root@"{{ hostvars[groups['zuul-scheduler-slave'][0]].ansible_host }}"::openlab_zuul_cfg
         mode: 0755
@@ -106,7 +111,7 @@
       copy:
         dest: /etc/rsync/cron_sync_nodepool_cfg.sh
         content: |
-          #/bin/bash
+          #!/bin/bash
           rsync -auvtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /etc/nodepool/nodepool.yaml \
           root@"{{ hostvars[groups['nodepool-launcher-slave'][0]].ansible_host }}"::openlab_nodepool_cfg
         mode: 0755
@@ -121,7 +126,7 @@
       copy:
         dest: /etc/rsync/cron_sync_clouds_cfg.sh
         content: |
-          #/bin/bash
+          #!/bin/bash
           rsync -auvtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /etc/openstack/clouds.yaml \
           root@"{{ hostvars[groups['nodepool-launcher-slave'][0]].ansible_host }}"::openlab_clouds_cfg
         mode: 0755
