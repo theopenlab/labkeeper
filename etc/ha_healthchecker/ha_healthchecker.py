@@ -70,8 +70,11 @@ class Base(object):
 
     def _get_oppo_node(self):
         for zk_node in self.zk.list_nodes():
+            # During swtich, we can not get oppo node
             if (zk_node.role != self.node.role and
-                    zk_node.type == self.node.type):
+                    zk_node.type == self.node.type) or (
+                    zk_node.type == self.node.type and
+                    zk_node.name != self.node.name):
                 return zk_node
 
     def _is_check_heart_beat_overtime(self, node_obj):
@@ -145,6 +148,8 @@ class Refresher(Base):
             self._refresh_service(service_obj, node_obj)
 
         self._report_heart_beat(node_obj)
+        if node_obj.alarmed and node_obj.role == 'slave':
+            self.zk.update_node(node_obj.name, alarmed=False)
 
     def _refresh_service(self, service_obj, node_obj):
         cur_status = self._get_service_status(service_obj.name)
@@ -262,7 +267,7 @@ class Fixer(Base):
                 else:
                     self._notify_issue(self.node, self.node,
                                        affect_services=service_obj,
-                                       affect_range='node',
+                                       affect_range='service',
                                        more_specific='unecessary_svc')
                 self.zk.update_service(service_obj.name, self.node.name,
                                        alarmed=True)
@@ -305,17 +310,20 @@ class Fixer(Base):
                             {'name': node_obj.name,
                              'role': node_obj.role,
                              'ip': node_obj.ip})
-                if node_obj.role == 'MASTER':
+                title += "%s check %s failed, " % (
+                    issuer_node.role, node_obj.role)
+                if node_obj.role == 'master':
                     body += "HA tools already switch to slave deployment, " \
                             "please try a simple job to check whether " \
                             "everything is OK.\n"
+                    title += "HA Switch Going."
+                else:
+                    title += "need to recover manually."
                 body += "\nSuggestion:\n" \
                         "===============\n" \
                         "ssh ubuntu@%s\n" % node_obj.ip
                 body += "And try to login the cloud to check whether the " \
                         "resource exists.\n"
-                title += "%s check %s failed, need to recover manually." % (
-                    issuer_node.role, node_obj.role)
             elif more_specific == 'slave_error':
                 body += "The data plane services of node %s in slave " \
                         "deployment hit errors.\n" % node_obj.name
@@ -335,7 +343,7 @@ class Fixer(Base):
                 body += "HA tools already switch to slave deployment, please " \
                         "try a simple job to check whether everything is OK.\n"
                 body += "Currently, the slave deployment has changed to master.\n"
-                body += "Please check original master deployment to check " \
+                body += "Please check original master deployment " \
                         "whether it is good for recovery or use labkeeper to " \
                         "re-create an new slave deployment.\n"
                 if more_specific == 'necessary_error':
@@ -354,51 +362,41 @@ class Fixer(Base):
                         "ssh ubuntu@%s\n" \
                         "cd go-to-labkeeper-directory\n" \
                         "./deploy.sh -d new-slave\n" % node_obj.ip
-            elif more_specific in ['healthchecker_error', 'network_error']:
-                if more_specific == 'healthchecker_error':
-                    title += "%s node %s - ha_healthchecker are dead." % (
-                        node_obj.role, node_obj.name)
-                    body += "ha_healthchecker not working anymore, please " \
-                            "login to fix it.\n"
-                    body += "\nSuggestion:\n" \
-                            "===============\n" \
-                            "ssh ubuntu@%s\n" \
-                            "systemctl status ha_healthchecker.timer\n" \
-                            "systemctl status ha_healthchecker.service\n" \
-                            "systemctl enable ha_healthchecker.service\n" \
-                            "systemctl enable ha_healthchecker.timer\n" \
-                            "systemctl start ha_healthchecker.timer\n" \
-                            "systemctl list-timers --all\n" % node_obj.ip
-                elif more_specific == 'network_error':
-                    title += "%s node %s - Hit network error." % (
-                        node_obj.role, node_obj.name)
-                    body += "Can not access node %s by ip %s using PING, " \
-                            "but ha_healthchecker on it still works.\n" % (
-                                node_obj.name, node_obj.ip)
-                    body += "\nSuggestion:\n" \
-                            "===============\n" \
-                            "Please check its security group setting.\n"
-            elif affect_range == 'service':
-                if more_specific == 'unecessary_svc':
-                    body += "A unecessary serivce %(service_name)s on the node " \
-                            "%(name)s (IP %(ip)s) has done. Please go ahead to " \
-                            "check.\n" % (
-                            {'service_name': affect_services.name,
-                             'name': node_obj.name,
-                             'ip': node_obj.ip})
-                    body += "\nSuggestion:\n" \
-                            "===============\n" \
-                            "ssh ubuntu@%s\n" \
-                            "systemctl %s %s\n" \
-                            "journalctl -u %s\n" % (
-                            node_obj.ip, SYSTEMCTL_STATUS,
-                            affect_services.name,
-                            affect_services.name)
-                    title += "%s node - %s 's unnecessary services %s are dead, " \
-                             "need to recover manually." % (
-                                 node_obj.role, node_obj.name,
-                                 affect_services.name)
-            return title, body
+            elif more_specific == 'healthchecker_error':
+                title += "%s node %s - ha_healthchecker are dead." % (
+                    node_obj.role, node_obj.name)
+                body += "ha_healthchecker not working anymore, please " \
+                        "login to fix it.\n"
+                body += "\nSuggestion:\n" \
+                        "===============\n" \
+                        "ssh ubuntu@%s\n" \
+                        "systemctl status ha_healthchecker.timer\n" \
+                        "systemctl status ha_healthchecker.service\n" \
+                        "systemctl enable ha_healthchecker.service\n" \
+                        "systemctl enable ha_healthchecker.timer\n" \
+                        "systemctl start ha_healthchecker.timer\n" \
+                        "systemctl list-timers --all\n" % node_obj.ip
+        elif affect_range == 'service':
+            if more_specific == 'unecessary_svc':
+                body += "A unecessary serivce %(service_name)s on the node " \
+                        "%(name)s (IP %(ip)s) has done. Please go ahead to " \
+                        "check.\n" % (
+                        {'service_name': affect_services.name,
+                         'name': node_obj.name,
+                         'ip': node_obj.ip})
+                body += "\nSuggestion:\n" \
+                        "===============\n" \
+                        "ssh ubuntu@%s\n" \
+                        "systemctl %s %s\n" \
+                        "journalctl -u %s\n" % (
+                        node_obj.ip, SYSTEMCTL_STATUS,
+                        affect_services.name,
+                        affect_services.name)
+                title += "%s node - %s 's unnecessary services %s are dead, " \
+                         "need to recover manually." % (
+                             node_obj.role, node_obj.name,
+                             affect_services.name)
+        return title, body
 
     def _notify_issue(self, issuer_node, affect_node, affect_services=None,
                      affect_range=None, more_specific=None):
@@ -418,23 +416,21 @@ class Fixer(Base):
 
     def _oppo_node_check(self, oppo_node_obj):
         if (self._ping(oppo_node_obj.ip) and
-                self._is_check_heart_beat_overtime(oppo_node_obj)):
+                self._is_check_heart_beat_overtime(oppo_node_obj) and
+                oppo_node_obj.status != 'down'):
             if not oppo_node_obj.alarmed:
                 self._notify_issue(self.node, oppo_node_obj,
                                    affect_range='node',
                                    more_specific='healthchecker_error')
+                self._post_alarmed(oppo_node_obj)
         elif (not self._ping(oppo_node_obj.ip) and
+              oppo_node_obj.status != 'down' and
               self._is_check_heart_beat_overtime(oppo_node_obj)):
-            if not oppo_node_obj.alarmed:
-                self._notify_issue(self.node, oppo_node_obj,
-                                   affect_range='node',
-                                   more_specific='network_error')
-        elif (not self._ping(oppo_node_obj.ip) and
-              self._is_check_heart_beat_overtime(oppo_node_obj)):
-            if not oppo_node_obj.alarmed:
-                self._notify_issue(self.node, oppo_node_obj,
-                                   affect_range='node',
-                                   more_specific='oppo_check')
+                if not oppo_node_obj.alarmed:
+                    self._notify_issue(self.node, oppo_node_obj,
+                                       affect_range='node',
+                                       more_specific='oppo_check')
+                    self._post_alarmed(oppo_node_obj)
 
     def run(self):
         if self.node.status in ['maintaining', 'down']:
@@ -505,13 +501,25 @@ class Switcher(Base):
         if self.node.role == 'slave' and (
                 self.node.switch_status == 'start' and
                 (not self._ping(self.oppo_node.ip) and
-                 not self._is_check_heart_beat_overtime(self.oppo_node))):
+                 self._is_check_heart_beat_overtime(self.oppo_node))):
             self.zk.update_node(self.oppo_node.name, role='slave',
                                 switch_status='start')
             LOG.info("Global checking result: setting switch_status "
                      "%(status)s and role=slave on OPPO %(role)s "
                      "node %(name)s.",
                      {'status': 'start'.upper(),
+                      'role': self.oppo_node.role,
+                      'name': self.oppo_node.name})
+        if self.node.role == 'master' and (
+                self.node.switch_status == 'end' and
+                (not self._ping(self.oppo_node.ip) and
+                 self._is_check_heart_beat_overtime(self.oppo_node))):
+            self.zk.update_node(self.oppo_node.name, role='slave',
+                                switch_status='end')
+            LOG.info("Global checking result: setting switch_status "
+                     "%(status)s and role=slave on OPPO %(role)s "
+                     "node %(name)s.",
+                     {'status': 'end'.upper(),
                       'role': self.oppo_node.role,
                       'name': self.oppo_node.name})
         return need_switch
@@ -715,7 +723,8 @@ class Switcher(Base):
 
 class HealthChecker(object):
     def __init__(self, config_file, heartbeat_timeout):
-        cfg = configparser.ConfigParser().read(config_file)
+        cfg = configparser.ConfigParser()
+        cfg.read(config_file)
         self.zk = zk.ZooKeeper(cfg)
         self.heartbeat_timeout = heartbeat_timeout
 

@@ -20,11 +20,11 @@ service_mapping = {
     'slave': {
         'zuul': {
             'necessary': [],
-            'unnecessary': ['mysql', 'rsync']
+            'unnecessary': ['mysql', 'rsyncd']
         },
         'nodepool': {
             'necessary': [],
-            'unnecessary': ['zookeeper', 'rsync']
+            'unnecessary': ['zookeeper', 'rsyncd']
         }
     },
     'zookeeper': {

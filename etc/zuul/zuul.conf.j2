@@ -17,9 +17,6 @@ tenant_config = {{ zuul_file_main_yaml_dest }}
 log_config = /etc/zuul/scheduler-logging.conf
 state_dir = {{ zuul_user_home }}
 
-[statsd]
-server = {{ hostvars[inventory_hostname].ansible_host }}
-
 [executor]
 finger_port = 17979
 log_config = /etc/zuul/executor-logging.conf
