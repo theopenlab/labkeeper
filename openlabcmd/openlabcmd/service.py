@@ -85,8 +85,11 @@ class Service(object):
 
     def update(self, update_dict):
         for k, v in update_dict.items():
-            if getattr(self, k, None):
+            try:
+                getattr(self, k)
                 setattr(self, k, v)
+            except AttributeError:
+                pass
 
     @classmethod
     def from_zk_bytes(cls, zk_bytes):

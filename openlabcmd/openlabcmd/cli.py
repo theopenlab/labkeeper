@@ -132,6 +132,10 @@ class OpenLabCmd(object):
             '--role', action='append',
             choices=['master', 'slave', 'zookeeper'],
             help='Filter the services with the specified node role.')
+        cmd_ha_service_list.add_argument(
+            '--status', action='append',
+            choices=['up', 'down', 'restarting'],
+            help='Filter the services with the specified status.')
         # openlab ha service get
         cmd_ha_service_get = cmd_ha_service_subparsers.add_parser(
             'get', help='Get a service.')
@@ -278,7 +282,8 @@ class OpenLabCmd(object):
 
     @_zk_wrapper
     def ha_service_list(self):
-        result = self.zk.list_services(self.args.node, self.args.role)
+        result = self.zk.list_services(self.args.node, self.args.role,
+                                       self.args.status)
         if self.args.format == 'pretty':
             print(utils.format_output('service', result))
         else:

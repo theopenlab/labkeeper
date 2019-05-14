@@ -13,7 +13,8 @@ class NodeStatus(object):
 
 class Node(object):
     def __init__(self, name, role, type, ip, heartbeat=None, alarmed=None,
-                 status=None, created_at=None, updated_at=None, **kwargs):
+                 status=None, created_at=None, updated_at=None,
+                 switch_status=None, **kwargs):
         self.name = name
         self.role = role
         self.type = type
@@ -23,6 +24,7 @@ class Node(object):
         self.status = status or NodeStatus.INITIALIZING
         self.created_at = created_at
         self.updated_at = updated_at
+        self.switch_status = switch_status
 
     def to_zk_bytes(self):
         node_dict = {
@@ -32,7 +34,8 @@ class Node(object):
             'ip': self.ip,
             'heartbeat': self.heartbeat,
             'alarmed': self.alarmed,
-            'status': self.status
+            'status': self.status,
+            'switch_status': self.switch_status
         }
         return json.dumps(node_dict).encode('utf8')
 
@@ -41,8 +44,11 @@ class Node(object):
 
     def update(self, update_dict):
         for k, v in update_dict.items():
-            if getattr(self, k, None):
+            try:
+                getattr(self, k)
                 setattr(self, k, v)
+            except AttributeError:
+                pass
 
     @classmethod
     def from_zk_bytes(cls, zk_bytes):
