@@ -26,7 +26,7 @@
 
     - name: Start rsync daemon on slave nodes
       template:
-        src: "{{ labkeeper_config_git_dest }}/rsync/rsyncd.service"
+        src: "{{ labkeeper_config_git_dest }}/rsync/rsyncd.service.j2"
         dest: /etc/systemd/system/rsyncd.service
 
     # As systemd ansible module bugs not fix #36585 and #48786
