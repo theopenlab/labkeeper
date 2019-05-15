@@ -203,6 +203,7 @@ class OpenLabCmd(object):
             plugins = base.Plugin.plugins
 
         cnt = len(cloud_list)
+        exit_flag = False
         for i, c in enumerate(cloud_list):
             header = "%s/%s. %s cloud check" % (i + 1, cnt, c)
             self._header_print(header)
@@ -214,6 +215,11 @@ class OpenLabCmd(object):
                 # the failed flag would be record when do check()
                 if self.args.recover and plugin.failed:
                     plugin.recover()
+                if plugin.failed:
+                    exit_flag = True
+
+        if exit_flag:
+            raise exceptions.ClientError("Error: cloud check failed.")
 
     def _zk_wrapper(func):
         def wrapper(self, *args, **kwargs):
@@ -306,11 +312,8 @@ class OpenLabCmd(object):
             help_message = subprocess.getoutput("%s -h" % ' '.join(sys.argv))
             print(help_message)
             return 1
-        try:
-            self.args.func()
-        except exceptions.ClientError as e:
-            print(e)
-            return 1
+        self.args.func()
+
 
     def _initConfig(self):
         self.config = configparser.ConfigParser()
@@ -329,10 +332,14 @@ class OpenLabCmd(object):
                                      "%s" % locations)
 
     def _main(self):
-        self.parser = self.create_parser()
-        self.args = self.parser.parse_args()
-        self._initConfig()
-        self.run()
+        try:
+            self.parser = self.create_parser()
+            self.args = self.parser.parse_args()
+            self._initConfig()
+            return self.run()
+        except exceptions.OpenLabCmdError as e:
+            print(e)
+            return 1
 
     @classmethod
     def main(cls):

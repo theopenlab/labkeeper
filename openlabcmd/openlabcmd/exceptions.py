@@ -1,6 +1,10 @@
-class ClientError(Exception):
+class OpenLabCmdError(Exception):
     pass
 
 
-class ValidationError(Exception):
+class ClientError(OpenLabCmdError):
+    pass
+
+
+class ValidationError(OpenLabCmdError):
     pass
