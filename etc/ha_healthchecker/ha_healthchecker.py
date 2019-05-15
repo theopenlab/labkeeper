@@ -424,8 +424,9 @@ class Fixer(Base):
                                    more_specific='healthchecker_error')
                 self._post_alarmed(oppo_node_obj)
         elif (not self._ping(oppo_node_obj.ip) and
-              oppo_node_obj.status != 'down' and
               self._is_check_heart_beat_overtime(oppo_node_obj)):
+            if ((oppo_node_obj.role == 'master' and
+                 oppo_node_obj.status == 'down') or oppo_node_obj != 'down'):
                 if not oppo_node_obj.alarmed:
                     self._notify_issue(self.node, oppo_node_obj,
                                        affect_range='node',
@@ -502,7 +503,7 @@ class Switcher(Base):
                 self.node.switch_status == 'start' and
                 (not self._ping(self.oppo_node.ip) and
                  self._is_check_heart_beat_overtime(self.oppo_node))):
-            self.zk.update_node(self.oppo_node.name, role='slave',
+            self.zk.update_node(self.oppo_node.name,
                                 switch_status='start')
             LOG.info("Global checking result: setting switch_status "
                      "%(status)s and role=slave on OPPO %(role)s "
