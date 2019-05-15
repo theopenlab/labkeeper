@@ -57,8 +57,6 @@ SYSTEMCTL_STATUS = 'status'
 SYSTEMCTL_RESTART = 'restart'
 SYSTEMCTL_STOP = 'stop'
 SYSTEMCTL_START = 'start'
-SYSTEMCTL_ENABLE = 'enable'
-SYSTEMCTL_DISABLE = 'disable'
 
 
 class Base(object):
@@ -70,10 +68,7 @@ class Base(object):
 
     def _get_oppo_node(self):
         for zk_node in self.zk.list_nodes():
-            # During swtich, we can not get oppo node
-            if (zk_node.role != self.node.role and
-                    zk_node.type == self.node.type) or (
-                    zk_node.type == self.node.type and
+            if (zk_node.type == self.node.type and
                     zk_node.name != self.node.name):
                 return zk_node
 
@@ -171,7 +166,7 @@ class Refresher(Base):
             self.zk.update_service(service_obj.name, node_obj.name,
                                    **update_dict)
 
-        if cur_status != 'up':
+        if cur_status != 'up' and service_obj.status == 'restarting':
             LOG.debug(
                 "Service %(name)s is abnormal. It's status is %(status)s.",
                 {'name': service_obj.name,
@@ -182,13 +177,13 @@ class Refresher(Base):
         update_dict = {'heartbeat': hb}
         if node_obj.status == 'initializing':
             update_dict['status'] = 'up'
+        if node_obj.alarmed and node_obj.role == 'slave':
+            update_dict['alarmed'] = False
         self.zk.update_node(node_obj.name, **update_dict)
         LOG.debug("Report node %(name)s heartbeat %(hb)s",
                   {'name': node_obj.name, 'hb': hb})
 
     def _oppo_node_check(self, oppo_node_obj):
-        if self.node.type == 'zookeeper':
-            return
         if oppo_node_obj.status == 'maintaining':
             return
         if (not self._ping(oppo_node_obj.ip) and
@@ -213,7 +208,8 @@ class Refresher(Base):
                  'status': self.node.status.upper()})
             return
         self._local_node_service_process(self.node)
-        self._oppo_node_check(self.oppo_node)
+        if self.oppo_node:
+            self._oppo_node_check(self.oppo_node)
 
 
 class Fixer(Base):
@@ -440,7 +436,7 @@ class Fixer(Base):
                        'status': self.node.status.upper()})
             return
         self._local_node_service_process()
-        if self.node.role != 'zookeeper':
+        if self.oppo_node:
             self._oppo_node_check(self.oppo_node)
 
 

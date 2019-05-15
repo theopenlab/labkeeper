@@ -6,6 +6,10 @@ OnActiveSec=10s
 OnBootSec=300s
 OnStartupSec=10s
 OnUnitActiveSec=2min
+# Per 2 mins
+OnCalendar=*:0/2
+# Per 10 seconds
+#OnCalendar=*:*:0/10
 
 [Install]
 WantedBy=timers.target

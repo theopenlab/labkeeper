@@ -24,7 +24,7 @@
     - name: Copy necessary scripts
       template: src={{ item.src }} dest={{ item.dest }} mode=0755
       with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.py' }
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py.j2", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.py' }
       vars:
         zk_cli_conf: "/etc/openlab/openlab.conf"
         heartbeat_internal: 300
@@ -41,8 +41,8 @@
     - name: config ha_healthchecker
       copy: src={{ item.src }} dest={{ item.dest }}
       with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.timer", dest: '/etc/systemd/system/ha_healthchecker.timer'}
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service", dest: '/etc/systemd/system/ha_healthchecker.service' }
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.timer.j2", dest: '/etc/systemd/system/ha_healthchecker.timer'}
+        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service.j2", dest: '/etc/systemd/system/ha_healthchecker.service' }
 
     # As systemd ansible module bugs not fix #36585 and #48786
     - name: Enable ha_healthchecker Timer
