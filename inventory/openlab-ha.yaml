@@ -15,6 +15,7 @@ all:
   vars:
     zuul_tenant_name: openlab
     labsync_enabled: true
+    labcheck_enabled: true
   children:
     nodepool:
       children:
