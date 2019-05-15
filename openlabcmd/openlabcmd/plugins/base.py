@@ -47,6 +47,7 @@ class Plugin(object):
     failed = False
     reasons = []
     nocolor = False
+    experimental = False
 
     def register_signals(self):
         # print("%s has been loaded." % self.__class__.__name__)

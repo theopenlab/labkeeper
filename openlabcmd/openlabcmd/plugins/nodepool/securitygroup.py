@@ -8,6 +8,7 @@ class SecurityGroupPlugin(Plugin):
 
     ptype = 'nodepool'
     name = 'securitygroup'
+    experimental = True
 
     def check(self):
         self.failed = False
