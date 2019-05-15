@@ -55,6 +55,8 @@ all:
       hosts: zuul01
     statsd:
       hosts: zuul01
+      vars:
+        statsd_service_statsd_state: stopped
     zookeeper:
       hosts: nodepool01
     mysql:

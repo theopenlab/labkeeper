@@ -193,7 +193,11 @@ class ZooKeeper(object):
                         "to un-maintain it.")
         if role:
             node_obj.role = role
-
+        switch_status = kwargs.get('switch_status')
+        if switch_status is not None:
+            if switch_status.lower() not in ['start', 'end']:
+                raise exceptions.ClientError(
+                    "switch_status must be 'start', 'end'")
         node_obj.update(kwargs)
         self.client.set(path, value=node_obj.to_zk_bytes())
 
@@ -207,13 +211,16 @@ class ZooKeeper(object):
         self.client.delete(path, recursive=True)
 
     @_client_check_wrapper
-    def list_services(self, node_name_filter=None, node_role_filter=None):
+    def list_services(self, node_name_filter=None, node_role_filter=None,
+                      status_filter=None):
         """
         List the services in the HA deployment.
         :param node_name_filter: The node filter.
         :type node_name_filter: list or string.
         :param node_role_filter: The node filter.
         :type node_role_filter: list or string.
+        :param status_filter: The status filter.
+        :type status_filter: list or string.
         :return: the services list.
         """
         if node_name_filter:
@@ -228,6 +235,12 @@ class ZooKeeper(object):
             if not isinstance(node_role_filter, list):
                 raise exceptions.ValidationError("node_role_filter should be "
                                                  "a list or string.")
+        if status_filter:
+            if isinstance(status_filter, str):
+                status_filter = [status_filter]
+            if not isinstance(status_filter, list):
+                raise exceptions.ValidationError("status_filter should be "
+                                                 "a list or string.")
 
         result = []
         for exist_node in self.list_nodes():
@@ -240,6 +253,8 @@ class ZooKeeper(object):
                 service_path = path + '/' + service_name
                 service_bytes = self.client.get(service_path)
                 service_obj = service.Service.from_zk_bytes(service_bytes)
+                if status_filter and service_obj.status not in status_filter:
+                    continue
                 result.append(service_obj)
         return sorted(result, key=lambda x: x.node_name)
 

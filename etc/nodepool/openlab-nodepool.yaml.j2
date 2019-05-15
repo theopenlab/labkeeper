@@ -14,10 +14,10 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 20
+    min-ready: 10
     max-ready-age: 14400
   - name: ubuntu-trusty
-    min-ready: 4
+    min-ready: 2
     max-ready-age: 14400
   - name: ubuntu-xenial-ut
     min-ready: 3
@@ -34,6 +34,8 @@ labels:
   - name: ubuntu-xenial-gpu
     min-ready: 0
     max-ready-age: 14400
+  - name: ubuntu-xenial-tf
+    min-ready: 5
 
 providers:
   #VEXXHOST
@@ -141,12 +143,16 @@ providers:
           - name: ubuntu-xenial
             diskimage: ubuntu-xenial
             flavor-name: '4C-8GB-100GB'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            flavor-name: '4C-8GB-100GB'
-          - name: ubuntu-xenial-ut
+#          - name: ubuntu-trusty
+#            diskimage: ubuntu-trusty
+#            flavor-name: '4C-8GB-100GB'
+#          - name: ubuntu-xenial-ut
+#            diskimage: ubuntu-xenial
+#            flavor-name: '1C-2GB-50GB'
+          # Reserve 5 nodes for tensorflow benchmark job to avoid across cloud providers
+          - name: ubuntu-xenial-tf
             diskimage: ubuntu-xenial
-            flavor-name: '1C-2GB-50GB'
+            flavor-name: '8C-8GB-100GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram

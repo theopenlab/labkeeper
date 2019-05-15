@@ -1,6 +1,6 @@
 - tenant:
     name: openlab
-    max-job-timeout: 36000
+    max-job-timeout: 86400
     source:
       github:
         config-projects:
@@ -65,13 +65,13 @@
               exclude-unprotected-branches: true
           - theopenlab/labkeeper:
               exclude-unprotected-branches: true
-          - theopenlab/containerd:
-              exclude-unprotected-branches: true
           - theopenlab/envoy:
               exclude-unprotected-branches: true
           - containerd/containerd:
               exclude-unprotected-branches: false
           - envoyproxy/envoy:
+              exclude-unprotected-branches: true
+          - theopenlab/volcano:
               exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
