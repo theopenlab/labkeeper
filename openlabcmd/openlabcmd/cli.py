@@ -43,9 +43,10 @@ class OpenLabCmd(object):
         cmd_check = parser.add_parser('check',
                                       help='Check OpenLab environment.')
         cmd_check.set_defaults(func=self.check)
-        cmd_check.add_argument('--type', default='all',
+        cmd_check.add_argument('--type', default='default',
                                help="Specify a plugin type, like 'nodepool', "
-                                    "'jobs'. Default is 'all'.")
+                                    "'jobs', 'all'. Default is 'default',"
+                                    " will skip the experimental plugins.")
         cmd_check.add_argument('--cloud', default='all',
                                help="Specify a cloud provider, like 'otc', "
                                     "'vexxhost'. Default is 'all'.")
@@ -195,12 +196,15 @@ class OpenLabCmd(object):
 
         cloud_list = self._get_cloud_list(self.args.cloud)
 
-        if self.args.type != 'all':
+        if self.args.type == 'default':
+            plugins = list(filter(lambda x: not x.experimental,
+                                  base.Plugin.plugins))
+        elif self.args.type == 'all':
+            plugins = base.Plugin.plugins
+        else:
             # Filter the plugins with specific ptype
             plugins = list(filter(lambda x: x.ptype == self.args.type,
                                   base.Plugin.plugins))
-        else:
-            plugins = base.Plugin.plugins
 
         cnt = len(cloud_list)
         for i, c in enumerate(cloud_list):

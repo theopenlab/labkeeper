@@ -7,6 +7,7 @@ from openlabcmd.plugins.recover import Recover
 class NetworkPlugin(Plugin):
     ptype = 'nodepool'
     name = 'network'
+    experimental = True
 
     def check(self):
         self.failed = False
