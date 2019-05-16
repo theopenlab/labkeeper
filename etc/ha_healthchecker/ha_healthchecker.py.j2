@@ -143,8 +143,6 @@ class Refresher(Base):
             self._refresh_service(service_obj, node_obj)
 
         self._report_heart_beat(node_obj)
-        if node_obj.alarmed and node_obj.role == 'slave':
-            self.zk.update_node(node_obj.name, alarmed=False)
 
     def _refresh_service(self, service_obj, node_obj):
         cur_status = self._get_service_status(service_obj.name)
@@ -156,21 +154,22 @@ class Refresher(Base):
                 update_dict['status'] = 'up'
                 update_dict['restarted'] = False
                 update_dict['alarmed'] = False
+                LOG.debug("Fix Service %(name)s status from %(orig)s to UP.",
+                          {'name': service_obj.name,
+                           'orig': service_obj.status})
         else:
             if not service_obj.restarted:
                 update_dict['status'] = 'restarting'
                 update_dict['restarted'] = True
+                LOG.debug("Service %(name)s is Restarting.",
+                          {'name': service_obj.name})
             else:
                 update_dict['status'] = 'down'
+                LOG.debug("Service %(name)s is Down.",
+                          {'name': service_obj.name})
         if update_dict:
             self.zk.update_service(service_obj.name, node_obj.name,
                                    **update_dict)
-
-        if cur_status != 'up' and service_obj.status == 'restarting':
-            LOG.debug(
-                "Service %(name)s is abnormal. It's status is %(status)s.",
-                {'name': service_obj.name,
-                 'status': cur_status.upper()})
 
     def _report_heart_beat(self, node_obj):
         hb = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -444,7 +443,7 @@ class Switcher(Base):
     def __init__(self, zk, heartbeat_timeout):
         super(Switcher, self).__init__(zk, heartbeat_timeout)
 
-    def global_analysis(self):
+    def _is_need_switch(self):
         all_nodes = self.zk.list_nodes()
 
         for node in all_nodes:
@@ -708,7 +707,7 @@ class Switcher(Base):
         return 'start' not in res
 
     def run(self):
-        if self.global_analysis():
+        if self._is_need_switch():
             if self._can_start_switch():
                 self._do_switch()
         if self._is_switching() and self.node.switch_status == 'start':
