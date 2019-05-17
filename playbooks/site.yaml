@@ -37,5 +37,7 @@
 - import_playbook: apache.yaml
 - import_playbook: sync-config-files.yaml
   when: labsync_enabled|default(false)|bool
+- import_playbook: check-nodepool-periodic.yaml
+  when: labcheck_enabled|default(false)|bool
 - import_playbook: conf-new-slave.yaml
   when: config_new_slave|default(false)|bool
