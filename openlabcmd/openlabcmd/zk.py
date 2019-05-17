@@ -285,13 +285,15 @@ class ZooKeeper(object):
                 raise exceptions.ValidationError('alarmed should be boolean '
                                                  'value.')
             old_service.alarmed = alarmed
-            old_service.alarmed_at = current_time
+            if alarmed:
+                old_service.alarmed_at = current_time
         if restarted is not None:
             if not isinstance(restarted, bool):
                 raise exceptions.ValidationError('restarted should be '
                                                  'boolean value.')
             old_service.restarted = restarted
-            old_service.restarted_at = current_time
+            if restarted:
+                old_service.restarted_at = current_time
         if status:
             if status not in service.ServiceStatus().all_status:
                 raise exceptions.ValidationError(
