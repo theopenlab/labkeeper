@@ -119,3 +119,15 @@ Get or list the service running in cluster.
     -h, --help            show this help message and exit
     --node NODE  The node where the service run.
   ```
+
+#### cluster
+
+Manage the HA cluster.
+
+* openlab ha cluster switch
+  ```
+  usage: openlab ha cluster switch [-h]
+
+  optional arguments:
+    -h, --help            show this help message and exit
+  ```
