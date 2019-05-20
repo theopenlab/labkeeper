@@ -171,12 +171,35 @@ class Refresher(Base):
             self.zk.update_service(service_obj.name, node_obj.name,
                                    **update_dict)
 
+    def _need_fix_alarmed_status(self, node):
+        service_objs = self.zk.list_services(node_name_filter=node.name)
+        err_svcs = []
+        for service_obj in service_objs:
+            if service_obj.status == 'down':
+                err_svcs.append(service_obj)
+
+        need_fix = False
+        if len(err_svcs) == 0:
+            need_fix = True
+        else:
+            fix_res = []
+            for err_svc in err_svcs:
+                if (not err_svc.is_necessary and
+                        not self._is_alarmed_timeout(err_svc) and
+                        node.role == 'master'):
+                    fix_res.append(True)
+            if len(err_svcs) == len(fix_res):
+                need_fix = True
+
+        return need_fix and node.alarmed
+
     def _report_heart_beat(self, node_obj):
         hb = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         update_dict = {'heartbeat': hb}
         if node_obj.status == 'initializing':
             update_dict['status'] = 'up'
-        if node_obj.alarmed and node_obj.role == 'slave':
+        if ((node_obj.alarmed and node_obj.role == 'slave') or
+                self._need_fix_alarmed_status(node_obj)):
             update_dict['alarmed'] = False
         self.zk.update_node(node_obj.name, **update_dict)
         LOG.debug("Report node %(name)s heartbeat %(hb)s",
@@ -518,6 +541,19 @@ class Switcher(Base):
                      {'status': 'end'.upper(),
                       'role': self.oppo_node.role,
                       'name': self.oppo_node.name})
+
+        # if we arrive here, that means the switch condition can not reach, but
+        # the swtich_status already be set with 'start', that means during the
+        # switch preparation period, we fix the switch condition, so this time,
+        # we didn't find a switching condition, we must set back the
+        # switch_status to None.
+        if not need_switch and self.node.switch_status == 'start':
+            self.zk.update_node(self.node.name, switch_status=None)
+            LOG.info("Global checking result: setting back switch_status "
+                     "from %(status)s to None on %(role)s node %(name)s.",
+                     {'status': 'start'.upper(),
+                      'role': self.node.role,
+                      'name': self.node.name})
         return need_switch
 
     def _run_systemctl_command(self, command, service):
