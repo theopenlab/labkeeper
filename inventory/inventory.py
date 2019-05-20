@@ -49,10 +49,8 @@ def main():
     args_group = parser.add_mutually_exclusive_group(required=True)
     args_group.add_argument('--list', action='store_true',
                             help='List inventories')
-    args_group.add_argument('--old-host-ips', action='store_true',
-                            help='List old host ips')
-    args_group.add_argument('--new-host-ips', action='store_true',
-                            help='List new host ips')
+    args_group.add_argument('--show-ip', action='store_true',
+                            help='List host ips')
     parsed_args = parser.parse_args()
     if not os.environ.get('OL_TYPE'):
         raise Exception('ERROR: You must specify a deploy type with "OL_TYPE" '
@@ -60,9 +58,10 @@ def main():
     updated_inventories, old_ips, new_ips = parse_inventory()
     if parsed_args.list:
         print(json.dumps(updated_inventories, indent=4))
-    elif parsed_args.old_host_ips:
+    elif parsed_args.show_ip:
+        print("Old_IPs:\n")
         print(json.dumps(old_ips, indent=4))
-    elif parsed_args.new_host_ips:
+        print("New IPs:\n")
         print(json.dumps(new_ips, indent=4))
 
 

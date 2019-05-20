@@ -1,0 +1,12 @@
+- import_playbook: ha_log_cfg_sync.yaml
+- import_playbook: ha_mysql_configure.yaml
+
+- name: Run openlabcmd
+  become: yes
+  hosts: zuul-master
+  tasks:
+    - name: Run openlab ha cluster switch cmd
+      shell: |
+        openlab ha cluster switch
+      args:
+        executable: /bin/bash
