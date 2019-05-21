@@ -714,15 +714,18 @@ class Switcher(Base):
                 'start' in set(res) and
                 'end' in set(res))
 
-    def _do_switch(self):
+    def _do_switch(self, force_switch=False):
         if self.node.role == 'master':
             self._shut_down_all_services(self.node)
-            self.zk.update_node(self.node.name, role='slave', status='down',
-                                switch_status='end')
+            update_dict = {'role': 'slave', 'switch_status': 'end'}
+            if not force_switch:
+                update_dict['status'] = 'down'
+            self.zk.update_node(self.node.name, **update_dict)
             LOG.info("M/S switching: local node, %(role)s node %(name)s is "
                      "finishd from master to slave. And update it with "
-                     "role=slave and status=down.",
-                     {'role': self.node.role, 'name': self.node.name})
+                     "role=slave%(ext_msg)s.",
+                     {'role': self.node.role, 'name': self.node.name,
+                      'ext_msg': ' and status=down' if not force_switch else ''})
 
         elif self.node.role == 'slave':
             if self.node.type == 'zuul':
@@ -743,11 +746,21 @@ class Switcher(Base):
         return 'start' not in res
 
     def run(self):
+        is_force_swtich = False
+        # This is the normal case, once reach the switch condition we do the
+        # normal switch.
         if self._is_need_switch():
             if self._can_start_switch():
-                self._do_switch()
+                self._do_switch(force_switch=is_force_swtich)
+        # But if we found the current switch start are all start, and not reach
+        # the switch condition, that means the deploy manager setting the
+        # switch_status to start manually and want to do a S/W swtich.
+        else:
+            if self._can_start_switch():
+                is_force_swtich = True
+                self._do_switch(force_switch=is_force_swtich)
         if self._is_switching() and self.node.switch_status == 'start':
-            self._do_switch()
+            self._do_switch(force_switch=is_force_swtich)
 
         if self._is_end():
             self.zk.update_node(self.node.name, switch_status=None)
