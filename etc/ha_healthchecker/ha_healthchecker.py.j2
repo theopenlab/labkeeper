@@ -547,7 +547,8 @@ class Switcher(Base):
         # switch preparation period, we fix the switch condition, so this time,
         # we didn't find a switching condition, we must set back the
         # switch_status to None.
-        if not need_switch and self.node.switch_status == 'start':
+        if (not need_switch and self.node.switch_status == 'start' and
+                not self._can_start_switch()):
             self.zk.update_node(self.node.name, switch_status=None)
             LOG.info("Global checking result: setting back switch_status "
                      "from %(status)s to None on %(role)s node %(name)s.",
