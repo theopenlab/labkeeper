@@ -145,6 +145,17 @@ class OpenLabCmd(object):
         cmd_ha_service_get.add_argument(
             '--node', required=True, help="The node where the service run.")
 
+    def _add_ha_cluster_cmd(self, parser):
+        # openlab ha cluster
+        cmd_ha_cluster = parser.add_parser('cluster',
+                                           help='Manage HA cluster.')
+        cmd_ha_cluster_subparsers = cmd_ha_cluster.add_subparsers(
+            title='cluster', dest='cluster')
+        # openlab ha cluster switch
+        cmd_ha_service_get = cmd_ha_cluster_subparsers.add_parser(
+            'switch', help='Switch Master and Slave role.')
+        cmd_ha_service_get.set_defaults(func=self.ha_cluster_switch)
+
     def _add_ha_cmd(self, parser):
         # openlab ha
         cmd_ha = parser.add_parser('ha',
@@ -152,6 +163,7 @@ class OpenLabCmd(object):
         cmd_ha_subparsers = cmd_ha.add_subparsers(title='ha', dest='ha')
         self._add_ha_node_cmd(cmd_ha_subparsers)
         self._add_ha_service_cmd(cmd_ha_subparsers)
+        self._add_ha_cluster_cmd(cmd_ha_subparsers)
 
     def create_parser(self):
         parser = argparse.ArgumentParser(
@@ -306,6 +318,14 @@ class OpenLabCmd(object):
             print(utils.format_output('service', result))
         else:
             print(result.to_dict())
+
+    @_zk_wrapper
+    def ha_cluster_switch(self):
+        try:
+            self.zk.switch_master_and_slave()
+            print("Switch success")
+        except exceptions.OpenLabCmdError:
+            print("Switch failed")
 
     def run(self):
         # no arguments, print help messaging, then exit with error(1)

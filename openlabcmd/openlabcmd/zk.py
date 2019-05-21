@@ -306,3 +306,14 @@ class ZooKeeper(object):
 
         new_service = self.get_service(service_name, node_name)
         return new_service
+
+    @_client_check_wrapper
+    def switch_master_and_slave(self):
+        """Mark node's switch status to start.
+
+        This func is called by labkeeper deploy tool. So that operators can
+        switch master-slave role by hand. Once health checker find that all
+        nodes' switch status are `start`, it will start to switch cluster.
+        """
+        for node in self.list_nodes():
+            self.update_node(node.name, switch_status='start')
