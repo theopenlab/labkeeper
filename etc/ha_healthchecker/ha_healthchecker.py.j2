@@ -109,11 +109,6 @@ class Base(object):
         return current_time > over_time
 
     def _get_service_status(self, service):
-        # gearman is controlled by zuul itself. It's not under systemd.
-        if service == 'gearman':
-            return 'up' if os.path.exists(
-                '/run/gearman/server.pid') else 'down'
-
         # timer tasks are handled by crontab
         if service in ['zuul-timer-tasks', 'nodepool-timer-tasks']:
             service = 'cron'
@@ -264,8 +259,6 @@ class Fixer(Base):
 
     def _fix_service(self, service_obj):
         if service_obj.status == 'restarting':
-            if service_obj.name == 'gearman':
-                return
             if service_obj.name in ['zuul-timer-tasks','nodepool-timer-tasks']:
                 service_name = 'cron'
             else:
@@ -577,7 +570,7 @@ class Switcher(Base):
         service_objs = self.zk.list_services(
             node_name_filter=node_obj.name)
         for service in service_objs:
-            if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
+            if service.name not in ['zuul-timer-tasks',
                                     'nodepool-timer-tasks']:
                 self._run_systemctl_command(SYSTEMCTL_STOP, service.name)
 
@@ -586,7 +579,7 @@ class Switcher(Base):
             node_name_filter=node_obj.name)
         for service in service_objs:
             if service.is_necessary:
-                if service.name not in ['rsync', 'gearman', 'zuul-timer-tasks',
+                if service.name not in ['zuul-timer-tasks',
                                         'nodepool-timer-tasks']:
                     self._run_systemctl_command(SYSTEMCTL_START, service)
                     LOG.info("Start Service %(name)s.", {'name': service.name})

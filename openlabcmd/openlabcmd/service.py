@@ -8,7 +8,7 @@ service_mapping = {
     'master': {
         'zuul': {
             'necessary': ['zuul-scheduler', 'zuul-executor', 'zuul-web',
-                          'gearman', 'mysql', 'apache2'],
+                          'gearman-job-server', 'mysql', 'apache2'],
             'unnecessary': ['zuul-merger', 'zuul-fingergw', 'zuul-timer-tasks']
         },
         'nodepool': {
