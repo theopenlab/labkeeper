@@ -35,8 +35,8 @@ CONFIG_LOCAL = {
     'dns_status_domain': 'status.openlabtesting.org',
     'dns_log_domain': 'logs.openlabtesting.org',
 {% endif %}
-     'dns_ori_web_ip': "{{ ori_master_ip }}",
-     'dns_change_web_ip': "{{ slave_ip }}",
+     'dns_master_public_ip': "{{ master_zuul_web_ip }}",
+     'dns_slave_public_ip': "{{ slave_zuul_web_ip }}",
 }
 
 # General constants
@@ -610,7 +610,7 @@ class Switcher(Base):
     def _match_record(self, name, res):
         return (name == res['name'] and
                 res['type'] == "A" and
-                self.cfg_cache.dns_ori_web_ip == res['content'])
+                self.cfg_cache.dns_master_public_ip == res['content'])
 
     def _change_dns(self):
         headers = {'Authorization': "Bearer %s" % self.cfg_cache.dns_provider_token,
@@ -667,7 +667,7 @@ class Switcher(Base):
 
         headers['Content-Type'] = 'application/json'
         data = {
-            "content": self.cfg_cache.dns_change_web_ip
+            "content": self.cfg_cache.dns_slave_public_ip
         }
         for target_domain in target_dict.keys():
             res = requests.patch(
@@ -676,16 +676,16 @@ class Switcher(Base):
                 data=data, headers=headers)
             result = json.loads(s=res.content.decode('utf8'))['data']
             if (res.status_code == 200 and
-                    result['content'] == self.cfg_cache.dns_change_web_ip):
+                    result['content'] == self.cfg_cache.dns_slave_public_ip):
                 self.cfg_cache.LOG.info(
                     "Success Update -- Domain %s from %s to %s" % (
-                        target_domain, self.cfg_cache.dns_ori_web_ip,
-                        self.cfg_cache.dns_change_web_ip))
+                        target_domain, self.cfg_cache.dns_master_public_ip,
+                        self.cfg_cache.dns_slave_public_ip))
             else:
                 self.cfg_cache.LOG.error(
                     "Fail Update -- Domain %s from %s to %s" % (
-                        target_domain, self.cfg_cache.dns_ori_web_ip,
-                        self.cfg_cache.dns_change_web_ip))
+                        target_domain, self.cfg_cache.dns_master_public_ip,
+                        self.cfg_cache.dns_slave_public_ip))
                 self.cfg_cache.LOG.error(
                     "Details: code-status %s\n         message: %s" % (
                         res.status_code, res.reason))

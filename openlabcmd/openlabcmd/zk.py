@@ -15,12 +15,12 @@ from openlabcmd import service
 
 CONFIGURATION_DICT = {
     'dns_log_domain': 'test-logs.openlabtesting.org',
+    'dns_master_public_ip': None,
     'dns_provider_account': None,
     'dns_provider_api_url': 'https://api.dnsimple.com/v2/',
     'dns_provider_token': None,
+    'dns_slave_public_ip': None,
     'dns_status_domain': 'test-status.openlabtesting.org',
-    'dns_ori_web_ip': None,
-    'dns_change_web_ip': None,
     'github_repo': None,
     'github_user_token': None,
     'heartbeat_timeout_second': 150,
