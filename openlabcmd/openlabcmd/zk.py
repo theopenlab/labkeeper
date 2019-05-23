@@ -15,16 +15,18 @@ from openlabcmd import service
 
 CONFIGURATION_DICT = {
     'dns_log_domain': 'test-logs.openlabtesting.org',
+    'dns_master_public_ip': None,
     'dns_provider_account': None,
     'dns_provider_api_url': 'https://api.dnsimple.com/v2/',
     'dns_provider_token': None,
+    'dns_slave_public_ip': None,
     'dns_status_domain': 'test-status.openlabtesting.org',
     'github_repo': None,
     'github_user_token': None,
-    'heartbeat_timeout (second)': 150,
+    'heartbeat_timeout_second': 150,
     'logging_level': 'DEBUG',
     'logging_path': '/etc/openlab/ha_healthchecker/ha_healthchecker.log',
-    'unnecessary_service_switch_timeout (hour)': 48,
+    'unnecessary_service_switch_timeout_hour': 48,
 }
 
 
