@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import json
 
 from prettytable import PrettyTable
 
@@ -61,3 +62,14 @@ def format_output(headers_table_name, objs):
                     values.append(getattr(obj, k))
             t.add_row(values)
     return t
+
+
+def format_dict(d, max_column_width=80):
+    pt = PrettyTable(['Option', 'Value'], caching=False)
+    pt.align = 'l'
+    pt.max_width = max_column_width
+    for k, v in d.items():
+        if isinstance(v, (dict, list)):
+            v = json.dumps(v)
+        pt.add_row([k, v])
+    return pt.get_string(sortby='Option')

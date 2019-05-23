@@ -156,6 +156,26 @@ class OpenLabCmd(object):
             'switch', help='Switch Master and Slave role.')
         cmd_ha_service_get.set_defaults(func=self.ha_cluster_switch)
 
+    def _add_ha_config_cmd(self, parser):
+        # openlab ha cluster
+        cmd_ha_config = parser.add_parser('config',
+                                          help='Manage HA cluster '
+                                               'configuration.')
+        cmd_ha_config_subparsers = cmd_ha_config.add_subparsers(
+            title='config', dest='configuration')
+        # openlab ha config list
+        cmd_ha_config_list = cmd_ha_config_subparsers.add_parser(
+            'list', help='List all HA cluster config options.')
+        cmd_ha_config_list.set_defaults(func=self.ha_config_list)
+        # openlab ha config set
+        cmd_ha_config_set = cmd_ha_config_subparsers.add_parser(
+            'set', help='Update a HA cluster config option.')
+        cmd_ha_config_set.set_defaults(func=self.ha_config_update)
+        cmd_ha_config_set.add_argument('name',
+                                       help='The name of config option.')
+        cmd_ha_config_set.add_argument('value',
+                                       help='The value of config option.')
+
     def _add_ha_cmd(self, parser):
         # openlab ha
         cmd_ha = parser.add_parser('ha',
@@ -164,6 +184,7 @@ class OpenLabCmd(object):
         self._add_ha_node_cmd(cmd_ha_subparsers)
         self._add_ha_service_cmd(cmd_ha_subparsers)
         self._add_ha_cluster_cmd(cmd_ha_subparsers)
+        self._add_ha_config_cmd(cmd_ha_subparsers)
 
     def create_parser(self):
         parser = argparse.ArgumentParser(
@@ -326,6 +347,18 @@ class OpenLabCmd(object):
             print("Switch success")
         except exceptions.OpenLabCmdError:
             print("Switch failed")
+
+    @_zk_wrapper
+    def ha_config_list(self):
+        result = self.zk.list_configuration()
+        if self.args.format == 'pretty':
+            print(utils.format_dict(result))
+        else:
+            print(result)
+
+    @_zk_wrapper
+    def ha_config_update(self):
+        self.zk.update_configuration(self.args.name, self.args.value)
 
     def run(self):
         # no arguments, print help messaging, then exit with error(1)
