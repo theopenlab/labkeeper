@@ -27,11 +27,8 @@
         - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py.j2", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.py' }
       vars:
         zk_cli_conf: "/etc/openlab/openlab.conf"
-        heartbeat_internal: 300
         ori_master_ip: "{{ hostvars[groups['zuul-web-master'][0]].ansible_host }}"
-        ori_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
         slave_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
-        slave_backup_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
 
     - name: install script dependency
       pip:

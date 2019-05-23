@@ -15,42 +15,29 @@ import requests
 import six
 
 
-logging.basicConfig(
-    filename="/etc/openlab/ha_healthchecker/ha_healthchecker.log",
-    filemode='a',
-    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-    datefmt='%H:%M:%S',
-    level=logging.DEBUG)
-LOG = logging.getLogger(__name__)
-
-
-# Post user info
-{% if use_test_account %}
-ISSUE_USER_TOKEN = "{{ test_github_token }}"
-REPO_NAME = "{{ test_repo_name }}"
-{% else %}
-ISSUE_USER_TOKEN = "{{ github_token }}"
-REPO_NAME = 'theopenlab/openlab'
-{% endif %}
-
 # Simpledns provider
-base_api_url = 'https://api.dnsimple.com/v2/'
 DOMAIN_NAME = 'openlabtesting.org'
-{% if use_test_url %}
-DOMAIN_NAME1 = 'test-status.openlabtesting.org'
-DOMAIN_NAME2 = 'test-logs.openlabtesting.org'
-DOMAIN_NAME_BK = 'test-logs-bak.openlabtesting.org'
-{% else %}
-DOMAIN_NAME1 = 'status.openlabtesting.org'
-DOMAIN_NAME2 = 'logs.openlabtesting.org'
-DOMAIN_NAME_BK = 'logs-bak.openlabtesting.org'
-{% endif %}
-TOKEN = "{{ dns_access_token }}"
-ACCOUNT_ID = {{ dns_account_id }}
 TARGET_ORI_IP = "{{ ori_master_ip }}"
-TARGET_ORI_BK_IP = "{{ ori_backup_ip }}"
 TARGET_CHANGE_IP = "{{ slave_ip }}"
-TARGET_CHANGE_BK_IP = "{{ slave_backup_ip }}"
+
+CONFIG_LOCAL = {
+    'dns_provider_token': "{{ dns_access_token }}",
+    'dns_provider_account': {{ dns_account_id }},
+{% if use_test_account %}
+    'github_repo': "{{ test_repo_name }}",
+    'github_user_token': "{{ test_github_token }}",
+{% else %}
+    'github_repo': 'theopenlab/openlab',
+    'github_user_token': "{{ github_token }}",
+{% endif %}
+{% if use_test_url %}
+    'dns_status_domain': 'test-status.openlabtesting.org',
+    'dns_log_domain': 'test-logs.openlabtesting.org',
+{% else %}
+    'dns_status_domain': 'status.openlabtesting.org',
+    'dns_log_domain': 'logs.openlabtesting.org',
+{% endif %}
+}
 
 # General constants
 SYSTEMCTL_STATUS = 'status'
@@ -60,11 +47,11 @@ SYSTEMCTL_START = 'start'
 
 
 class Base(object):
-    def __init__(self, zk, heartbeat_timeout):
+    def __init__(self, zk, cfg_cache):
         self.zk = zk
-        self.heartbeat_timeout = heartbeat_timeout
         self.node = self.zk.get_node(socket.gethostname())
         self.oppo_node = self._get_oppo_node()
+        self.cfg_cache = cfg_cache
 
     def _get_oppo_node(self):
         for zk_node in self.zk.list_nodes():
@@ -76,7 +63,7 @@ class Base(object):
         try:
             over_time = iso8601.parse_date(
                 node_obj.heartbeat) + datetime.timedelta(
-                seconds=self.heartbeat_timeout)
+                seconds=self.cfg_cache.heartbeat_timeout)
         except (iso8601.ParseError, TypeError, ValueError):
             # The heartbeat is not formatted, this must be the kp on the node
             # is not finish the first loop. We just return False, as we are in
@@ -104,7 +91,7 @@ class Base(object):
     def _is_alarmed_timeout(self, obj):
         over_time = self._parse_isotime(
             obj.alarmed_at) + datetime.timedelta(
-            days=2)
+            hours=self.cfg_cache.unnecessary_service_switch_timeout)
         current_time = datetime.datetime.utcnow().replace(tzinfo=iso8601.UTC)
         return current_time > over_time
 
@@ -119,18 +106,18 @@ class Base(object):
             # if using status command, 0 means active, non-zero means error
             # status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
+            self.cfg_cache.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
             return 'up'
         except subprocess.CalledProcessError as e:
-            LOG.error("Failed to check %(srvc)s service: "
-                      "%(err)s %(out)s", {'srvc': service, 'err': e,
-                                          'out': e.output})
+            self.cfg_cache.LOG.error("Failed to check %(srvc)s service: "
+                                     "%(err)s %(out)s", {
+                'srvc': service, 'err': e, 'out': e.output})
             return 'down'
 
 
 class Refresher(Base):
-    def __init__(self, zk, heartbeat_timeout):
-        super(Refresher, self).__init__(zk, heartbeat_timeout)
+    def __init__(self, zk, cfg_cache):
+        super(Refresher, self).__init__(zk, cfg_cache)
 
     def _local_node_service_process(self, node_obj):
         service_objs = self.zk.list_services(node_name_filter=node_obj.name)
@@ -141,27 +128,29 @@ class Refresher(Base):
 
     def _refresh_service(self, service_obj, node_obj):
         cur_status = self._get_service_status(service_obj.name)
-        LOG.debug("Service %(name)s check result: %(status)s",
-                  {'name': service_obj.name, 'status': cur_status})
+        self.cfg_cache.LOG.debug("Service %(name)s check result: %(status)s",
+                                 {'name': service_obj.name,
+                                  'status': cur_status})
         update_dict = {}
         if cur_status == 'up':
             if service_obj.status != 'up':
                 update_dict['status'] = 'up'
                 update_dict['restarted'] = False
                 update_dict['alarmed'] = False
-                LOG.debug("Fix Service %(name)s status from %(orig)s to UP.",
-                          {'name': service_obj.name,
-                           'orig': service_obj.status})
+                self.cfg_cache.LOG.debug("Fix Service %(name)s status from "
+                                         "%(orig)s to UP.",
+                                         {'name': service_obj.name,
+                                          'orig': service_obj.status})
         else:
             if not service_obj.restarted:
                 update_dict['status'] = 'restarting'
                 update_dict['restarted'] = True
-                LOG.debug("Service %(name)s is Restarting.",
-                          {'name': service_obj.name})
+                self.cfg_cache.LOG.debug("Service %(name)s is Restarting.",
+                                         {'name': service_obj.name})
             else:
                 update_dict['status'] = 'down'
-                LOG.debug("Service %(name)s is Down.",
-                          {'name': service_obj.name})
+                self.cfg_cache.LOG.debug("Service %(name)s is Down.",
+                                         {'name': service_obj.name})
         if update_dict:
             self.zk.update_service(service_obj.name, node_obj.name,
                                    **update_dict)
@@ -197,8 +186,8 @@ class Refresher(Base):
                 self._need_fix_alarmed_status(node_obj)):
             update_dict['alarmed'] = False
         self.zk.update_node(node_obj.name, **update_dict)
-        LOG.debug("Report node %(name)s heartbeat %(hb)s",
-                  {'name': node_obj.name, 'hb': hb})
+        self.cfg_cache.LOG.debug("Report node %(name)s heartbeat %(hb)s",
+                                 {'name': node_obj.name, 'hb': hb})
 
     def _oppo_node_check(self, oppo_node_obj):
         if oppo_node_obj.status == 'maintaining':
@@ -211,15 +200,15 @@ class Refresher(Base):
                 # So current node is slave, we need to set the oppo side ones
                 # to down
                 self.zk.update_node(oppo_node_obj.name, status='down')
-                LOG.info("OPPO %(role)s node %(name)s can not reach, updated "
-                         "with %(status)s status.",
-                         {'role': oppo_node_obj.role,
-                          'name': oppo_node_obj.name,
-                          'status': 'down'.upper()})
+                self.cfg_cache.LOG.info("OPPO %(role)s node %(name)s can not "
+                                        "reach, updated with %(status)s status.",
+                                        {'role': oppo_node_obj.role,
+                                         'name': oppo_node_obj.name,
+                                         'status': 'down'.upper()})
 
     def run(self):
         if self.node.status in ['maintaining', 'down']:
-            LOG.debug(
+            self.cfg_cache.LOG.debug(
                 'Node %(name)s status is %(status)s, Skipping refresh.',
                 {'name': self.node.name,
                  'status': self.node.status.upper()})
@@ -230,20 +219,22 @@ class Refresher(Base):
 
 
 class Fixer(Base):
-    def __init__(self, zk, heartbeat_timeout):
-        super(Fixer, self).__init__(zk, heartbeat_timeout)
+    def __init__(self, zk, cfg_cache):
+        super(Fixer, self).__init__(zk, cfg_cache)
 
     def _post_alarmed(self, obj):
         if not obj.alarmed:
             if 'node' in obj.__class__.__name__.lower():
                 self.zk.update_node(obj.name, alarmed=True)
-                LOG.info("%(role)s Node %(name)s updated with alarmed=True",
-                         {'name': obj.name,
-                          'role': obj.role})
+                self.cfg_cache.LOG.info("%(role)s Node %(name)s updated with "
+                                        "alarmed=True",
+                                        {'name': obj.name,
+                                         'role': obj.role})
             elif 'service' in obj.__class__.__name__.lower():
                 self.zk.update_service(obj.name, self.node.name, alarmed=True)
-                LOG.info("Service %(name)s updated with alarmed=True",
-                         {'name': obj.name})
+                self.cfg_cache.LOG.info("Service %(name)s updated with "
+                                        "alarmed=True",
+                                        {'name': obj.name})
 
     def _service_restart(self, service):
         cmd = "systemctl restart {srvc}".format(srvc=service)
@@ -251,11 +242,12 @@ class Fixer(Base):
             # 0 means OK
             # if using status command, 0 means active, non-zero means error status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
+            self.cfg_cache.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
         except subprocess.CalledProcessError as e:
-            LOG.error("Failed to restart %(srvc)s service: "
-                      "%(err)s %(out)s", {'srvc': service,
-                                          'err': e, 'out': e.output})
+            self.cfg_cache.LOG.error("Failed to restart %(srvc)s service: "
+                                     "%(err)s %(out)s", {'srvc': service,
+                                                         'err': e,
+                                                         'out': e.output})
 
     def _fix_service(self, service_obj):
         if service_obj.status == 'restarting':
@@ -264,8 +256,8 @@ class Fixer(Base):
             else:
                 service_name = service_obj.name
             self._service_restart(service_name)
-            LOG.info("Service %(name)s restarted already.",
-                     {'name': service_obj.name})
+            self.cfg_cache.LOG.info("Service %(name)s restarted already.",
+                                    {'name': service_obj.name})
         elif service_obj.status == 'down':
             if not service_obj.alarmed:
                 if service_obj.is_necessary:
@@ -414,16 +406,18 @@ class Fixer(Base):
         title, body = self._format_body_for_issue(
             issuer_node, affect_node, affect_services=affect_services,
             affect_range=affect_range, more_specific=more_specific)
-        g = Github(login_or_token=ISSUE_USER_TOKEN)
-        repo = g.get_repo(REPO_NAME)
+        g = Github(login_or_token=self.cfg_cache.github_user_token)
+        repo = g.get_repo(self.cfg_cache.github_repo)
         repo.create_issue(
             title=title % (
                 datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
             body=body)
-        LOG.info("Post a Issue for %(title)s with reason %(reason)s.",
-                 {'title': title % (
-                     datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
-                  'reason': more_specific})
+        self.cfg_cache.LOG.info("Post a Issue for %(title)s with reason "
+                                "%(reason)s.",
+                                {'title': title % (
+                                    datetime.datetime.utcnow().strftime(
+                                        "%Y-%m-%d %H:%M:%S")),
+                                 'reason': more_specific})
 
     def _oppo_node_check(self, oppo_node_obj):
         if (self._ping(oppo_node_obj.ip) and
@@ -446,9 +440,10 @@ class Fixer(Base):
 
     def run(self):
         if self.node.status in ['maintaining', 'down']:
-            LOG.debug('Node %(name)s status is %(status)s, Skipping fix.',
-                      {'name': self.node.name,
-                       'status': self.node.status.upper()})
+            self.cfg_cache.LOG.debug('Node %(name)s status is %(status)s, '
+                                     'Skipping fix.',
+                                     {'name': self.node.name,
+                                      'status': self.node.status.upper()})
             return
         self._local_node_service_process()
         if self.oppo_node:
@@ -456,17 +451,18 @@ class Fixer(Base):
 
 
 class Switcher(Base):
-    def __init__(self, zk, heartbeat_timeout):
-        super(Switcher, self).__init__(zk, heartbeat_timeout)
+    def __init__(self, zk, cfg_cache):
+        super(Switcher, self).__init__(zk, cfg_cache)
 
     def _is_need_switch(self):
         all_nodes = self.zk.list_nodes()
 
         for node in all_nodes:
             if node.status == 'maintaining':
-                LOG.info("Global checking: there is a maintaining node, "
-                         "it's %(name)s, so can not decide to swtich. "
-                         "Skipping..", {'name': node.name})
+                self.cfg_cache.LOG.info("Global checking: there is a "
+                                        "maintaining node, it's %(name)s, so "
+                                        "can not decide to swtich. Skipping..",
+                                        {'name': node.name})
 
                 return
 
@@ -478,37 +474,41 @@ class Switcher(Base):
                 err_services = [e for e in node_services if e.status == 'down']
                 if node.status == 'down':
                     need_switch = True
-                    LOG.info("Global checking: Found %(role)s node %(name)s "
-                             "is in %(status)s. ", {
-                        'name': node.name, 'role': node.role,
-                        'status': 'down'.upper()})
+                    self.cfg_cache.LOG.info("Global checking: Found %(role)s "
+                                            "node %(name)s is in %(status)s. ",
+                                            {'name': node.name,
+                                             'role': node.role,
+                                             'status': 'down'.upper()})
                     break
                 # Service analysis
                 for err_svc in err_services:
                     if err_svc.is_necessary:
                         need_switch = True
-                        LOG.info("Global checking: Found a necessary service "
-                                 "%(service_name)s is in %(service_status)s "
-                                 "status on %(role)s node %(name)s. ", {
-                            'service_name': err_svc.name,
-                            'service_status': err_svc.status.upper(),
-                            'name': node.name, 'role': node.role})
+                        self.cfg_cache.LOG.info(
+                            "Global checking: Found a necessary service "
+                            "%(service_name)s is in %(service_status)s "
+                            "status on %(role)s node %(name)s. ", {
+                                'service_name': err_svc.name,
+                                'service_status': err_svc.status.upper(),
+                                'name': node.name, 'role': node.role})
                         break
                     elif (not err_svc.is_necessary and
                           self._is_alarmed_timeout(err_svc)):
                         need_switch = True
-                        LOG.info("Global checking: Found a necessary service "
-                                 "%(service_name)s is in %(service_status)s "
-                                 "status on %(role)s node %(name)s. ", {
-                            'service_name': err_svc.name,
-                            'service_status': err_svc.status.upper(),
-                            'name': node.name, 'role': node.role})
+                        self.cfg_cache.LOG.info(
+                            "Global checking: Found a necessary service "
+                            "%(service_name)s is in %(service_status)s "
+                            "status on %(role)s node %(name)s. ", {
+                                'service_name': err_svc.name,
+                                'service_status': err_svc.status.upper(),
+                                'name': node.name, 'role': node.role})
                         break
 
         if need_switch and not self.node.switch_status:
             self.zk.update_node(self.node.name, switch_status='start')
-            LOG.info("Global checking result: setting switch_status "
-                     "%(status)s.", {'status': 'start'.upper()})
+            self.cfg_cache.LOG.info("Global checking result: setting "
+                                    "switch_status %(status)s.",
+                                    {'status': 'start'.upper()})
 
         if self.node.role == 'slave' and (
                 self.node.switch_status == 'start' and
@@ -516,24 +516,26 @@ class Switcher(Base):
                  self._is_check_heart_beat_overtime(self.oppo_node))):
             self.zk.update_node(self.oppo_node.name,
                                 switch_status='start')
-            LOG.info("Global checking result: setting switch_status "
-                     "%(status)s and role=slave on OPPO %(role)s "
-                     "node %(name)s.",
-                     {'status': 'start'.upper(),
-                      'role': self.oppo_node.role,
-                      'name': self.oppo_node.name})
+            self.cfg_cache.LOG.info(
+                "Global checking result: setting switch_status "
+                "%(status)s and role=slave on OPPO %(role)s "
+                "node %(name)s.",
+                {'status': 'start'.upper(),
+                 'role': self.oppo_node.role,
+                 'name': self.oppo_node.name})
         if self.node.role == 'master' and (
                 self.node.switch_status == 'end' and
                 (not self._ping(self.oppo_node.ip) and
                  self._is_check_heart_beat_overtime(self.oppo_node))):
             self.zk.update_node(self.oppo_node.name, role='slave',
                                 switch_status='end')
-            LOG.info("Global checking result: setting switch_status "
-                     "%(status)s and role=slave on OPPO %(role)s "
-                     "node %(name)s.",
-                     {'status': 'end'.upper(),
-                      'role': self.oppo_node.role,
-                      'name': self.oppo_node.name})
+            self.cfg_cache.LOG.info(
+                "Global checking result: setting switch_status "
+                "%(status)s and role=slave on OPPO %(role)s "
+                "node %(name)s.",
+                {'status': 'end'.upper(),
+                 'role': self.oppo_node.role,
+                 'name': self.oppo_node.name})
 
         # if we arrive here, that means the switch condition can not reach, but
         # the swtich_status already be set with 'start', that means during the
@@ -543,11 +545,12 @@ class Switcher(Base):
         if (not need_switch and self.node.switch_status == 'start' and
                 not self._can_start_switch()):
             self.zk.update_node(self.node.name, switch_status=None)
-            LOG.info("Global checking result: setting back switch_status "
-                     "from %(status)s to None on %(role)s node %(name)s.",
-                     {'status': 'start'.upper(),
-                      'role': self.node.role,
-                      'name': self.node.name})
+            self.cfg_cache.LOG.info(
+                "Global checking result: setting back switch_status "
+                "from %(status)s to None on %(role)s node %(name)s.",
+                {'status': 'start'.upper(),
+                 'role': self.node.role,
+                 'name': self.node.name})
         return need_switch
 
     def _run_systemctl_command(self, command, service):
@@ -556,13 +559,14 @@ class Switcher(Base):
             # 0 means OK
             # if using status command, 0 means active, non-zero means error status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
+            self.cfg_cache.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
             if command == SYSTEMCTL_STATUS:
                 return 'up'
         except subprocess.CalledProcessError as e:
-            LOG.error("Failed to %(cmd)s %(srvc)s service: "
-                      "%(err)s %(out)s", {'cmd': command, 'srvc': service,
-                                          'err': e, 'out': e.output})
+            self.cfg_cache.LOG.error("Failed to %(cmd)s %(srvc)s service: "
+                                     "%(err)s %(out)s",
+                                     {'cmd': command, 'srvc': service,
+                                      'err': e, 'out': e.output})
             if command == SYSTEMCTL_STATUS:
                 return 'down'
 
@@ -582,7 +586,8 @@ class Switcher(Base):
                 if service.name not in ['zuul-timer-tasks',
                                         'nodepool-timer-tasks']:
                     self._run_systemctl_command(SYSTEMCTL_START, service)
-                    LOG.info("Start Service %(name)s.", {'name': service.name})
+                    self.cfg_cache.LOG.info("Start Service %(name)s.",
+                                            {'name': service.name})
 
         # local deplay 5 seconds
         time.sleep(5)
@@ -591,52 +596,56 @@ class Switcher(Base):
         result = {}
         for service in service_objs:
             result[service.name] = self._get_service_status(service.name)
-            LOG.info("Started Service %(name)s status checking: %(status)s",
-                     {'name': service.name,
-                      'status': result[service.name].upper()})
+            self.cfg_cache.LOG.info("Started Service %(name)s status "
+                                    "checking: %(status)s",
+                                    {'name': service.name,
+                                     'status': result[service.name].upper()})
 
         for svc_name, res in result.items():
             if res != 0:
-                LOG.error("%s is failed to start with return code %s" % (
-                    svc_name, res))
+                self.cfg_cache.LOG.error(
+                    "%s is failed to start with return code %s" % (
+                        svc_name, res))
 
     def _match_record(self, name, res):
-        if res['name'] in ['logs-bak', 'test-logs-bak']:
-            return (name == res['name'] and res['type'] == "A" and
-                    TARGET_ORI_BK_IP == res['content'])
         return (name == res['name'] and
                 res['type'] == "A" and TARGET_ORI_IP == res['content'])
 
     def _change_dns(self):
-        headers = {'Authorization': "Bearer %s" % TOKEN,
+        headers = {'Authorization': "Bearer %s" % self.cfg_cache.dns_provider_token,
                    'Accept': 'application/json'}
-        res = requests.get(base_api_url + 'accounts', headers=headers)
+        res = requests.get(self.cfg_cache.dns_provider_api_url + 'accounts',
+                           headers=headers)
         if res.status_code != 200:
-            LOG.error("Failed to get the accounts")
-            LOG.error("Details: code-status %s\n         message: %s" % (
-                res.status_code, res.reason))
+            self.cfg_cache.LOG.error("Failed to get the accounts")
+            self.cfg_cache.LOG.error(
+                "Details: code-status %s\n         message: %s" % (
+                    res.status_code, res.reason))
             return
         accounts = json.loads(s=res.content.decode('utf8'))['data']
         account_id = None
         for account in accounts:
-            if account['id'] == ACCOUNT_ID:
+            if account['id'] == self.cfg_cache.dns_provider_account:
                 account_id = account['id']
                 break
         if not account_id:
-            LOG.error("Failed to get the account_id")
+            self.cfg_cache.LOG.error("Failed to get the account_id")
             return
 
-        target_dict = {DOMAIN_NAME1: {}, DOMAIN_NAME2: {}, DOMAIN_NAME_BK: {}}
+        target_dict = {self.cfg_cache.dns_status_domain: {},
+                       self.cfg_cache.dns_log_domain: {}}
         for target_domain in target_dict.keys():
-            res = requests.get(base_api_url + "%s/zones/%s/records?name=%s" % (
+            res = requests.get(
+                self.cfg_cache.dns_provider_api_url + "%s/zones/%s/records?name=%s" % (
                 account_id, DOMAIN_NAME,
                 target_domain.split(DOMAIN_NAME)[0][:-1]),
                                headers=headers)
             if res.status_code != 200:
-                LOG.error(
+                self.cfg_cache.LOG.error(
                     "Failed to get the records by name %s" % target_domain)
-                LOG.error("Details: code-status %s\n         message: %s" % (
-                    res.status_code, res.reason))
+                self.cfg_cache.LOG.error(
+                    "Details: code-status %s\n         message: %s" % (
+                        res.status_code, res.reason))
                 return
             records = json.loads(s=res.content.decode('utf8'))['data']
             record_id = None
@@ -647,12 +656,12 @@ class Switcher(Base):
                     target_dict[target_domain]['id'] = record_id
                     break
             if not record_id:
-                LOG.error(
+                self.cfg_cache.LOG.error(
                     "Failed to get the record_id by name %s" % target_domain)
                 return
 
         if not any(target_dict.values()):
-            LOG.error("Can't not get any records.")
+            self.cfg_cache.LOG.error("Can't not get any records.")
             return
 
         headers['Content-Type'] = 'application/json'
@@ -660,36 +669,25 @@ class Switcher(Base):
             "content": TARGET_CHANGE_IP
         }
         for target_domain in target_dict.keys():
-            res = requests.patch(base_api_url + "%s/zones/%s/records/%s" % (
-                account_id, DOMAIN_NAME, target_dict[target_domain]['id']),
-                                 data=data,
-                                 headers=headers)
+            res = requests.patch(
+                self.cfg_cache.dns_provider_api_url + "%s/zones/%s/records/%s" % (
+                    account_id, DOMAIN_NAME, target_dict[target_domain]['id']),
+                data=data, headers=headers)
             result = json.loads(s=res.content.decode('utf8'))['data']
-            if result['name'] not in ['logs-bak', 'test-logs-bak']:
-                if (res.status_code == 200 and
-                        result['content'] == TARGET_CHANGE_IP):
-                    LOG.info("Success Update -- Domain %s from %s to %s" % (
+            if (res.status_code == 200 and
+                    result['content'] == TARGET_CHANGE_IP):
+                self.cfg_cache.LOG.info(
+                    "Success Update -- Domain %s from %s to %s" % (
                         target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
-                else:
-                    LOG.error("Fail Update -- Domain %s from %s to %s" % (
-                        target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
-                    LOG.error(
-                        "Details: code-status %s\n         message: %s" % (
-                            res.status_code, res.reason))
-                    return
             else:
-                if (res.status_code == 200 and
-                        result['content'] == TARGET_CHANGE_BK_IP):
-                    LOG.info("Success Update -- Domain %s from %s to %s" % (
-                        target_domain, TARGET_ORI_BK_IP, TARGET_CHANGE_BK_IP))
-                else:
-                    LOG.error("Fail Update -- Domain %s from %s to %s" % (
-                        target_domain, TARGET_ORI_BK_IP, TARGET_CHANGE_BK_IP))
-                    LOG.error(
-                        "Details: code-status %s\n         message: %s" % (
-                            res.status_code, res.reason))
-                    return
-        LOG.info("Finish update DNS entry.")
+                self.cfg_cache.LOG.error(
+                    "Fail Update -- Domain %s from %s to %s" % (
+                        target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
+                self.cfg_cache.LOG.error(
+                    "Details: code-status %s\n         message: %s" % (
+                        res.status_code, res.reason))
+                return
+        self.cfg_cache.LOG.info("Finish update DNS entry.")
 
     def _can_start_switch(self):
         res = []
@@ -715,11 +713,12 @@ class Switcher(Base):
             if not force_switch:
                 update_dict['status'] = 'down'
             self.zk.update_node(self.node.name, **update_dict)
-            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
-                     "finishd from master to slave. And update it with "
-                     "role=slave%(ext_msg)s.",
-                     {'role': self.node.role, 'name': self.node.name,
-                      'ext_msg': ' and status=down' if not force_switch else ''})
+            self.cfg_cache.LOG.info(
+                "M/S switching: local node, %(role)s node %(name)s is "
+                "finishd from master to slave. And update it with "
+                "role=slave%(ext_msg)s.",
+                {'role': self.node.role, 'name': self.node.name,
+                 'ext_msg': ' and status=down' if not force_switch else ''})
 
         elif self.node.role == 'slave':
             if self.node.type == 'zuul':
@@ -727,10 +726,11 @@ class Switcher(Base):
             self.zk.update_node(self.node.name, role='master',
                                 switch_status='end')
             self._setup_necessary_services_and_check(self.node)
-            LOG.info("M/S switching: local node, %(role)s node %(name)s is "
-                     "finishd from slave to master. And update it with "
-                     "role=master and switch_status=end.",
-                     {'role': self.node.role, 'name': self.node.name})
+            self.cfg_cache.LOG.info(
+                "M/S switching: local node, %(role)s node %(name)s is "
+                "finishd from slave to master. And update it with "
+                "role=master and switch_status=end.",
+                {'role': self.node.role, 'name': self.node.name})
 
     def _is_end(self):
         res = []
@@ -760,19 +760,57 @@ class Switcher(Base):
             self.zk.update_node(self.node.name, switch_status=None)
 
 
+class ConfigCache(object):
+    def __init__(self, zk):
+        self._load(**zk.list_configuration())
+        self._refresh_zk(zk)
+
+    def _load(self, **kwargs):
+        for attr, value in kwargs.items():
+            if len(attr.split(' ')) != 1:
+                attr = attr.split(' ')[0]
+            if not hasattr(self, attr):
+                if not value:
+                    value = CONFIG_LOCAL.get(attr)
+                setattr(self, attr, value)
+
+    def _refresh_zk(self, zk):
+        nodes_status = [n.status for n in zk.list_nodes()]
+        if len(set(nodes_status)) == 1 and nodes_status[0] == 'initializing':
+            for key in CONFIG_LOCAL.keys():
+                zk.update_configuration(key, CONFIG_LOCAL[key])
+                setattr(self, key, CONFIG_LOCAL[key])
+
+    def configuration(self, log_str):
+        file_dir = os.path.split(self.logging_path)[0]
+        if not os.path.isdir(file_dir):
+            os.makedirs(file_dir)
+        if not os.path.exists(self.logging_path):
+            os.system('touch %s' % self.logging_path)
+        if not self.logging_level.upper() in ['DEBUG', 'INFO', 'ERROR']:
+            # use the default level
+            self.logging_level = 'DEBUG'
+        logging.basicConfig(
+            filename=self.logging_path,
+            filemode='a',
+            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+            datefmt='%H:%M:%S',
+            level=getattr(logging, self.logging_level.upper()))
+        self.LOG = logging.getLogger(log_str)
+
 class HealthChecker(object):
-    def __init__(self, config_file, heartbeat_timeout):
+    def __init__(self, config_file):
         cfg = configparser.ConfigParser()
         cfg.read(config_file)
         self.zk = zk.ZooKeeper(cfg)
-        self.heartbeat_timeout = heartbeat_timeout
 
     def run(self):
         self.zk.connect()
-
-        Refresher(self.zk, self.heartbeat_timeout).run()
-        Fixer(self.zk, self.heartbeat_timeout).run()
-        Switcher(self.zk, self.heartbeat_timeout).run()
+        cfg_cache = ConfigCache(self.zk)
+        cfg_cache.configuration(self.__class__.__name__)
+        Refresher(self.zk, cfg_cache).run()
+        Fixer(self.zk, cfg_cache).run()
+        Switcher(self.zk, cfg_cache).run()
 
         self.zk.disconnect()
 
@@ -780,7 +818,5 @@ class HealthChecker(object):
 if __name__ == '__main__':
     # ZK client config file
     conf = "{{ zk_cli_conf }}"
-    # Heartbeat Internal timeout(seconds)
-    heartbeat_timeout = {{ heartbeat_internal }}
 
-    HealthChecker(conf, heartbeat_timeout).run()
+    HealthChecker(conf).run()
