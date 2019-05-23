@@ -181,7 +181,8 @@ class Refresher(Base):
     def _report_heart_beat(self, node_obj):
         hb = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         update_dict = {'heartbeat': hb}
-        if node_obj.status == 'initializing':
+        if node_obj.status == 'initializing' or (
+                node_obj.role == 'slave' and node_obj.status == 'down'):
             update_dict['status'] = 'up'
         if ((node_obj.alarmed and node_obj.role == 'slave') or
                 self._need_fix_alarmed_status(node_obj)):
@@ -195,11 +196,7 @@ class Refresher(Base):
             return
         if (not self._ping(oppo_node_obj.ip) and
                 self._is_check_heart_beat_overtime(oppo_node_obj)):
-            if oppo_node_obj.role == 'master' and oppo_node_obj.status == 'up':
-                # Report the issue towards deployment as oppo host is master
-                # Master/Slave Switch
-                # So current node is slave, we need to set the oppo side ones
-                # to down
+            if oppo_node_obj.status == 'up':
                 self.zk.update_node(oppo_node_obj.name, status='down')
                 self.cfg_cache.LOG.info("OPPO %(role)s node %(name)s can not "
                                         "reach, updated with %(status)s status.",
@@ -431,8 +428,7 @@ class Fixer(Base):
                 self._post_alarmed(oppo_node_obj)
         elif (not self._ping(oppo_node_obj.ip) and
               self._is_check_heart_beat_overtime(oppo_node_obj)):
-            if ((oppo_node_obj.role == 'master' and
-                 oppo_node_obj.status == 'down') or oppo_node_obj != 'down'):
+            if oppo_node_obj.status == 'down':
                 if not oppo_node_obj.alarmed:
                     self._notify_issue(self.node, oppo_node_obj,
                                        affect_range='node',
@@ -465,6 +461,12 @@ class Switcher(Base):
                                         "can not decide to swtich. Skipping..",
                                         {'name': node.name})
 
+                return
+            elif node.role == 'slave' and node.status == 'down':
+                self.cfg_cache.LOG.info("Global checking: there is a slave "
+                                        "node %(name)s in DOWN state, can "
+                                        "not do switch. Skipping..",
+                                        {'name': node.name})
                 return
 
         need_switch = False
