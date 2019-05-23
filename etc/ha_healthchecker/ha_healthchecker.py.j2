@@ -17,8 +17,6 @@ import six
 
 # Simpledns provider
 DOMAIN_NAME = 'openlabtesting.org'
-TARGET_ORI_IP = "{{ ori_master_ip }}"
-TARGET_CHANGE_IP = "{{ slave_ip }}"
 
 CONFIG_LOCAL = {
     'dns_provider_token': "{{ dns_access_token }}",
@@ -37,6 +35,8 @@ CONFIG_LOCAL = {
     'dns_status_domain': 'status.openlabtesting.org',
     'dns_log_domain': 'logs.openlabtesting.org',
 {% endif %}
+     'dns_ori_web_ip': "{{ ori_master_ip }}",
+     'dns_change_web_ip': "{{ slave_ip }}",
 }
 
 # General constants
@@ -63,7 +63,7 @@ class Base(object):
         try:
             over_time = iso8601.parse_date(
                 node_obj.heartbeat) + datetime.timedelta(
-                seconds=self.cfg_cache.heartbeat_timeout)
+                seconds=self.cfg_cache.heartbeat_timeout_second)
         except (iso8601.ParseError, TypeError, ValueError):
             # The heartbeat is not formatted, this must be the kp on the node
             # is not finish the first loop. We just return False, as we are in
@@ -91,7 +91,7 @@ class Base(object):
     def _is_alarmed_timeout(self, obj):
         over_time = self._parse_isotime(
             obj.alarmed_at) + datetime.timedelta(
-            hours=self.cfg_cache.unnecessary_service_switch_timeout)
+            hours=self.cfg_cache.unnecessary_service_switch_timeout_hour)
         current_time = datetime.datetime.utcnow().replace(tzinfo=iso8601.UTC)
         return current_time > over_time
 
@@ -609,7 +609,8 @@ class Switcher(Base):
 
     def _match_record(self, name, res):
         return (name == res['name'] and
-                res['type'] == "A" and TARGET_ORI_IP == res['content'])
+                res['type'] == "A" and
+                self.cfg_cache.dns_ori_web_ip == res['content'])
 
     def _change_dns(self):
         headers = {'Authorization': "Bearer %s" % self.cfg_cache.dns_provider_token,
@@ -666,7 +667,7 @@ class Switcher(Base):
 
         headers['Content-Type'] = 'application/json'
         data = {
-            "content": TARGET_CHANGE_IP
+            "content": self.cfg_cache.dns_change_web_ip
         }
         for target_domain in target_dict.keys():
             res = requests.patch(
@@ -675,14 +676,16 @@ class Switcher(Base):
                 data=data, headers=headers)
             result = json.loads(s=res.content.decode('utf8'))['data']
             if (res.status_code == 200 and
-                    result['content'] == TARGET_CHANGE_IP):
+                    result['content'] == self.cfg_cache.dns_change_web_ip):
                 self.cfg_cache.LOG.info(
                     "Success Update -- Domain %s from %s to %s" % (
-                        target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
+                        target_domain, self.cfg_cache.dns_ori_web_ip,
+                        self.cfg_cache.dns_change_web_ip))
             else:
                 self.cfg_cache.LOG.error(
                     "Fail Update -- Domain %s from %s to %s" % (
-                        target_domain, TARGET_ORI_IP, TARGET_CHANGE_IP))
+                        target_domain, self.cfg_cache.dns_ori_web_ip,
+                        self.cfg_cache.dns_change_web_ip))
                 self.cfg_cache.LOG.error(
                     "Details: code-status %s\n         message: %s" % (
                         res.status_code, res.reason))
@@ -767,8 +770,6 @@ class ConfigCache(object):
 
     def _load(self, **kwargs):
         for attr, value in kwargs.items():
-            if len(attr.split(' ')) != 1:
-                attr = attr.split(' ')[0]
             if not hasattr(self, attr):
                 if not value:
                     value = CONFIG_LOCAL.get(attr)
