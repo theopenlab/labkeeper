@@ -3,6 +3,7 @@ import configparser
 import datetime
 import json
 import logging
+from logging import handlers
 import socket
 import subprocess
 import time
@@ -791,12 +792,13 @@ class ConfigCache(object):
         if not self.logging_level.upper() in ['DEBUG', 'INFO', 'ERROR']:
             # use the default level
             self.logging_level = 'DEBUG'
+        Rthandler = handlers.RotatingFileHandler(
+            self.logging_path, maxBytes=10*1024*1024, backupCount=5)
         logging.basicConfig(
-            filename=self.logging_path,
-            filemode='a',
             format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
             datefmt='%H:%M:%S',
-            level=getattr(logging, self.logging_level.upper()))
+            level=getattr(logging, self.logging_level.upper()),
+            handlers=[Rthandler])
         self.LOG = logging.getLogger(log_str)
 
 class HealthChecker(object):
