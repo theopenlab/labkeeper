@@ -107,12 +107,15 @@ class Base(object):
             # if using status command, 0 means active, non-zero means error
             # status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            self.cfg_cache.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
+            self.cfg_cache.LOG.debug("Service %(name)s runs well.",
+                                     {'name': service})
             return 'up'
         except subprocess.CalledProcessError as e:
-            self.cfg_cache.LOG.error("Failed to check %(srvc)s service: "
-                                     "%(err)s %(out)s", {
-                'srvc': service, 'err': e, 'out': e.output})
+            self.cfg_cache.LOG.error("Service %(name)s runs error: "
+                                     "%(err)s %(out)s.",
+                                     {'name': service,
+                                      'err': e,
+                                      'out': e.output})
             return 'down'
 
 
@@ -129,9 +132,6 @@ class Refresher(Base):
 
     def _refresh_service(self, service_obj, node_obj):
         cur_status = self._get_service_status(service_obj.name)
-        self.cfg_cache.LOG.debug("Service %(name)s check result: %(status)s",
-                                 {'name': service_obj.name,
-                                  'status': cur_status})
         update_dict = {}
         if cur_status == 'up':
             if service_obj.status != 'up':
@@ -240,10 +240,11 @@ class Fixer(Base):
             # 0 means OK
             # if using status command, 0 means active, non-zero means error status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            self.cfg_cache.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
+            self.cfg_cache.LOG.info("Service %(name)s restarted success.",
+                                    {'name': service})
         except subprocess.CalledProcessError as e:
-            self.cfg_cache.LOG.error("Failed to restart %(srvc)s service: "
-                                     "%(err)s %(out)s", {'srvc': service,
+            self.cfg_cache.LOG.error("Service %(name)s restarted failed.: "
+                                     "%(err)s %(out)s", {'name': service,
                                                          'err': e,
                                                          'out': e.output})
 
@@ -254,8 +255,6 @@ class Fixer(Base):
             else:
                 service_name = service_obj.name
             self._service_restart(service_name)
-            self.cfg_cache.LOG.info("Service %(name)s restarted already.",
-                                    {'name': service_obj.name})
         elif service_obj.status == 'down':
             if not service_obj.alarmed:
                 if service_obj.is_necessary:
@@ -456,11 +455,6 @@ class Switcher(Base):
 
         for node in all_nodes:
             if node.status == 'maintaining':
-                self.cfg_cache.LOG.info("Global checking: there is a "
-                                        "maintaining node, it's %(name)s, so "
-                                        "can not decide to swtich. Skipping..",
-                                        {'name': node.name})
-
                 return
             elif node.role == 'slave' and node.status == 'down':
                 self.cfg_cache.LOG.info("Global checking: there is a slave "
@@ -599,10 +593,6 @@ class Switcher(Base):
         result = {}
         for service in service_objs:
             result[service.name] = self._get_service_status(service.name)
-            self.cfg_cache.LOG.info("Started Service %(name)s status "
-                                    "checking: %(status)s",
-                                    {'name': service.name,
-                                     'status': result[service.name].upper()})
 
         for svc_name, res in result.items():
             if res != 0:
