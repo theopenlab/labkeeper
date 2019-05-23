@@ -60,3 +60,14 @@
         section: "zookeeper"
         option: "hosts"
         value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"
+
+- name: Run openlabcmd
+  become: yes
+  hosts: zuul-master
+  tasks:
+    - name: Run openlab ha config set cmd
+      shell: |
+        openlab ha config set dns_master_public_ip '{{ hostvars[groups["zuul-master"][0]].ansible_host }}'
+        openlab ha config set dns_slave_public_ip '{{ hostvars[groups["zuul-slave"][0]].ansible_host }}'
+      args:
+        executable: /bin/bash
