@@ -334,6 +334,11 @@ class ZooKeeper(object):
         switch master-slave role by hand. Once health checker find that all
         nodes' switch status are `start`, it will start to switch cluster.
         """
+        configs = self.list_configuration()
+        self.update_configuration('dns_master_public_ip',
+                                  configs['dns_slave_public_ip'])
+        self.update_configuration('dns_slave_public_ip',
+                                  configs['dns_master_public_ip'])
         for node in self.list_nodes():
             self.update_node(node.name, switch_status='start')
 
