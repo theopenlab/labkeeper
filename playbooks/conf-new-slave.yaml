@@ -61,6 +61,17 @@
         option: "hosts"
         value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"
 
+- name: Update zookeeper config for openlabcmd
+  become: yes
+  hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave, zk03
+  tasks:
+    - name: modify openlab.conf to use new zookeeper servers
+      ini_file:
+        path: /etc/openlab/openlab.conf
+        section: "ha"
+        option: "zookeeper_hosts"
+        value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"
+
 - name: Run openlabcmd
   become: yes
   hosts: zuul-master
