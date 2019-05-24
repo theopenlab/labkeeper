@@ -90,6 +90,9 @@ class Base(object):
             raise ValueError(six.text_type(e))
 
     def _is_alarmed_timeout(self, obj):
+        if not obj.alarmed_at:
+            return False
+
         over_time = self._parse_isotime(
             obj.alarmed_at) + datetime.timedelta(
             hours=self.cfg_cache.unnecessary_service_switch_timeout_hour)
@@ -157,26 +160,19 @@ class Refresher(Base):
                                    **update_dict)
 
     def _need_fix_alarmed_status(self, node):
-        service_objs = self.zk.list_services(node_name_filter=node.name)
-        err_svcs = []
-        for service_obj in service_objs:
-            if service_obj.status == 'down':
-                err_svcs.append(service_obj)
+        if not node.alarmed:
+            return False
 
-        need_fix = False
-        if len(err_svcs) == 0:
-            need_fix = True
-        else:
-            fix_res = []
-            for err_svc in err_svcs:
-                if (not err_svc.is_necessary and
-                        not self._is_alarmed_timeout(err_svc) and
-                        node.role == 'master'):
-                    fix_res.append(True)
-            if len(err_svcs) == len(fix_res):
-                need_fix = True
+        if node.role == 'slave':
+            return True
 
-        return need_fix and node.alarmed
+        for service in self.zk.list_services(node_name_filter=node.name):
+            if service.is_necessary:
+                continue
+            if service.alarmed and self._is_alarmed_timeout(service):
+                return False
+
+        return True
 
     def _report_heart_beat(self, node_obj):
         hb = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -184,8 +180,7 @@ class Refresher(Base):
         if node_obj.status == 'initializing' or (
                 node_obj.role == 'slave' and node_obj.status == 'down'):
             update_dict['status'] = 'up'
-        if ((node_obj.alarmed and node_obj.role == 'slave') or
-                self._need_fix_alarmed_status(node_obj)):
+        if self._need_fix_alarmed_status(node_obj):
             update_dict['alarmed'] = False
         self.zk.update_node(node_obj.name, **update_dict)
         self.cfg_cache.LOG.debug("Report node %(name)s heartbeat %(hb)s",
