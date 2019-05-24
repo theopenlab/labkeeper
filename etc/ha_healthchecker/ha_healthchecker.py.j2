@@ -205,11 +205,10 @@ class Refresher(Base):
                                          'status': 'down'.upper()})
 
     def run(self):
-        if self.node.status in ['maintaining', 'down']:
+        if self.node.status == 'maintaining':
             self.cfg_cache.LOG.debug(
-                'Node %(name)s status is %(status)s, Skipping refresh.',
-                {'name': self.node.name,
-                 'status': self.node.status.upper()})
+                'Node %(name)s status is MAINTAINING, Skipping refresh.',
+                {'name': self.node.name})
             return
         self._local_node_service_process(self.node)
         if self.oppo_node:
@@ -683,6 +682,10 @@ class Switcher(Base):
                     "Details: code-status %s\n         message: %s" % (
                         res.status_code, res.reason))
                 return
+        self.zk.update_configuration('dns_master_public_ip',
+                                     self.cfg_cache.dns_slave_public_ip)
+        self.zk.update_configuration('dns_slave_public_ip',
+                                     self.cfg_cache.dns_master_public_ip)
         self.cfg_cache.LOG.info("Finish update DNS entry.")
 
     def _can_start_switch(self):

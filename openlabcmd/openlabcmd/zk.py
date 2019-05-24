@@ -23,7 +23,7 @@ CONFIGURATION_DICT = {
     'dns_status_domain': 'test-status.openlabtesting.org',
     'github_repo': None,
     'github_user_token': None,
-    'heartbeat_timeout_second': 150,
+    'heartbeat_timeout_second': 600,
     'logging_level': 'DEBUG',
     'logging_path': '/etc/openlab/ha_healthchecker/ha_healthchecker.log',
     'unnecessary_service_switch_timeout_hour': 48,
@@ -334,11 +334,6 @@ class ZooKeeper(object):
         switch master-slave role by hand. Once health checker find that all
         nodes' switch status are `start`, it will start to switch cluster.
         """
-        configs = self.list_configuration()
-        self.update_configuration('dns_master_public_ip',
-                                  configs['dns_slave_public_ip'])
-        self.update_configuration('dns_slave_public_ip',
-                                  configs['dns_master_public_ip'])
         for node in self.list_nodes():
             self.update_node(node.name, switch_status='start')
 
