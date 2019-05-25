@@ -28,6 +28,7 @@ _headers_table_mapping = {
         ("heartbeat", "HeartBeat"),
         ("alarmed", "Alarmed"),
         ("status", "Status"),
+        ("switch_status", "Switch_Status"),
         ("updated_at", "Updated_At"),
         ("created_at", "Created_At")
     ]),

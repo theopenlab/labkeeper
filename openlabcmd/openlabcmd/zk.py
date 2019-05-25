@@ -122,14 +122,16 @@ class ZooKeeper(object):
         return wrapper
 
     @_client_check_wrapper
-    def list_nodes(self):
+    def list_nodes(self, with_zk=True):
         path = '/ha'
         try:
             nodes_objs = []
             for exist_node in self.client.get_children(path):
-                if exist_node != 'configuration':
-                    node_obj = self.get_node(exist_node)
-                    nodes_objs.append(node_obj)
+                if (exist_node == 'configuration'
+                        or ('zookeeper' in exist_node and not with_zk)):
+                    continue
+                node_obj = self.get_node(exist_node)
+                nodes_objs.append(node_obj)
         except kze.NoNodeError:
             return []
         return sorted(nodes_objs, key=lambda x: x.name)
@@ -335,7 +337,8 @@ class ZooKeeper(object):
         nodes' switch status are `start`, it will start to switch cluster.
         """
         for node in self.list_nodes():
-            self.update_node(node.name, switch_status='start')
+            if node.type != 'zookeeper':
+                self.update_node(node.name, switch_status='start')
 
     def _init_ha_configuration(self):
         path = '/ha/configuration'
