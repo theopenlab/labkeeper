@@ -42,6 +42,9 @@ _headers_table_mapping = {
         ("is_necessary", "Is_Necessary"),
         ("status", "Status"),
         ("updated_at", "Updated_At")
+    ]),
+    'repo': OrderedDict([
+        ("repo", "Repo")
     ])
 }
 
@@ -57,10 +60,11 @@ def format_output(headers_table_name, objs):
         for obj in objs:
             values = []
             for k in headers_table:
-                if isinstance(getattr(obj, k), list):
-                    values.append(','.join(getattr(obj, k)))
+                val = obj.get(k) if isinstance(obj, dict) else getattr(obj, k)
+                if isinstance(val, list):
+                    values.append(','.join(val))
                 else:
-                    values.append(getattr(obj, k))
+                    values.append(val)
             t.add_row(values)
     return t
 
