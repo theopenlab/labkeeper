@@ -122,15 +122,34 @@ class ZooKeeper(object):
         return wrapper
 
     @_client_check_wrapper
-    def list_nodes(self, with_zk=True):
+    def list_nodes(self, with_zk=True, node_role_filter=None,
+                   node_type_filter=None):
+        if node_role_filter:
+            if isinstance(node_role_filter, str):
+                node_role_filter = [node_role_filter]
+            if not isinstance(node_role_filter, list):
+                raise exceptions.ValidationError("node_role_filter should be "
+                                                 "a list or string.")
+        if node_type_filter:
+            if isinstance(node_type_filter, str):
+                node_type_filter = [node_type_filter]
+            if not isinstance(node_type_filter, list):
+                raise exceptions.ValidationError("node_type_filter should be "
+                                                 "a list or string.")
+
         path = '/ha'
         try:
             nodes_objs = []
             for exist_node in self.client.get_children(path):
-                if (exist_node == 'configuration'
-                        or ('zookeeper' in exist_node and not with_zk)):
+                if exist_node == 'configuration':
+                    continue
+                if not with_zk and 'zookeeper' in exist_node:
                     continue
                 node_obj = self.get_node(exist_node)
+                if node_role_filter and node_obj.role not in node_role_filter:
+                    continue
+                if node_type_filter and node_obj.type not in node_type_filter:
+                    continue
                 nodes_objs.append(node_obj)
         except kze.NoNodeError:
             return []
@@ -207,7 +226,8 @@ class ZooKeeper(object):
             else:
                 if node_obj.status == node.NodeStatus.MAINTAINING:
                     node_obj.status = node.NodeStatus.UP
-                    node_obj.heartbeat = datetime.datetime.utcnow()
+                    node_obj.heartbeat = datetime.datetime.utcnow().strftime(
+                        '%Y-%m-%d %H:%M:%S')
                 else:
                     raise exceptions.ClientError(
                         "The node must be in 'maintaining' status when trying "

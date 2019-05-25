@@ -14,8 +14,8 @@ def add_cli_args():
                         help='OpenLab deployment type',
                         )
     parser.add_argument('--action',
-                        choices=["deploy", "new-slave", "switch-role",
-                                 "show-graph", "show-ip"],
+                        choices=["deploy", "new-slave", "new-zookeeper",
+                                 "switch-role", "show-graph", "show-ip"],
                         default="deploy",
                         help="The action that labkeeper supports. Default "
                              "value is 'deploy'.\n"
@@ -68,6 +68,9 @@ def main():
     elif parsed_args.action == 'new-slave':
         cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
                'playbooks/site.yaml', '-l', '*-slave']
+    elif parsed_args.action == 'new-zookeeper':
+        cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
+               'playbooks/site.yaml', '-l', 'zk-03']
     elif parsed_args.action == 'switch-role':
         os.environ['OL_SWITCH_MASTER_SLAVE'] = True
         cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
@@ -101,6 +104,9 @@ def main():
     if parsed_args.action == 'new-slave':
         subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
                          'playbooks/conf-new-slave.yaml'])
+    elif parsed_args.action == 'new-zookeeper':
+        subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
+                         'playbooks/conf-new-zookeeper.yaml'])
 
 
 if __name__ == '__main__':

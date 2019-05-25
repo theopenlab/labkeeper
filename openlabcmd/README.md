@@ -38,6 +38,17 @@ OpenLab HA cluster management commands.
 CRUD for node
 
 * openlab ha node list
+  ```
+  usage: openlab ha node list [-h] [--type {nodepool,zuul,zookeeper}]
+                                 [--role {master,slave,zookeeper}]
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    --type {nodepool,zuul,zookeeper}
+                          Filter the services with the specified node type.
+    --role {master,slave,zookeeper}
+                          Filter the services with the specified node role.
+  ```
 * openlab ha node get
   ```
   usage: openlab ha node get [-h] name
