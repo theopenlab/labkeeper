@@ -14,7 +14,7 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 10
+    min-ready: 15
     max-ready-age: 14400
   - name: ubuntu-trusty
     min-ready: 2
@@ -35,7 +35,7 @@ labels:
     min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-tf
-    min-ready: 5
+    min-ready: 0
 
 providers:
   #VEXXHOST
@@ -103,6 +103,7 @@ providers:
     pools:
       - name: main
         max-ram: 80000
+        max-servers: -1 # disable chameleon because server in BUILD state cannot be deleted
         networks:
           - openlab-net
         labels:
@@ -140,16 +141,15 @@ providers:
         networks:
           - openlab-net
         labels:
-#          - name: ubuntu-xenial
-#            diskimage: ubuntu-xenial
-#            flavor-name: '4C-8GB-100GB'
-#          - name: ubuntu-trusty
-#            diskimage: ubuntu-trusty
-#            flavor-name: '4C-8GB-100GB'
-#          - name: ubuntu-xenial-ut
-#            diskimage: ubuntu-xenial
-#            flavor-name: '1C-2GB-50GB'
-          # Reserve 5 nodes for tensorflow benchmark job to avoid across cloud providers
+          - name: ubuntu-xenial
+            diskimage: ubuntu-xenial
+            flavor-name: '4C-8GB-100GB'
+          - name: ubuntu-trusty
+            diskimage: ubuntu-trusty
+            flavor-name: '4C-8GB-100GB'
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            flavor-name: '1C-2GB-50GB'
           - name: ubuntu-xenial-tf
             diskimage: ubuntu-xenial
             flavor-name: '8C-8GB-100GB'
@@ -215,24 +215,24 @@ providers:
         security-groups:
           - openlab-sg
         labels:
-          #- name: ubuntu-xenial
-          #  diskimage: ubuntu-xenial
-          #  # 4C-8G-100G
-          #  flavor-name: 's3.xlarge.2'
-          #  boot-from-volume: true
-          #  volume-size: 100
-          #- name: ubuntu-trusty
-          #  diskimage: ubuntu-trusty
-          #  # 4C-8G-100G
-          #  flavor-name: 's3.xlarge.2'
-          #  boot-from-volume: true
-          #  volume-size: 100
-          #- name: ubuntu-xenial-ut
-          #  diskimage: ubuntu-xenial
-          #  # 1C-2G-40G
-          #  flavor-name: 's3.medium.2'
-          #  boot-from-volume: true
-          #  volume-size: 40
+#          - name: ubuntu-xenial
+#            diskimage: ubuntu-xenial
+#            # 4C-8G-100G
+#            flavor-name: 's3.xlarge.2'
+#            boot-from-volume: true
+#            volume-size: 100
+#          - name: ubuntu-trusty
+#            diskimage: ubuntu-trusty
+#            # 4C-8G-100G
+#            flavor-name: 's3.xlarge.2'
+#            boot-from-volume: true
+#            volume-size: 100
+#          - name: ubuntu-xenial-ut
+#            diskimage: ubuntu-xenial
+#            # 1C-2G-40G
+#            flavor-name: 's3.medium.2'
+#            boot-from-volume: true
+#            volume-size: 40
           - name: ubuntu-xenial-huaweicloud
             diskimage: ubuntu-xenial
             # 4C-8G-100G
