@@ -9,6 +9,8 @@ class Recover(Enum):
     NETWORK = 5
     NETWORK_SUBNET = 6
     NETWORK_SUBNET_CIDR = 7
+    IMAGE_CIRROS_035 = 8
+    IMAGE_CIRROS_040 = 9
 
 
 RECOVER_MAPS = {
@@ -44,5 +46,19 @@ RECOVER_MAPS = {
         "recover": "openstack --os-cloud %s subnet create openlab-subnet "
                    "--network openlab-net --subnet-range=192.168.199.0/24",
         "reason": "- Subnet cidr: 192.168.199.0/24 is not found.",
+    },
+    Recover.CIRROS_035: {
+        "recover": "curl -O http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img;"
+                   "openstack --os-cloud %s image create --file ./cirros-0.3.5-x86_64-disk.img "
+                   "--min-disk 1 --container-format bare --disk-format raw "
+                   "cirros-0.3.5-x86_64-disk -f value -c id",
+        "reason": "- Image: cirros-0.3.5 image not found.",
+    },
+    Recover.CIRROS_040: {
+        "recover": "curl -O http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img;"
+                   "openstack --os-cloud %s image create --file ./cirros-0.4.0-x86_64-disk.img "
+                   "--min-disk 1 --container-format bare --disk-format raw "
+                   "cirros-0.4.0-x86_64-disk -f value -c id",
+        "reason": "- Image: cirros-0.4.0 image not found.",
     },
 }
