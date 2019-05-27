@@ -10,14 +10,3 @@
         openlab ha cluster switch
       args:
         executable: /bin/bash
-
-- name: Teardown original slave rsyncd
-  become: yes
-  hosts: logserver-master, zuul-scheduler-master, nodepool-launcher-master
-  tasks:
-    - name: Disable rsyncd on ori slave
-      shell: |
-        set -xe
-        systemctl disable rsyncd.service
-      args:
-      executable: /bin/bash

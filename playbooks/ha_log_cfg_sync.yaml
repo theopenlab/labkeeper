@@ -65,6 +65,13 @@
         content: "{{ rsync_password }}"
         mode: 0600
 
+    - name: Teardown original slave rsyncd(when slave master switched)
+      shell: |
+        set -xe
+        systemctl disable rsyncd.service || true
+      args:
+      executable: /bin/bash
+
 - name: Setup crontab job for sync zuul jobs logs files
   hosts: logserver-master
   become: yes
