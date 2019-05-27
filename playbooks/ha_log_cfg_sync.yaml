@@ -70,7 +70,7 @@
         set -xe
         systemctl disable rsyncd.service || true
       args:
-      executable: /bin/bash
+        executable: /bin/bash
 
 - name: Setup crontab job for sync zuul jobs logs files
   hosts: logserver-master
