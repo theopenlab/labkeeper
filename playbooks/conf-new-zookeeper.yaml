@@ -1,0 +1,69 @@
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+
+- name: Config zookeeper for HA deployment
+  become: yes
+  hosts: zk-master, zk-slave, zk-03
+  tasks:
+    - name: Config zookeeper myid
+      shell: echo {{ zk_myid }} > /var/lib/zookeeper/myid
+      args:
+        executable: /bin/bash
+
+    - name: Config zookeeper cluster
+      ini_file:
+        path: /etc/zookeeper/conf/zoo.cfg
+        option: "server.{{ hostvars[item].zk_myid }}"
+        section: null
+        value: "{{ hostvars[item].ansible_host }}:2888:3888"
+      with_items: "{{ groups['zookeeper'] }}"
+
+    - name: Restart zookeeper services
+      service: name=zookeeper state=restarted
+
+- name: Update zookeeper config for zuul
+  become: yes
+  hosts: nodepool-builder-master, nodepool-builder-slave
+  tasks:
+    - name: modify zuul.conf to use new zookeeper servers
+      shell: |
+        sed -i "/^zookeeper-servers:$/{N;N;N;N;N;N;s/.*/zookeeper-servers:\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][0]].ansible_host }}\'\n    port: 2181\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][1]].ansible_host }}\'\n    port: 2181\n  \
+        - host: \'{{ hostvars[groups["zookeeper"][2]].ansible_host }}\'\n    port: 2181/}" \
+        /etc/nodepool/nodepool.yaml
+      args:
+        executable: /bin/bash
+
+- name: Update zookeeper config for zuul
+  become: yes
+  hosts: zuul-scheduler-master, zuul-scheduler-slave
+  tasks:
+    - name: modify zuul.conf to use new zookeeper servers
+      ini_file:
+        path: /etc/zuul/zuul.conf
+        section: "zookeeper"
+        option: "hosts"
+        value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"
+
+- name: Update zookeeper config for openlabcmd
+  become: yes
+  hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave, zk03
+  tasks:
+    - name: modify openlab.conf to use new zookeeper servers
+      ini_file:
+        path: /etc/openlab/openlab.conf
+        section: "ha"
+        option: "zookeeper_hosts"
+        value: "{{ groups['zookeeper'] | map('extract', hostvars, ['ansible_host']) | join(', ') }}"

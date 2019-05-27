@@ -64,6 +64,14 @@ class OpenLabCmd(object):
         cmd_ha_node_list = cmd_ha_node_subparsers.add_parser(
             'list', help='List all nodes.')
         cmd_ha_node_list.set_defaults(func=self.ha_node_list)
+        cmd_ha_node_list.add_argument(
+            '--type', action='append',
+            choices=['nodepool', 'zuul', 'zookeeper'],
+            help='Filter the services with the specified node type.')
+        cmd_ha_node_list.add_argument(
+            '--role', action='append',
+            choices=['master', 'slave', 'zookeeper'],
+            help='Filter the services with the specified node role.')
         # openlab ha node get
         cmd_ha_node_get = cmd_ha_node_subparsers.add_parser(
             'get', help='Get a node.')
@@ -271,11 +279,15 @@ class OpenLabCmd(object):
 
     @_zk_wrapper
     def ha_node_list(self):
-        result = self.zk.list_nodes()
+        result = self.zk.list_nodes(node_role_filter=self.args.role,
+                                    node_type_filter=self.args.type)
         if self.args.format == 'pretty':
             print(utils.format_output('node', result))
         else:
-            print(result.to_dict())
+            dict_result = []
+            for node in result:
+                dict_result.append(node.to_dict())
+            print(dict_result)
 
     @_zk_wrapper
     def ha_node_get(self):

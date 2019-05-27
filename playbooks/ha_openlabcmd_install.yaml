@@ -18,6 +18,10 @@
 
     - name: Init HA node
       shell: |
+        for node in `openlab ha node list --role '{{ node_role }}' --type  '{{ node_type }}' | awk '{print $2}' | grep -`; do
+          openlab ha node delete $node
+        done
+
         openlab ha node init --role '{{ node_role }}' --type  '{{ node_type }}' \
         --ip '{{ hostvars[inventory_hostname]['ansible_host'] }}' $(hostname)
       args:
