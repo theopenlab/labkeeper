@@ -84,19 +84,32 @@ class ZooKeeper(object):
             return True
         return self.client.state == KazooState.LOST
 
-    def connect(self, hosts=None, read_only=False):
+    def connect(self, hosts=None, timeout=None, read_only=False):
         if not hosts:
             if not self.config:
                 raise exceptions.ClientError('Either config object or hosts '
                                              'string should be provided.')
-            else:
-                try:
-                    hosts = self.config.get('ha', 'zookeeper_hosts')
-                except configparser.NoOptionError:
-                    raise exceptions.ClientError(
-                        "The config doesn't [ha]zookeeper_hosts option.")
+            try:
+                hosts = hosts or self.config.get('ha', 'zookeeper_hosts')
+            except (configparser.NoOptionError, configparser.NoSectionError):
+                raise exceptions.ClientError(
+                    "The config doesn't contain [ha]zookeeper_hosts option.")
+
+        if not timeout:
+            timeout = self.config.get('ha', 'zookeeper_connect_timeout',
+                                      fallback=5)
+        try:
+            timeout = int(timeout)
+        except ValueError:
+            raise exceptions.ClientError("zookeeper_connect_timeout "
+                                         "should be int-like format.")
+        if timeout <= 0:
+            raise exceptions.ClientError("zookeeper_connect_timeout "
+                                         "should be larger than 0.")
+
         if self.client is None:
-            self.client = KazooClient(hosts=hosts, read_only=read_only)
+            self.client = KazooClient(hosts=hosts, timeout=timeout,
+                                      read_only=read_only)
             self.client.add_listener(self._connection_listener)
             # Manually retry initial connection attempt
             while True:
