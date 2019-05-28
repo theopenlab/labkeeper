@@ -20,7 +20,7 @@ echo -e $issue_header"\n\n"$issue_content > ~/labcheck/labcheck.issue
 openlab check --nocolor >> ~/labcheck/labcheck.issue
 retval=$?
 
-echo -e "\`\`\`">> test.issue
+echo -e "\`\`\`\n\ncc: @theopenlab/ops">> ~/labcheck/labcheck.issue
 
 if [ $retval -ne 0 ]; then
     echo "[Labcheck] Check failed, report to openlab issue."
