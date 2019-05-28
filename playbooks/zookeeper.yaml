@@ -29,13 +29,38 @@
       args:
         executable: /bin/bash
 
+    - name: Get local interface IP for binding zookeeper
+      shell: ip route | grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p' | xargs ifconfig | grep "inet addr" | sed -nr 's/\s*inet addr:(([0-9]+\.){3}[0-9]+)\s+(.*)/\1/p'
+      register: local_zk_ip
+
+    - name: Get config options
+      shell: |
+        set -ex
+        declare -a res_list
+        host_list=([0]="{{ groups['zookeeper'][0] }}" [1]="{{ groups['zookeeper'][1] }}" [2]="{{ groups['zookeeper'][2] }}")
+        store_ip_list=([0]="{{ hostvars[groups['zookeeper'][0]].ansible_host }}" [1]="{{ hostvars[groups['zookeeper'][1]].ansible_host }}" [2]="{{ hostvars[groups['zookeeper'][2]].ansible_host }}" )
+        for i in 0 1 2; do
+          if [ ${host_list[$i]} = "{{ inventory_hostname }}" ]; then
+              res_list[$i]="{{ local_zk_ip.stdout }}":2888:3888
+          fi
+          res_list[$i]=${store_ip_list[$i]}:2888:3888
+        done
+        echo ${host_list[@]}
+        echo ${res_list[@]}
+      args:
+        executable: /bin/bash
+      register:
+        task
+
     - name: Config zookeeper cluster
       ini_file:
         path: /etc/zookeeper/conf/zoo.cfg
-        option: "server.{{ hostvars[item].zk_myid }}"
+        option: "server.{{ hostvars[item.0].zk_myid }}"
         section: null
-        value: "{{ hostvars[item].ansible_host }}:2888:3888"
-      with_items: "{{ groups['zookeeper'] }}"
+        value: "{{ item.1 }}"
+      with_together:
+        - "{{ task.stdout_lines[0].split() }}"
+        - "{{ task.stdout_lines[1].split() }}"
 
     - name: Restart zookeeper services
       service: name=zookeeper state=restarted
