@@ -1,7 +1,7 @@
-- project: openstack-infra/project-config
-- project: openstack-dev/devstack
-- project: openstack-infra/devstack-gate
-- project: openstack-infra/tripleo-ci
+- project: openstack/project-config
+- project: openstack/devstack
+- project: openstack/devstack-gate
+- project: openstack/tripleo-ci
 - project: openstack/ceilometer
 - project: openstack/ceilometermiddleware
 - project: openstack/cinder

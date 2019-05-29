@@ -63,7 +63,7 @@
         # npm pack
         # npm run  build:dist
       args:
-        chdir: '{{ ansible_user_dir }}/src/git.openstack.org/openstack-infra/zuul'
+        chdir: '{{ ansible_user_dir }}/src/git.openstack.org/openstack/zuul'
         executable: /bin/bash
 
     - name: Restart zuul services
