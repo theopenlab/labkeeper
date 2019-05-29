@@ -70,8 +70,7 @@ rm old_secrets_decrypted.yaml
 rm vault-password.txt
 rm nodepool_temp.yaml
 
-is_modified="`hub status |grep modified`"
-if [[ $is_modified ]];then
+if [[ `hub status |grep modified` ]];then
     hub add $clouds_file
     hub add $secrets_file
     hub add $nodepool_file
