@@ -25,6 +25,16 @@
         update_cache: yes
         state: latest
 
+    - name: Get the local hostname
+      shell: hostname
+      register: real_hostname
+
+    - name: Update the /etc/hosts file with node name if possible
+      lineinfile:
+        path: "/etc/hosts"
+        regexp: "^127.0.0.1"
+        line: "127.0.0.1 {{ real_hostname.stdout }} localhost"
+
     - name: Configure apache listening ports
       become: yes
       copy:
