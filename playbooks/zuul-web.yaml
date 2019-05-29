@@ -27,13 +27,6 @@
         zuul_file_zuul_web_service_manage: true
         zuul_service_zuul_web_manage: true
 
-    - name: Install apt packages
-      package:
-        name: "{{ item }}"
-      with_items:
-        - yarn
-        - nodejs
-
     - name: Config zuul web javascript
       shell: |
         ./tools/install-js-tools.sh
