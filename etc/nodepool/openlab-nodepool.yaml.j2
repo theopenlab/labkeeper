@@ -58,7 +58,7 @@ providers:
         config-drive: true
     pools:
       - name: main
-        max-ram: 114688 #163840-6vm reserved
+        max-ram: 97280 #163840-8vm(8G Ram for each) reserved, and HA zookeeper node need another 1G Ram
         availability-zones:
           - ca-ymq-2
         networks:
@@ -171,7 +171,7 @@ providers:
         config-drive: true
     pools:
       - name: main
-        max-servers: 8
+        max-servers: 6 # 2vm is reserved by HA deployment: slave cluster contains two nodes, each is 4c-8G
         networks:
           - openlab-net
         labels:
