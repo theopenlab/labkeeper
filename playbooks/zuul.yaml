@@ -103,6 +103,10 @@
         - libssl-dev
         - python3-dev
 
+    - name: Get local interface IP for zuul
+      shell: ip route | grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p' | xargs ifconfig | grep "inet addr" | sed -nr 's/\s*inet addr:(([0-9]+\.){3}[0-9]+)\s+(.*)/\1/p'
+      register: local_zuul_address
+
     - name: Install and config zuul.
       include_role:
         name: openstack.zuul
