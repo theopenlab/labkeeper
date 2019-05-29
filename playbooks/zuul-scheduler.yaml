@@ -44,6 +44,14 @@
         - openlab_zuul_jobs_key_dest is defined
         - openlab_zuul_jobs_key_src is defined
 
+    - name: Make sure the key directory with the right mode
+      file:
+        path: /var/lib/zuul/keys
+        mode: 0700
+        group: zuul
+        owner: zuul
+        recurse: yes
+
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul
