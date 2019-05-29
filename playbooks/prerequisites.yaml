@@ -27,7 +27,7 @@
       package:
         name: "{{ item }}"
       with_items:
-        - python-setuptools
+        - python3-setuptools
         - dbus
         - libffi-dev
         - libssl-dev
