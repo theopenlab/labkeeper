@@ -70,8 +70,8 @@ class OpenLabCmd(object):
                                    help="Specify base server url. Default is "
                                         "github.com")
         cmd_repo_list.add_argument(
-            '--app-id', default='7102',
-            help="Specify the github APP ID, Default is 7102 (allinone: 7102,"
+            '--app-id', default='6778',
+            help="Specify the github APP ID, Default is 6778 (allinone: 7102,"
                  " OpenLab: 6778).")
         cmd_repo_list.add_argument(
             '--app-key', default='/var/lib/zuul/openlab-app-key.pem',

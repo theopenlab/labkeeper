@@ -16,16 +16,22 @@ class Repo(object):
         except ImportError:
             raise exceptions.ClientError(
                 "Error: 'openlab repo list' only can be used in Zuul node.")
-
-        driver = GithubDriver()
-        connection_config = {
-            'server': server,
-            'app_id': appid,
-            'app_key': appkey,
-        }
-        self.conn = GithubConnection(driver, 'github', connection_config)
-        self.conn._authenticateGithubAPI()
-        self.conn._prime_installation_map()
+        try:
+            driver = GithubDriver()
+            connection_config = {
+                'server': server,
+                'app_id': appid,
+                'app_key': appkey,
+            }
+            self.conn = GithubConnection(driver, 'github', connection_config)
+            self.conn._authenticateGithubAPI()
+            self.conn._prime_installation_map()
+        except Exception:
+            raise exceptions.ClientError(
+                "Failed to load repo list. Please check the specified"
+                " args:\n--server: %s\n--app_id: %s\n--app_key: %s\n"
+                "See 'openlab repo list -h' to get more info." % (
+                    server, appid, appkey))
 
     def list(self):
         repos = [{"repo": x} for x in self.conn.installation_map]

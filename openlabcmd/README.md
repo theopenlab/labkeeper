@@ -178,7 +178,7 @@ usage: openlab repo list [-h] [--server SERVER] [--app-id APP_ID]
 optional arguments:
   -h, --help         show this help message and exit
   --server SERVER    Specify base server url. Default is github.com
-  --app-id APP_ID    Specify the github APP ID, Default is 7102 (allinone:
+  --app-id APP_ID    Specify the github APP ID, Default is 6778 (allinone:
                      7102, OpenLab: 6778).
   --app-key APP_KEY  Specify the app key file path. Default is
                      /var/lib/zuul/openlab-app-key.pem
