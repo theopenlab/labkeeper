@@ -750,6 +750,9 @@ class Switcher(Base):
         return True
 
     def run(self):
+        if not self.cfg_cache.allow_switch:
+            return
+
         if self.node.type == 'zookeeper':
             # zookeeper node don't need master/slave switch
             return

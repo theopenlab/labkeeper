@@ -14,6 +14,7 @@ from openlabcmd import service
 
 
 CONFIGURATION_DICT = {
+    'allow_switch': False,
     'dns_log_domain': 'test-logs.openlabtesting.org',
     'dns_master_public_ip': None,
     'dns_provider_account': None,
