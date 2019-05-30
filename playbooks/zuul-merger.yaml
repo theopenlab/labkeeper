@@ -37,8 +37,8 @@
         - { option: "handlers", section: "logger_gerrit", value: "normal" }
         - { option: "handlers", section: "logger_gear", value: "normal" }
 
-    - name: Restart nodepool-merger services
-      service: name=nodepool-merger state=restarted
+    - name: Restart zuul-merger services
+      service: name=zuul-merger state=restarted
 
     - name: Setup openstack.logrotate role.
       include_role:
