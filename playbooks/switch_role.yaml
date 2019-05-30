@@ -1,3 +1,7 @@
+- import_playbook: sync-config-files.yaml
+  when: labsync_enabled|default(false)|bool
+- import_playbook: check-nodepool-periodic.yaml
+  when: labcheck_enabled|default(false)|bool
 - import_playbook: ha_log_cfg_sync.yaml
 - import_playbook: ha_mysql_configure.yaml
 

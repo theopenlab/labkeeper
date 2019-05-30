@@ -103,7 +103,7 @@ def main():
 
     if parsed_args.action == 'new-slave':
         subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
-                         'playbooks/conf-new-slave.yaml'])
+                         'playbooks/conf-cluster.yaml'])
     elif parsed_args.action == 'new-zookeeper':
         subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
                          'playbooks/conf-new-zookeeper.yaml'])
