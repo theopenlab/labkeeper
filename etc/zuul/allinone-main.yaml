@@ -43,4 +43,4 @@
           - include: []
             projects:
               - openstack/openstacksdk
-              - openstack-infra/shade
+              - openstack/shade

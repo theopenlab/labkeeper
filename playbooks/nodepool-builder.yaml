@@ -37,7 +37,7 @@
 
     - name: Clone project-config
       git:
-        repo: 'https://github.com/openstack-infra/project-config.git'
+        repo: 'https://github.com/openstack/project-config.git'
         dest: /tmp/project-config
 
     - name: Copy elements from project-config into place
