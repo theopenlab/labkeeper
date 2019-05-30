@@ -48,8 +48,7 @@ cd ~/inotify/labkeeper/
 hub checkout master
 
 # maybe some errors happened last time, the branch wont be clean
-is_clean="`hub status |grep clean`"
-if [[ -n $is_clean ]];then
+if [[ -n `hub status |grep clean` ]];then
     echo 'branch is clean!'
 else
     echo 'branch is not clean!!'

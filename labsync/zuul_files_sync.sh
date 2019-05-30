@@ -43,8 +43,7 @@ hub checkout -b ${branch_name} upstream/master
 echo "copy file to labkeeper"
 cp /etc/zuul/main.yaml $online_file
 
-is_modified="`hub status |grep modified`"
-if [[ $is_modified ]];then
+if [[ `hub status |grep modified` ]];then
     hub add $online_file
     hub commit -m "${message}"
     hub push origin ${branch_name}
