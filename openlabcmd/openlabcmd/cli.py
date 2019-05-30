@@ -402,7 +402,10 @@ class OpenLabCmd(object):
 
     @_zk_wrapper
     def ha_config_update(self):
-        self.zk.update_configuration(self.args.name, self.args.value)
+        value = self.args.value
+        if self.args.name in ['allow_switch']:
+            value = self._str2bool(value)
+        self.zk.update_configuration(self.args.name, value)
 
     def run(self):
         # no arguments, print help messaging, then exit with error(1)
