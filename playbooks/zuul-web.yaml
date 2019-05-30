@@ -30,11 +30,16 @@
     - name: Config zuul web javascript
       shell: |
         ./tools/install-js-tools.sh
-        cd web/
-        sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
-        yarn install
         npm install
-        yarn build
+        if [[ ! -f zuul/web/static/status.html ]]
+        then
+            mkdir -p zuul/web/static
+            pushd web/
+                yarn install
+                sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
+                yarn build
+            popd
+        fi
       args:
         chdir: '{{ zuul_git_dest }}'
         executable: /bin/bash
