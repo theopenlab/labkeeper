@@ -27,6 +27,21 @@
         zuul_file_zuul_web_service_manage: true
         zuul_service_zuul_web_manage: true
 
+    - name: Re-Config web-logging.conf for disable debug
+      ini_file:
+        path: /etc/zuul/web-logging.conf
+        option: "{{ item.option }}"
+        section: "{{ item.section }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "handlers", section: "logger_zuul", value: "normal" }
+        - { option: "handlers", section: "logger_gerrit", value: "normal" }
+        - { option: "handlers", section: "logger_gear", value: "normal" }
+        - { option: "level", section: "handler_debug", value: "INFO" }
+
+    - name: Restart zuul-web services
+      service: name=zuul-web state=restarted
+
     - name: Config zuul web javascript
       shell: |
         ./tools/install-js-tools.sh

@@ -27,6 +27,8 @@
       package:
         name: "{{ item }}"
       with_items:
+        - python-setuptools
+        - python3-setuptools
         - dbus
         - libffi-dev
         - libssl-dev
@@ -35,6 +37,8 @@
         - python-dev
         - python3-pip
         - python-pip
+        - python-openstackclient
+        - python3-openstackclient
 
     - name: Install pip packages
       pip:

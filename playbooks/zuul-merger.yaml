@@ -26,6 +26,20 @@
         zuul_file_zuul_merger_service_manage: true
         zuul_service_zuul_merger_manage: true
 
+    - name: Re-Config merger-logging.conf for disable debug
+      ini_file:
+        path: /etc/zuul/merger-logging.conf
+        option: "{{ item.option }}"
+        section: "{{ item.section }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "handlers", section: "logger_zuul", value: "normal" }
+        - { option: "handlers", section: "logger_gerrit", value: "normal" }
+        - { option: "handlers", section: "logger_gear", value: "normal" }
+
+    - name: Restart zuul-merger services
+      service: name=zuul-merger state=restarted
+
     - name: Setup openstack.logrotate role.
       include_role:
         name: openstack.logrotate

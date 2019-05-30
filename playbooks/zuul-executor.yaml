@@ -17,6 +17,11 @@
   become: yes
 
   tasks:
+    - name: Install necessary package before install zuul-executor
+      pip:
+        name: ansible
+        executable: pip3
+
     - name: Setup openstack.zuul role
       include_role:
         name: openstack.zuul
@@ -26,6 +31,21 @@
         zuul_file_zuul_executor_service_config_manage: true
         zuul_file_zuul_executor_service_manage: true
         zuul_service_zuul_executor_manage: true
+
+    - name: Re-Config executor-logging.conf for disable debug
+      ini_file:
+        path: /etc/zuul/executor-logging.conf
+        option: "{{ item.option }}"
+        section: "{{ item.section }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "handlers", section: "logger_zuul", value: "normal" }
+        - { option: "handlers", section: "logger_gerrit", value: "normal" }
+        - { option: "handlers", section: "logger_gear", value: "normal" }
+        - { option: "level", section: "handler_debug", value: "INFO" }
+
+    - name: Restart zuul-executor services
+      service: name=zuul-executor state=restarted
 
     # TODO(pabelanger): If we want to support xenial, we'll need to use this ppa
     # since bubblewrap doesn't exist.

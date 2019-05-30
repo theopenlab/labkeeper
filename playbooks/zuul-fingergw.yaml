@@ -27,6 +27,19 @@
         zuul_file_zuul_fingergw_service_manage: true
         zuul_service_zuul_fingergw_manage: true
 
+    - name: Re-Config zuul-fingergw.conf for disable debug
+      ini_file:
+        path: /etc/zuul/zuul-fingergw.conf
+        option: "{{ item.option }}"
+        section: "{{ item.section }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "handlers", section: "logger_zuul", value: "normal" }
+        - { option: "handlers", section: "logger_gear", value: "normal" }
+
+    - name: Restart zuul-fingergw services
+      service: name=zuul-fingergw state=restarted
+
     - name: Setup openstack.logrotate role.
       include_role:
         name: openstack.logrotate

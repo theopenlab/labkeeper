@@ -44,6 +44,14 @@
         - openlab_zuul_jobs_key_dest is defined
         - openlab_zuul_jobs_key_src is defined
 
+    - name: Make sure the key directory with the right mode
+      file:
+        path: /var/lib/zuul/keys
+        mode: 0700
+        group: zuul
+        owner: zuul
+        recurse: yes
+
     - name: Setup openstack.zuul role.
       include_role:
         name: openstack.zuul
@@ -53,6 +61,34 @@
         zuul_file_zuul_scheduler_service_config_manage: true
         zuul_file_zuul_scheduler_service_manage: true
         zuul_service_zuul_scheduler_manage: true
+
+    - name: Re-Config scheduler-logging.conf for disable debug
+      ini_file:
+        path: /etc/zuul/scheduler-logging.conf
+        option: "{{ item.option }}"
+        section: "{{ item.section }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "handlers", section: "logger_zuul", value: "normal" }
+        - { option: "handlers", section: "logger_gerrit", value: "normal" }
+        - { option: "handlers", section: "logger_gear", value: "normal" }
+        - { option: "handlers", section: "logger_gerrit_io", value: "normal" }
+        - { option: "handlers", section: "logger_kazoo", value: "normal" }
+
+    - name: Re-Config gearman-logging.conf for disable debug
+      ini_file:
+        path: /etc/zuul/gearman-logging.conf
+        option: "{{ item.option }}"
+        section: "{{ item.section }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "handlers", section: "logger_gear", value: "normal" }
+
+    - name: Restart gearman-job-server services
+      service: name=gearman-job-server state=restarted
+
+    - name: Restart zuul-scheduler services
+      service: name=zuul-scheduler state=restarted
 
     - name: Setup openstack.logrotate role.
       include_role:
