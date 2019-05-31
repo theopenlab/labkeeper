@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-- name: Install nodepool master node
+- name: Enable services on nodepool master node
   become: yes
-  hosts: nodepool01
+  hosts: nodepool-master
   tasks:
     - name: Force to enable nodepool services
       shell: |
@@ -25,9 +25,9 @@
       args:
         executable: /bin/bash
 
-- name: Install zuul master node
+- name: Enable services on zuul master node
   become: yes
-  hosts: zuul01
+  hosts: zuul-master
   tasks:
     - name: Force to enable zuul services
       shell: |
@@ -43,9 +43,9 @@
       args:
         executable: /bin/bash
 
-- name: Install zookeeper node
+- name: Enable service on zookeeper node
   become: yes
-  hosts: zk03
+  hosts: zk-03
   tasks:
     - name: Force to enable nodepool services
       shell: |
