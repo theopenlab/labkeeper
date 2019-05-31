@@ -22,7 +22,6 @@
         systemctl enable nodepool-launcher.service || true
         systemctl enable nodepool-builder.service || true
         systemctl enable zookeeper.service || true
-        systemctl enable apache2.service || true
       args:
         executable: /bin/bash
 
@@ -40,6 +39,7 @@
         systemctl enable zuul-fingergw.service || true
         systemctl enable mariadb.service || true
         systemctl enable gearman-job-server.service || true
+        systemctl enable apache2.service || true
       args:
         executable: /bin/bash
 
