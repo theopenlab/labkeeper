@@ -42,12 +42,39 @@
         mode: "{{ apache_ports_config_mode }}"
         src: "{{ apache_ports_config_src }}"
 
+    - name: Configure apache zuul page ssl pem
+      become: yes
+      copy:
+        dest: "{{ apache_zuul_status_ssl_page_pem_dest }}"
+        mode: "{{ apache_zuul_status_ssl_page_pem_mode }}"
+        src: "{{ apache_zuul_status_ssl_page_pem_src }}"
+      when:
+        - apache_zuul_status_ssl_page_pem_src is defined
+
+    - name: Configure apache zuul page ssl key
+      become: yes
+      copy:
+        dest: "{{ apache_zuul_status_ssl_page_key_dest }}"
+        mode: "{{ apache_zuul_status_ssl_page_key_mode }}"
+        src: "{{ apache_zuul_status_ssl_page_key_src }}"
+      when:
+        - apache_zuul_status_ssl_page_key_src is defined
+
     - name: Configure apache zuul status pages
       become: yes
       template:
         dest: "{{ apache_zuul_status_page_config_dest }}"
         mode: "{{ apache_zuul_status_page_config_mode }}"
         src: "{{ apache_zuul_status_page_config_src }}"
+
+    - name: Configure apache zuul ssl status pages
+      become: yes
+      template:
+        dest: "{{ apache_zuul_status_ssl_page_config_dest }}"
+        mode: "{{ apache_zuul_status_ssl_page_config_mode }}"
+        src: "{{ apache_zuul_status_ssl_page_config_src }}"
+      when:
+        - apache_zuul_status_ssl_page_config_src is defined
 
     - name: Create evasive log directory
       file:
@@ -96,6 +123,15 @@
         a2dissite 000-default
         a2ensite zuul-web
       notify: restart apache2
+
+    - name: Enable zuul site ssl page
+      shell: |
+        a2ensite zuul-web-ssl
+      notify: restart apache2
+      when:
+        - apache_zuul_status_ssl_page_config_src is defined
+        - apache_zuul_status_ssl_page_key_src is defined
+        - apache_zuul_status_ssl_page_pem_src is defined
 
   handlers:
     - name: restart fail2ban
