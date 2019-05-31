@@ -20,7 +20,6 @@
       shell: |
         set -xe
         systemctl enable nodepool-launcher.service || true
-        systemctl enable nodepool-launcher.service || true
         systemctl enable nodepool-builder.service || true
         systemctl enable zookeeper.service || true
       args:
