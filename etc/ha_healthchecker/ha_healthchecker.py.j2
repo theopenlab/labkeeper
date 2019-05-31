@@ -35,8 +35,8 @@ CONFIG_LOCAL = {
     'github_repo': 'theopenlab/openlab',
     'github_user_token': "{{ github_token }}",
     'github_user_passwd': "{{ github_password }}",
-    'github_user_name': "theopenlab-ci",
-    'github_app_name': "theopenlab-ci",
+    'github_user_name': "{{ github_username }}",
+    'github_app_name': "{{ github_appname }}",
 {% endif %}
 {% if use_test_url %}
     'dns_status_domain': 'test-status.openlabtesting.org',
@@ -48,6 +48,9 @@ CONFIG_LOCAL = {
     'dns_master_public_ip': "{{ master_zuul_web_ip }}",
     'dns_slave_public_ip': "{{ slave_zuul_web_ip }}",
 }
+
+BASE64_ENCODED_OPTIONS = ['github_user_passwd', 'dns_provider_token',
+                          'github_user_token']
 
 # General constants
 SYSTEMCTL_STATUS = 'status'
@@ -890,16 +893,13 @@ class ConfigCache(object):
         self._load(**zk.list_configuration())
         self._refresh_zk(zk)
 
-
-
     def _load(self, **kwargs):
         for attr, value in kwargs.items():
             if not hasattr(self, attr):
                 if not value:
                     value = CONFIG_LOCAL.get(attr)
                 else:
-                    if attr in ['github_user_passwd', 'dns_provider_token',
-                                'github_user_token']:
+                    if attr in BASE64_ENCODED_OPTIONS:
                         value = base64.b64decode(value).decode("utf-8")
                 setattr(self, attr, value)
 
@@ -907,8 +907,7 @@ class ConfigCache(object):
         nodes_status = [n.status for n in zk.list_nodes()]
         if len(set(nodes_status)) == 1 and nodes_status[0] == 'initializing':
             for key in CONFIG_LOCAL.keys():
-                if key in ['github_user_passwd', 'dns_provider_token',
-                           'github_user_token']:
+                if key in BASE64_ENCODED_OPTIONS:
                     zk.update_configuration(
                         key, base64.b64encode(
                             CONFIG_LOCAL[key].encode("utf-8")).decode("utf-8"))

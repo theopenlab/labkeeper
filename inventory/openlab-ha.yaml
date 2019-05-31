@@ -202,6 +202,7 @@ all:
           6166386232326130626133626432306164323261343834393263
         test_repo_name: moo-ai/moo-ai.github.io
         test_github_user_name: moo-ai
+        test_github_app_name: test-ha-app
         test_github_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           31636661633365633364613732343738643135616137636566613536383833636138366338346337
