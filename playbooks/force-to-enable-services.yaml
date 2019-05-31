@@ -38,6 +38,8 @@
         systemctl enable zuul-web.service || true
         systemctl enable zuul-merger.service || true
         systemctl enable zuul-fingergw.service || true
+        systemctl enable mariadb.service || true
+        systemctl enable gearman-job-server.service || true
       args:
         executable: /bin/bash
 
