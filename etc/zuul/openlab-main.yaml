@@ -78,4 +78,4 @@
           - include: []
             projects:
               - openstack/openstacksdk
-              - openstack/shade
+              - openstack-infra/shade
