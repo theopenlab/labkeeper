@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import base64
 import configparser
 import datetime
 import json
@@ -889,22 +890,29 @@ class ConfigCache(object):
         self._load(**zk.list_configuration())
         self._refresh_zk(zk)
 
+
+
     def _load(self, **kwargs):
         for attr, value in kwargs.items():
             if not hasattr(self, attr):
                 if not value:
                     value = CONFIG_LOCAL.get(attr)
+                else:
+                    if attr in ['github_user_passwd', 'dns_provider_token',
+                                'github_user_token']:
+                        value = base64.b64decode(value).decode("utf-8")
                 setattr(self, attr, value)
-        for ext_attr in ['github_user_passwd', 'github_user_name',
-                         'github_app_name']:
-            setattr(self, ext_attr, CONFIG_LOCAL[ext_attr])
 
     def _refresh_zk(self, zk):
         nodes_status = [n.status for n in zk.list_nodes()]
         if len(set(nodes_status)) == 1 and nodes_status[0] == 'initializing':
             for key in CONFIG_LOCAL.keys():
-                if key not in ['github_user_passwd', 'github_user_name',
-                               'github_app_name']:
+                if key in ['github_user_passwd', 'dns_provider_token',
+                           'github_user_token']:
+                    zk.update_configuration(
+                        key, base64.b64encode(
+                            CONFIG_LOCAL[key].encode("utf-8")).decode("utf-8"))
+                else:
                     zk.update_configuration(key, CONFIG_LOCAL[key])
                 setattr(self, key, CONFIG_LOCAL[key])
 
