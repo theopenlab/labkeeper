@@ -167,7 +167,6 @@ all:
         ha_healthchecker-zk03:
           hosts: zk03
       vars:
-        use_test_url: true
         use_test_account: true
         test_github_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256

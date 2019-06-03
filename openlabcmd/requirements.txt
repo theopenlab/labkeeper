@@ -6,3 +6,4 @@ pbr>=1.3
 prettytable
 pytz
 PyYAML>=5.1
+wrapt>=1.11.1

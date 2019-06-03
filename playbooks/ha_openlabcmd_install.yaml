@@ -26,3 +26,41 @@
         --ip '{{ hostvars[inventory_hostname]['ansible_host'] }}' $(hostname)
       args:
         executable: /bin/bash
+
+- name: Init HA config options
+  hosts: nodepool-master
+  become: yes
+  tasks:
+    - name: Init HA config options
+      shell: |
+        if [ {{ use_test_account }} ];then
+          test_github_token=`base64 <<< "{{ test_github_token }}"`
+          test_github_password=`base64 <<< "{{ test_github_password }}"`
+
+          openlab ha config set github_repo {{ test_repo_name }}
+          openlab ha config set github_user_token $test_github_token
+          openlab ha config set github_user_password $test_github_password
+          openlab ha config set github_user_name {{ test_github_user_name }}
+          openlab ha config set github_app_name {{ test_github_app_name }}
+          openlab ha config set dns_status_domain test-status.openlabtesting.org
+          openlab ha config set dns_log_domain test-logs.openlabtesting.org
+        else
+          github_token=`base64 <<< "{{ github_token }}"`
+          github_password=`base64 <<< "{{ github_password }}"`
+
+          openlab ha config set github_repo theopenlab/openlab
+          openlab ha config set github_user_token $github_token
+          openlab ha config set github_user_password $github_password
+          openlab ha config set github_user_name {{ github_username }}
+          openlab ha config set github_app_name {{ github_appname }}
+          openlab ha config set dns_status_domain status.openlabtesting.org
+          openlab ha config set dns_log_domain logs.openlabtesting.org
+        fi
+        dns_access_token=`ebase64 <<< "{{ dns_access_token }}"`
+        openlab ha config set dns_provider_account {{ dns_account_id }}
+        openlab ha config set dns_provider_token $dns_access_token
+        openlab ha config set dns_master_public_ip {{ hostvars[groups['zuul-web-master'][0]].ansible_host }}
+        openlab ha config set dns_slave_public_ip {{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}
+      args:
+        executable: /bin/bash
+      no_log: true
