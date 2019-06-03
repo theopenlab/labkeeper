@@ -37,7 +37,7 @@
           - huaweicloud/openshift-ansible
           - moo-ai/moo-ai.github.io
           - Yikun/arm-openlab-test
-          - h00130372/charts
+          - huangtianhua/charts
       openstack-git:
         untrusted-projects:
           - include: []
