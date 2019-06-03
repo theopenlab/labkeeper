@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import base64
 import configparser
 import datetime
 import json
@@ -11,9 +12,11 @@ import os
 
 from github import Github
 import iso8601
+from html.parser import HTMLParser
 from openlabcmd import zk
 import requests
 import six
+from urllib import parse
 
 
 # Simpledns provider
@@ -25,9 +28,15 @@ CONFIG_LOCAL = {
 {% if use_test_account %}
     'github_repo': "{{ test_repo_name }}",
     'github_user_token': "{{ test_github_token }}",
+    'github_user_passwd': "{{ test_github_password }}",
+    'github_user_name': "{{ test_github_user_name }}",
+    'github_app_name': "{{ test_github_app_name }}"
 {% else %}
     'github_repo': 'theopenlab/openlab',
     'github_user_token': "{{ github_token }}",
+    'github_user_passwd': "{{ github_password }}",
+    'github_user_name': "{{ github_username }}",
+    'github_app_name': "{{ github_appname }}",
 {% endif %}
 {% if use_test_url %}
     'dns_status_domain': 'test-status.openlabtesting.org',
@@ -36,15 +45,23 @@ CONFIG_LOCAL = {
     'dns_status_domain': 'status.openlabtesting.org',
     'dns_log_domain': 'logs.openlabtesting.org',
 {% endif %}
-     'dns_master_public_ip': "{{ master_zuul_web_ip }}",
-     'dns_slave_public_ip': "{{ slave_zuul_web_ip }}",
+    'dns_master_public_ip': "{{ master_zuul_web_ip }}",
+    'dns_slave_public_ip': "{{ slave_zuul_web_ip }}",
 }
+
+BASE64_ENCODED_OPTIONS = ['github_user_passwd', 'dns_provider_token',
+                          'github_user_token']
 
 # General constants
 SYSTEMCTL_STATUS = 'status'
 SYSTEMCTL_RESTART = 'restart'
 SYSTEMCTL_STOP = 'stop'
 SYSTEMCTL_START = 'start'
+
+# Github app update
+GLOBAL_SESSION = requests.session()
+LOGIN_AUTH_TOKEN = None
+APP_UPDATE_AUTH_TOKEN = None
 
 
 class Base(object):
@@ -588,6 +605,73 @@ class Switcher(Base):
                 res['type'] == "A" and
                 self.cfg_cache.dns_master_public_ip == res['content'])
 
+    def _get_login_page_authenticity_token(self):
+        login_page = GLOBAL_SESSION.get('https://github.com/login')
+        login_page_content = login_page.content.decode('utf-8')
+
+        login_page_parser = LoginHTMLParser()
+        login_page_parser.feed(login_page_content)
+        login_page_parser.close()
+        quoted_authenticity_token = parse.quote(LOGIN_AUTH_TOKEN)
+        return quoted_authenticity_token
+
+    def _get_github_app_page_authenticity_token(self, app_url, app_name):
+        app_page = GLOBAL_SESSION.get(app_url)
+        if app_page.status_code == 404:
+            self.cfg_cache.LOG.error("Not Found Github App: %s" % app_name)
+            return
+        app_page_content = app_page.content.decode('utf-8')
+
+        app_page_parser = AppUpdateHTMLParser()
+        app_page_parser.feed(app_page_content)
+
+        quoted_authenticity_token = parse.quote(APP_UPDATE_AUTH_TOKEN)
+        return quoted_authenticity_token
+
+    def _update_github_app_webhook(self):
+        login_token = self._get_login_page_authenticity_token()
+        login_info = ('authenticity_token=%(token)s&login=%(username)s&'
+                      'password=%(password)s' % {
+            'token': login_token,
+            'username': self.cfg_cache.github_user_name,
+            'password': self.cfg_cache.github_user_passwd})
+        login_response = GLOBAL_SESSION.post(
+            'https://github.com/session',
+            data=login_info,
+        )
+        if (login_response.status_code == 200 and
+                GLOBAL_SESSION.cookies._cookies['.github.com']['/'][
+                    'logged_in'].value == 'yes'):
+            self.cfg_cache.LOG.info("Github app change: Success Login")
+        else:
+            self.cfg_cache.LOG.error("Github app change: Fail Login")
+            return
+
+        app_url = 'https://github.com/settings/apps/%s' % self.cfg_cache.github_app_name
+        github_app_edit_token = self._get_github_app_page_authenticity_token(
+            app_url,
+            self.cfg_cache.github_app_name)
+        if not github_app_edit_token:
+            return
+        update_response = GLOBAL_SESSION.post(
+            app_url,
+            data="_method=put&authenticity_token=" +
+                 github_app_edit_token +
+                 "&integration%5Bhook_attributes%5D%5Burl%5D=http%3A%2F%2F" +
+                 self.cfg_cache.dns_slave_public_ip + "%3A" + '80' +
+                 "%2Fapi%2Fconnection%2Fgithub%2Fpayload"
+        )
+        if update_response.status_code == 200:
+            self.cfg_cache.LOG.info(
+                "Success Update Github APP: %s" % self.cfg_cache.github_app_name)
+        else:
+            self.cfg_cache.LOG.error(
+                "Fail Update Github APP: %s" % self.cfg_cache.github_app_name)
+
+    def _change_dns_and_github_app_webhook(self):
+        self._change_dns()
+        self._update_github_app_webhook()
+
     def _change_dns(self):
         headers = {'Authorization': "Bearer %s" % self.cfg_cache.dns_provider_token,
                    'Accept': 'application/json'}
@@ -687,7 +771,7 @@ class Switcher(Base):
 
         elif self.node.role == 'slave':
             if self.node.type == 'zuul':
-                self._change_dns()
+                self._change_dns_and_github_app_webhook()
             self.zk.update_node(self.node.name, role='master',
                                 switch_status='end')
             self.node.switch_status = 'end'
@@ -783,6 +867,30 @@ class Switcher(Base):
                          'name': self.node.name})
 
 
+class LoginHTMLParser(HTMLParser):
+    def handle_startendtag(self, tag, attrs):
+        global LOGIN_AUTH_TOKEN
+        if tag == 'input' and ('name', 'authenticity_token') in attrs:
+            for key, value in attrs:
+                if key == 'value':
+                    LOGIN_AUTH_TOKEN = value
+
+
+class AppUpdateHTMLParser(HTMLParser):
+    token_index = 1
+
+    def handle_startendtag(self, tag, attrs):
+        global APP_UPDATE_AUTH_TOKEN
+        if tag == 'input' and ('name', 'authenticity_token') in attrs:
+            if self.token_index == 6:
+                for key, value in attrs:
+                    if key == 'value':
+                        APP_UPDATE_AUTH_TOKEN = value
+                self.token_index += 1
+            else:
+                self.token_index += 1
+
+
 class ConfigCache(object):
     def __init__(self, zk):
         self._load(**zk.list_configuration())
@@ -793,13 +901,21 @@ class ConfigCache(object):
             if not hasattr(self, attr):
                 if not value:
                     value = CONFIG_LOCAL.get(attr)
+                else:
+                    if attr in BASE64_ENCODED_OPTIONS:
+                        value = base64.b64decode(value).decode("utf-8")
                 setattr(self, attr, value)
 
     def _refresh_zk(self, zk):
         nodes_status = [n.status for n in zk.list_nodes()]
         if len(set(nodes_status)) == 1 and nodes_status[0] == 'initializing':
             for key in CONFIG_LOCAL.keys():
-                zk.update_configuration(key, CONFIG_LOCAL[key])
+                if key in BASE64_ENCODED_OPTIONS:
+                    zk.update_configuration(
+                        key, base64.b64encode(
+                            CONFIG_LOCAL[key].encode("utf-8")).decode("utf-8"))
+                else:
+                    zk.update_configuration(key, CONFIG_LOCAL[key])
                 setattr(self, key, CONFIG_LOCAL[key])
 
     def configuration(self, log_str):
