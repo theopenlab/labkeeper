@@ -1,0 +1,55 @@
+# Copyright 2016 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+---
+- name: Enable services on nodepool master node
+  become: yes
+  hosts: nodepool-master
+  tasks:
+    - name: Force to enable nodepool services
+      shell: |
+        set -xe
+        systemctl enable nodepool-launcher.service || true
+        systemctl enable nodepool-builder.service || true
+        systemctl enable zookeeper.service || true
+      args:
+        executable: /bin/bash
+
+- name: Enable services on zuul master node
+  become: yes
+  hosts: zuul-master
+  tasks:
+    - name: Force to enable zuul services
+      shell: |
+        set -xe
+        systemctl enable zuul-scheduler.service || true
+        systemctl enable zuul-executor.service || true
+        systemctl enable zuul-web.service || true
+        systemctl enable zuul-merger.service || true
+        systemctl enable zuul-fingergw.service || true
+        systemctl enable mariadb.service || true
+        systemctl enable gearman-job-server.service || true
+        systemctl enable apache2.service || true
+      args:
+        executable: /bin/bash
+
+- name: Enable service on zookeeper node
+  become: yes
+  hosts: zk-03
+  tasks:
+    - name: Force to enable nodepool services
+      shell: |
+        set -xe
+        systemctl enable zookeeper.service || true
+      args:
+        executable: /bin/bash
