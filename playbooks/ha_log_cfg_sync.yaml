@@ -81,7 +81,7 @@
         dest: /etc/rsync/cron_sync_zuul_jobs_log.sh
         content: |
           #/bin/bash
-          rsync -auvrtzopgP --progress --password-file=/etc/rsync/rsync_client.pwd /srv/static/logs/ \
+          rsync -auvrtzopgP --progress --delete  --password-file=/etc/rsync/rsync_client.pwd /srv/static/logs/ \
           root@"{{ hostvars[groups['logserver-slave'][0]].ansible_host }}"::openlab_logserver
         mode: 0755
 
