@@ -920,9 +920,3 @@ class HealthChecker(object):
         job_scheduler = blocking.BlockingScheduler()
         job_scheduler.add_job(self._action, 'interval', seconds=120)
         job_scheduler.start()
-
-
-if __name__ == '__main__':
-    # ZK client config file location.
-    conf = "/etc/openlab/openlab.conf"
-    HealthChecker(conf).run()

@@ -56,7 +56,7 @@
           openlab ha config set dns_status_domain status.openlabtesting.org
           openlab ha config set dns_log_domain logs.openlabtesting.org
         fi
-        dns_access_token=`ebase64 <<< "{{ dns_access_token }}"`
+        dns_access_token=`base64 <<< "{{ dns_access_token }}"`
         openlab ha config set dns_provider_account {{ dns_account_id }}
         openlab ha config set dns_provider_token $dns_access_token
         openlab ha config set dns_master_public_ip {{ hostvars[groups['zuul-web-master'][0]].ansible_host }}
