@@ -11,6 +11,7 @@ from openlabcmd import utils
 from openlabcmd.utils import _color
 from openlabcmd import zk
 from openlabcmd import repo
+from openlabcmd import hint
 
 
 class OpenLabCmd(object):
@@ -55,6 +56,16 @@ class OpenLabCmd(object):
                                help='Enable the no color mode.')
         cmd_check.add_argument('--recover', action='store_true',
                                help='Enable the auto recover mode.')
+
+    def _add_hint_cmd(self, parser):
+        # openlab hint
+        cmd_hint = parser.add_parser(
+            'hint',
+            help='Print hint info.')
+        cmd_hint.set_defaults(func=self.hint)
+        cmd_hint.add_argument('--type', default='all',
+                              help="Specify a hint type, "
+                                   "like 'resource', 'redundant'.")
 
     def _add_repo_cmd(self, parser):
         # openlab repo list
@@ -230,6 +241,7 @@ class OpenLabCmd(object):
 
         subparsers = parser.add_subparsers(title='commands',
                                            dest='command')
+        self._add_hint_cmd(subparsers)
         self._add_repo_cmd(subparsers)
         self._add_check_cmd(subparsers)
         self._add_ha_cmd(subparsers)
@@ -255,6 +267,10 @@ class OpenLabCmd(object):
     def _header_print(self, header):
         print(_color(header))
         print(_color("=" * 48))
+
+    def hint(self):
+        h = hint.Hint(self.args.type)
+        h.print_hints()
 
     def repo_list(self):
         r = repo.Repo(self.args.server,
