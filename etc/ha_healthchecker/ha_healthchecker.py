@@ -10,6 +10,7 @@ import subprocess
 import time
 import os
 
+from apscheduler.schedulers import blocking
 from github import Github
 import iso8601
 from html.parser import HTMLParser
@@ -21,36 +22,6 @@ from urllib import parse
 
 # Simpledns provider
 DOMAIN_NAME = 'openlabtesting.org'
-
-CONFIG_LOCAL = {
-    'dns_provider_token': "{{ dns_access_token }}",
-    'dns_provider_account': {{ dns_account_id }},
-{% if use_test_account %}
-    'github_repo': "{{ test_repo_name }}",
-    'github_user_token': "{{ test_github_token }}",
-    'github_user_passwd': "{{ test_github_password }}",
-    'github_user_name': "{{ test_github_user_name }}",
-    'github_app_name': "{{ test_github_app_name }}"
-{% else %}
-    'github_repo': 'theopenlab/openlab',
-    'github_user_token': "{{ github_token }}",
-    'github_user_passwd': "{{ github_password }}",
-    'github_user_name': "{{ github_username }}",
-    'github_app_name': "{{ github_appname }}",
-{% endif %}
-{% if use_test_url %}
-    'dns_status_domain': 'test-status.openlabtesting.org',
-    'dns_log_domain': 'test-logs.openlabtesting.org',
-{% else %}
-    'dns_status_domain': 'status.openlabtesting.org',
-    'dns_log_domain': 'logs.openlabtesting.org',
-{% endif %}
-    'dns_master_public_ip': "{{ master_zuul_web_ip }}",
-    'dns_slave_public_ip': "{{ slave_zuul_web_ip }}",
-}
-
-BASE64_ENCODED_OPTIONS = ['github_user_passwd', 'dns_provider_token',
-                          'github_user_token']
 
 # General constants
 SYSTEMCTL_STATUS = 'status'
@@ -65,11 +36,12 @@ APP_UPDATE_AUTH_TOKEN = None
 
 
 class Base(object):
-    def __init__(self, zk, cfg_cache):
+    def __init__(self, zk, cluster_config):
         self.zk = zk
         self.node = self.zk.get_node(socket.gethostname())
         self.oppo_node, self.zk_node = self._get_oppo_and_zk_node()
-        self.cfg_cache = cfg_cache
+        self.cluster_config = cluster_config
+        self.LOG = self.cluster_config.LOG
 
     def _get_oppo_and_zk_node(self):
         oppo_node = None
@@ -86,7 +58,7 @@ class Base(object):
 
     def _is_check_heart_beat_overtime(self, node_obj):
         try:
-            timeout = int(self.cfg_cache.heartbeat_timeout_second)
+            timeout = int(self.cluster_config.heartbeat_timeout_second)
             over_time = iso8601.parse_date(
                 node_obj.heartbeat) + datetime.timedelta(seconds=timeout)
         except (iso8601.ParseError, TypeError, ValueError):
@@ -119,7 +91,7 @@ class Base(object):
             return False
         try:
             timeout = int(
-                self.cfg_cache.unnecessary_service_switch_timeout_hour)
+                self.cluster_config.unnecessary_service_switch_timeout_hour)
         except ValueError:
             raise Exception("unnecessary_service_switch_timeout_hour should be"
                             " int-like format.")
@@ -139,21 +111,18 @@ class Base(object):
             # if using status command, 0 means active, non-zero means error
             # status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            self.cfg_cache.LOG.debug("Service %(name)s runs well.",
-                                     {'name': service})
+            self.LOG.debug("Service %(name)s runs well.",
+                                          {'name': service})
             return 'up'
         except subprocess.CalledProcessError as e:
-            self.cfg_cache.LOG.error("Service %(name)s runs error: "
-                                     "%(err)s %(out)s.",
-                                     {'name': service,
-                                      'err': e,
-                                      'out': e.output})
+            self.LOG.error("Service %(name)s runs error: %(err)s %(out)s.",
+                           {'name': service, 'err': e, 'out': e.output})
             return 'down'
 
 
 class Refresher(Base):
-    def __init__(self, zk, cfg_cache):
-        super(Refresher, self).__init__(zk, cfg_cache)
+    def __init__(self, zk, cluster_config):
+        super(Refresher, self).__init__(zk, cluster_config)
 
     def _local_node_service_process(self, node_obj):
         service_objs = self.zk.list_services(node_name_filter=node_obj.name)
@@ -170,20 +139,19 @@ class Refresher(Base):
                 update_dict['status'] = 'up'
                 update_dict['restarted'] = False
                 update_dict['alarmed'] = False
-                self.cfg_cache.LOG.debug("Fix Service %(name)s status from "
-                                         "%(orig)s to UP.",
-                                         {'name': service_obj.name,
-                                          'orig': service_obj.status})
+                self.LOG.debug("Fix Service %(name)s status from %(orig)s to "
+                               "UP.", {'name': service_obj.name,
+                                       'orig': service_obj.status})
         else:
             if not service_obj.restarted:
                 update_dict['status'] = 'restarting'
                 update_dict['restarted'] = True
-                self.cfg_cache.LOG.debug("Service %(name)s is Restarting.",
-                                         {'name': service_obj.name})
+                self.LOG.debug("Service %(name)s is Restarting.",
+                               {'name': service_obj.name})
             else:
                 update_dict['status'] = 'down'
-                self.cfg_cache.LOG.debug("Service %(name)s is Down.",
-                                         {'name': service_obj.name})
+                self.LOG.debug("Service %(name)s is Down.",
+                               {'name': service_obj.name})
         if update_dict:
             self.zk.update_service(service_obj.name, node_obj.name,
                                    **update_dict)
@@ -211,8 +179,8 @@ class Refresher(Base):
         if self._need_fix_alarmed_status(node_obj):
             update_dict['alarmed'] = False
         self.zk.update_node(node_obj.name, **update_dict)
-        self.cfg_cache.LOG.debug("Report node %(name)s heartbeat %(hb)s",
-                                 {'name': node_obj.name, 'hb': hb})
+        self.LOG.debug("Report node %(name)s heartbeat %(hb)s",
+                       {'name': node_obj.name, 'hb': hb})
 
     def _other_node_check(self, other_node_obj):
         if other_node_obj.status == 'maintaining':
@@ -221,15 +189,15 @@ class Refresher(Base):
                 self._is_check_heart_beat_overtime(other_node_obj)):
             if other_node_obj.status == 'up':
                 self.zk.update_node(other_node_obj.name, status='down')
-                self.cfg_cache.LOG.info("%(role)s node %(name)s can not reach,"
-                                        " updated with %(status)s status.",
-                                        {'role': other_node_obj.role,
-                                         'name': other_node_obj.name,
-                                         'status': 'down'.upper()})
+                self.LOG.info("%(role)s node %(name)s can not reach, updated "
+                              "with %(status)s status.",
+                              {'role': other_node_obj.role,
+                               'name': other_node_obj.name,
+                               'status': 'down'.upper()})
 
     def run(self):
         if self.node.status == 'maintaining':
-            self.cfg_cache.LOG.debug(
+            self.LOG.debug(
                 'Node %(name)s status is MAINTAINING, Skipping refresh.',
                 {'name': self.node.name})
             return
@@ -240,37 +208,36 @@ class Refresher(Base):
         if self.zk_node:
             self._other_node_check(self.zk_node)
 
+
 class Fixer(Base):
-    def __init__(self, zk, cfg_cache):
-        super(Fixer, self).__init__(zk, cfg_cache)
+    def __init__(self, zk, cluster_config):
+        super(Fixer, self).__init__(zk, cluster_config)
 
     def _post_alarmed(self, obj):
         if not obj.alarmed:
             if 'node' in obj.__class__.__name__.lower():
                 self.zk.update_node(obj.name, alarmed=True)
-                self.cfg_cache.LOG.info("%(role)s Node %(name)s updated with "
-                                        "alarmed=True",
-                                        {'name': obj.name,
-                                         'role': obj.role})
+                self.LOG.info("%(role)s Node %(name)s updated with "
+                              "alarmed=True", {'name': obj.name,
+                                               'role': obj.role})
             elif 'service' in obj.__class__.__name__.lower():
                 self.zk.update_service(obj.name, self.node.name, alarmed=True)
-                self.cfg_cache.LOG.info("Service %(name)s updated with "
-                                        "alarmed=True",
-                                        {'name': obj.name})
+                self.LOG.info("Service %(name)s updated with alarmed=True",
+                              {'name': obj.name})
 
     def _service_restart(self, service):
         cmd = "systemctl restart {srvc}".format(srvc=service)
         try:
             # 0 means OK
-            # if using status command, 0 means active, non-zero means error status.
+            # if using status command, 0 means active, non-zero means error
+            # status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            self.cfg_cache.LOG.info("Service %(name)s restarted success.",
-                                    {'name': service})
+            self.LOG.info("Service %(name)s restarted success.",
+                          {'name': service})
         except subprocess.CalledProcessError as e:
-            self.cfg_cache.LOG.error("Service %(name)s restarted failed.: "
-                                     "%(err)s %(out)s", {'name': service,
-                                                         'err': e,
-                                                         'out': e.output})
+            self.LOG.error("Service %(name)s restarted failed.: %(err)s "
+                           "%(out)s", {'name': service, 'err': e,
+                                       'out': e.output})
 
     def _fix_service(self, service_obj):
         if service_obj.status == 'restarting':
@@ -423,22 +390,20 @@ class Fixer(Base):
         return title, body
 
     def _notify_issue(self, issuer_node, affect_node, affect_services=None,
-                     affect_range=None, more_specific=None):
+                      affect_range=None, more_specific=None):
         title, body = self._format_body_for_issue(
             issuer_node, affect_node, affect_services=affect_services,
             affect_range=affect_range, more_specific=more_specific)
-        g = Github(login_or_token=self.cfg_cache.github_user_token)
-        repo = g.get_repo(self.cfg_cache.github_repo)
+        g = Github(login_or_token=self.cluster_config.github_user_token)
+        repo = g.get_repo(self.cluster_config.github_repo)
         repo.create_issue(
             title=title % (
                 datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
             body=body)
-        self.cfg_cache.LOG.info("Post a Issue for %(title)s with reason "
-                                "%(reason)s.",
-                                {'title': title % (
-                                    datetime.datetime.utcnow().strftime(
-                                        "%Y-%m-%d %H:%M:%S")),
-                                 'reason': more_specific})
+        self.LOG.info("Post a Issue for %(title)s with reason %(reason)s.",
+                      {'title': title % (
+                          datetime.datetime.utcnow().strftime(
+                              "%Y-%m-%d %H:%M:%S")), 'reason': more_specific})
 
     def _other_node_check(self, other_node_obj):
         if other_node_obj.status == 'maintaining':
@@ -461,7 +426,7 @@ class Fixer(Base):
 
     def run(self):
         if self.node.status == 'maintaining':
-            self.cfg_cache.LOG.debug(
+            self.LOG.debug(
                 'Node %(name)s status is MAINTAINING, Skipping fix.',
                 {'name': self.node.name})
             return
@@ -475,32 +440,31 @@ class Fixer(Base):
 
 
 class Switcher(Base):
-    def __init__(self, zk, cfg_cache):
-        super(Switcher, self).__init__(zk, cfg_cache)
+    def __init__(self, zk, cluster_config):
+        super(Switcher, self).__init__(zk, cluster_config)
 
     def _is_need_switch(self):
         all_nodes = self.zk.list_nodes()
         for node in all_nodes:
             if node.status == 'maintaining':
-                self.cfg_cache.LOG.debug(
+                self.LOG.debug(
                     'Node %(name)s status is MAINTAINING, Skipping switch.',
                     {'name': node.name})
                 return False
 
             if node.role == 'slave' and node.status == 'down':
-                self.cfg_cache.LOG.info("Global checking: there is a slave "
-                                        "node %(name)s in DOWN state, can "
-                                        "not do switch. Skipping..",
-                                        {'name': node.name})
+                self.LOG.info("Global checking: there is a slave node "
+                              "%(name)s in DOWN state, can not do switch. "
+                              "Skipping..", {'name': node.name})
                 return False
 
             if node.role == 'master':
                 if node.status == 'down':
-                    self.cfg_cache.LOG.info("Global checking: Found %(role)s "
-                                            "node %(name)s is in %(status)s. ",
-                                            {'name': node.name,
-                                             'role': node.role,
-                                             'status': 'down'.upper()})
+                    self.LOG.info("Global checking: Found %(role)s node "
+                                  "%(name)s is in %(status)s. ",
+                                  {'name': node.name,
+                                   'role': node.role,
+                                   'status': 'down'.upper()})
                     return True
                 node_services = self.zk.list_services(
                     node_name_filter=node.name)
@@ -508,7 +472,7 @@ class Switcher(Base):
                 # Service analysis
                 for err_svc in err_services:
                     if err_svc.is_necessary:
-                        self.cfg_cache.LOG.info(
+                        self.LOG.info(
                             "Global checking: Found a necessary service "
                             "%(service_name)s is in %(service_status)s "
                             "status on %(role)s node %(name)s. ", {
@@ -518,7 +482,7 @@ class Switcher(Base):
                         return True
                     elif (not err_svc.is_necessary and
                           self._is_alarmed_timeout(err_svc)):
-                        self.cfg_cache.LOG.info(
+                        self.LOG.info(
                             "Global checking: Found a necessary service "
                             "%(service_name)s is in %(service_status)s "
                             "status on %(role)s node %(name)s. ", {
@@ -532,16 +496,15 @@ class Switcher(Base):
         if not self.node.switch_status:
             self.zk.update_node(self.node.name, switch_status='start')
             self.node.switch_status = 'start'
-            self.cfg_cache.LOG.info("Global checking result: setting "
-                                    "switch_status %(status)s.",
-                                    {'status': 'start'.upper()})
+            self.LOG.info("Global checking result: setting switch_status "
+                          "%(status)s.", {'status': 'start'.upper()})
 
         if self.node.role == 'slave' and (not self._ping(self.oppo_node.ip) and
                  self._is_check_heart_beat_overtime(self.oppo_node)):
             self.zk.update_node(self.oppo_node.name,
                                 switch_status='start')
             self.oppo_node.switch_status = 'start'
-            self.cfg_cache.LOG.info(
+            self.LOG.info(
                 "Global checking result: setting switch_status "
                 "%(status)s and role=slave on OPPO %(role)s "
                 "node %(name)s.",
@@ -555,14 +518,13 @@ class Switcher(Base):
             # 0 means OK
             # if using status command, 0 means active, non-zero means error status.
             subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT)
-            self.cfg_cache.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
+            self.LOG.debug("Run CMD: %(cmd)s", {'cmd': cmd})
             if command == SYSTEMCTL_STATUS:
                 return 'up'
         except subprocess.CalledProcessError as e:
-            self.cfg_cache.LOG.error("Failed to %(cmd)s %(srvc)s service: "
-                                     "%(err)s %(out)s",
-                                     {'cmd': command, 'srvc': service,
-                                      'err': e, 'out': e.output})
+            self.LOG.error("Failed to %(cmd)s %(srvc)s service: %(err)s "
+                           "%(out)s", {'cmd': command, 'srvc': service,
+                                       'err': e, 'out': e.output})
             if command == SYSTEMCTL_STATUS:
                 return 'down'
 
@@ -583,8 +545,8 @@ class Switcher(Base):
             if service.name not in ['zuul-timer-tasks',
                                     'nodepool-timer-tasks']:
                 self._run_systemctl_command(SYSTEMCTL_START, service)
-                self.cfg_cache.LOG.info("Start Service %(name)s.",
-                                        {'name': service.name})
+                self.LOG.info("Start Service %(name)s.",
+                              {'name': service.name})
 
         # local deplay 5 seconds
         time.sleep(5)
@@ -596,14 +558,14 @@ class Switcher(Base):
 
         for svc_name, res in result.items():
             if res != 0:
-                self.cfg_cache.LOG.error(
+                self.LOG.error(
                     "%s is failed to start with return code %s" % (
                         svc_name, res))
 
     def _match_record(self, name, res):
         return (name == res['name'] and
                 res['type'] == "A" and
-                self.cfg_cache.dns_master_public_ip == res['content'])
+                self.cluster_config.dns_master_public_ip == res['content'])
 
     def _get_login_page_authenticity_token(self):
         login_page = GLOBAL_SESSION.get('https://github.com/login')
@@ -618,7 +580,7 @@ class Switcher(Base):
     def _get_github_app_page_authenticity_token(self, app_url, app_name):
         app_page = GLOBAL_SESSION.get(app_url)
         if app_page.status_code == 404:
-            self.cfg_cache.LOG.error("Not Found Github App: %s" % app_name)
+            self.LOG.error("Not Found Github App: %s" % app_name)
             return
         app_page_content = app_page.content.decode('utf-8')
 
@@ -633,8 +595,8 @@ class Switcher(Base):
         login_info = ('authenticity_token=%(token)s&login=%(username)s&'
                       'password=%(password)s' % {
             'token': login_token,
-            'username': self.cfg_cache.github_user_name,
-            'password': self.cfg_cache.github_user_passwd})
+            'username': self.cluster_config.github_user_name,
+            'password': self.cluster_config.github_user_password})
         login_response = GLOBAL_SESSION.post(
             'https://github.com/session',
             data=login_info,
@@ -642,15 +604,15 @@ class Switcher(Base):
         if (login_response.status_code == 200 and
                 GLOBAL_SESSION.cookies._cookies['.github.com']['/'][
                     'logged_in'].value == 'yes'):
-            self.cfg_cache.LOG.info("Github app change: Success Login")
+            self.LOG.info("Github app change: Success Login")
         else:
-            self.cfg_cache.LOG.error("Github app change: Fail Login")
+            self.LOG.error("Github app change: Fail Login")
             return
 
-        app_url = 'https://github.com/settings/apps/%s' % self.cfg_cache.github_app_name
+        app_url = 'https://github.com/settings/apps/%s' % self.cluster_config.github_app_name
         github_app_edit_token = self._get_github_app_page_authenticity_token(
             app_url,
-            self.cfg_cache.github_app_name)
+            self.cluster_config.github_app_name)
         if not github_app_edit_token:
             return
         update_response = GLOBAL_SESSION.post(
@@ -658,53 +620,53 @@ class Switcher(Base):
             data="_method=put&authenticity_token=" +
                  github_app_edit_token +
                  "&integration%5Bhook_attributes%5D%5Burl%5D=http%3A%2F%2F" +
-                 self.cfg_cache.dns_slave_public_ip + "%3A" + '80' +
+                 self.cluster_config.dns_slave_public_ip + "%3A" + '80' +
                  "%2Fapi%2Fconnection%2Fgithub%2Fpayload"
         )
         if update_response.status_code == 200:
-            self.cfg_cache.LOG.info(
-                "Success Update Github APP: %s" % self.cfg_cache.github_app_name)
+            self.LOG.info(
+                "Success Update Github APP: %s" % self.cluster_config.github_app_name)
         else:
-            self.cfg_cache.LOG.error(
-                "Fail Update Github APP: %s" % self.cfg_cache.github_app_name)
+            self.LOG.error(
+                "Fail Update Github APP: %s" % self.cluster_config.github_app_name)
 
     def _change_dns_and_github_app_webhook(self):
         self._change_dns()
         self._update_github_app_webhook()
 
     def _change_dns(self):
-        headers = {'Authorization': "Bearer %s" % self.cfg_cache.dns_provider_token,
+        headers = {'Authorization': "Bearer %s" % self.cluster_config.dns_provider_token,
                    'Accept': 'application/json'}
-        res = requests.get(self.cfg_cache.dns_provider_api_url + 'accounts',
+        res = requests.get(self.cluster_config.dns_provider_api_url + 'accounts',
                            headers=headers)
         if res.status_code != 200:
-            self.cfg_cache.LOG.error("Failed to get the accounts")
-            self.cfg_cache.LOG.error(
+            self.LOG.error("Failed to get the accounts")
+            self.LOG.error(
                 "Details: code-status %s\n         message: %s" % (
                     res.status_code, res.reason))
             return
         accounts = json.loads(s=res.content.decode('utf8'))['data']
         account_id = None
         for account in accounts:
-            if account['id'] == self.cfg_cache.dns_provider_account:
+            if account['id'] == self.cluster_config.dns_provider_account:
                 account_id = account['id']
                 break
         if not account_id:
-            self.cfg_cache.LOG.error("Failed to get the account_id")
+            self.LOG.error("Failed to get the account_id")
             return
 
-        target_dict = {self.cfg_cache.dns_status_domain: {},
-                       self.cfg_cache.dns_log_domain: {}}
+        target_dict = {self.cluster_config.dns_status_domain: {},
+                       self.cluster_config.dns_log_domain: {}}
         for target_domain in target_dict.keys():
             res = requests.get(
-                self.cfg_cache.dns_provider_api_url + "%s/zones/%s/records?name=%s" % (
+                self.cluster_config.dns_provider_api_url + "%s/zones/%s/records?name=%s" % (
                 account_id, DOMAIN_NAME,
                 target_domain.split(DOMAIN_NAME)[0][:-1]),
                                headers=headers)
             if res.status_code != 200:
-                self.cfg_cache.LOG.error(
+                self.LOG.error(
                     "Failed to get the records by name %s" % target_domain)
-                self.cfg_cache.LOG.error(
+                self.LOG.error(
                     "Details: code-status %s\n         message: %s" % (
                         res.status_code, res.reason))
                 return
@@ -717,44 +679,44 @@ class Switcher(Base):
                     target_dict[target_domain]['id'] = record_id
                     break
             if not record_id:
-                self.cfg_cache.LOG.error(
+                self.LOG.error(
                     "Failed to get the record_id by name %s" % target_domain)
                 return
 
         if not any(target_dict.values()):
-            self.cfg_cache.LOG.error("Can't not get any records.")
+            self.LOG.error("Can't not get any records.")
             return
 
         headers['Content-Type'] = 'application/json'
         data = {
-            "content": self.cfg_cache.dns_slave_public_ip
+            "content": self.cluster_config.dns_slave_public_ip
         }
         for target_domain in target_dict.keys():
             res = requests.patch(
-                self.cfg_cache.dns_provider_api_url + "%s/zones/%s/records/%s" % (
+                self.cluster_config.dns_provider_api_url + "%s/zones/%s/records/%s" % (
                     account_id, DOMAIN_NAME, target_dict[target_domain]['id']),
                 data=data, headers=headers)
             result = json.loads(s=res.content.decode('utf8'))['data']
             if (res.status_code == 200 and
-                    result['content'] == self.cfg_cache.dns_slave_public_ip):
-                self.cfg_cache.LOG.info(
+                    result['content'] == self.cluster_config.dns_slave_public_ip):
+                self.LOG.info(
                     "Success Update -- Domain %s from %s to %s" % (
-                        target_domain, self.cfg_cache.dns_master_public_ip,
-                        self.cfg_cache.dns_slave_public_ip))
+                        target_domain, self.cluster_config.dns_master_public_ip,
+                        self.cluster_config.dns_slave_public_ip))
             else:
-                self.cfg_cache.LOG.error(
+                self.LOG.error(
                     "Fail Update -- Domain %s from %s to %s" % (
-                        target_domain, self.cfg_cache.dns_master_public_ip,
-                        self.cfg_cache.dns_slave_public_ip))
-                self.cfg_cache.LOG.error(
+                        target_domain, self.cluster_config.dns_master_public_ip,
+                        self.cluster_config.dns_slave_public_ip))
+                self.LOG.error(
                     "Details: code-status %s\n         message: %s" % (
                         res.status_code, res.reason))
                 return
         self.zk.update_configuration('dns_master_public_ip',
-                                     self.cfg_cache.dns_slave_public_ip)
+                                     self.cluster_config.dns_slave_public_ip)
         self.zk.update_configuration('dns_slave_public_ip',
-                                     self.cfg_cache.dns_master_public_ip)
-        self.cfg_cache.LOG.info("Finish update DNS entry.")
+                                     self.cluster_config.dns_master_public_ip)
+        self.LOG.info("Finish update DNS entry.")
 
     def _do_switch(self, force_switch=False):
         if self.node.role == 'master':
@@ -762,7 +724,7 @@ class Switcher(Base):
             update_dict = {'role': 'slave', 'switch_status': 'end'}
             self.zk.update_node(self.node.name, **update_dict)
             self.node.switch_status = 'end'
-            self.cfg_cache.LOG.info(
+            self.LOG.info(
                 "M/S switching: local node, %(role)s node %(name)s is "
                 "finishd from master to slave. And update it with "
                 "role=slave%(ext_msg)s.",
@@ -776,7 +738,7 @@ class Switcher(Base):
                                 switch_status='end')
             self.node.switch_status = 'end'
             self._setup_necessary_services_and_check(self.node)
-            self.cfg_cache.LOG.info(
+            self.LOG.info(
                 "M/S switching: local node, %(role)s node %(name)s is "
                 "finishd from slave to master. And update it with "
                 "role=master and switch_status=end.",
@@ -786,7 +748,7 @@ class Switcher(Base):
                 self.zk.update_node(self.oppo_node.name, role='slave',
                                     switch_status='end')
                 self.oppo_node.switch_status = 'end'
-                self.cfg_cache.LOG.info(
+                self.LOG.info(
                     "Global checking result: setting switch_status "
                     "%(status)s and role=slave on OPPO %(role)s "
                     "node %(name)s.",
@@ -834,7 +796,7 @@ class Switcher(Base):
         return True
 
     def run(self):
-        if not self.cfg_cache.allow_switch:
+        if not self.cluster_config.allow_switch:
             return
 
         if self.node.type == 'zookeeper':
@@ -859,7 +821,7 @@ class Switcher(Base):
                             self.oppo_node)):
                     self.zk.update_node(self.oppo_node.name,
                                         switch_status=None)
-                    self.cfg_cache.LOG.info(
+                    self.LOG.info(
                         "Global checking result: setting back switch_status "
                         "from %(status)s to None on %(role)s node %(name)s.",
                         {'status': 'start'.upper(),
@@ -891,34 +853,25 @@ class AppUpdateHTMLParser(HTMLParser):
                 self.token_index += 1
 
 
-class ConfigCache(object):
-    def __init__(self, zk):
-        self._load(**zk.list_configuration())
-        self._refresh_zk(zk)
+class ClusterConfig(object):
+    BASE64_ENCODED_OPTIONS = ['github_user_password', 'dns_provider_token',
+                              'github_user_token']
 
-    def _load(self, **kwargs):
-        for attr, value in kwargs.items():
-            if not hasattr(self, attr):
-                if not value:
-                    value = CONFIG_LOCAL.get(attr)
-                else:
-                    if attr in BASE64_ENCODED_OPTIONS:
-                        value = base64.b64decode(value).decode("utf-8")
-                setattr(self, attr, value)
+    def __init__(self, zk_client):
+        self._init_options(zk_client)
+        self._set_log()
 
-    def _refresh_zk(self, zk):
-        nodes_status = [n.status for n in zk.list_nodes()]
-        if len(set(nodes_status)) == 1 and nodes_status[0] == 'initializing':
-            for key in CONFIG_LOCAL.keys():
-                if key in BASE64_ENCODED_OPTIONS:
-                    zk.update_configuration(
-                        key, base64.b64encode(
-                            CONFIG_LOCAL[key].encode("utf-8")).decode("utf-8"))
-                else:
-                    zk.update_configuration(key, CONFIG_LOCAL[key])
-                setattr(self, key, CONFIG_LOCAL[key])
+    def _init_options(self, zk_client):
+        for attr, value in zk_client.list_configuration().items():
+            if value is None:
+                raise Exception("Openlab HA related options haven't been "
+                                "initialized, try 'openlab ha config list'"
+                                " to get more detail.")
+            if attr in self.BASE64_ENCODED_OPTIONS:
+                value = base64.b64decode(value).decode("utf-8").split('\n')[0]
+            setattr(self, attr, value)
 
-    def configuration(self, log_str):
+    def _set_log(self):
         file_dir = os.path.split(self.logging_path)[0]
         if not os.path.isdir(file_dir):
             os.makedirs(file_dir)
@@ -934,28 +887,42 @@ class ConfigCache(object):
             datefmt='%H:%M:%S',
             level=getattr(logging, self.logging_level.upper()),
             handlers=[Rthandler])
-        self.LOG = logging.getLogger(log_str)
+        self.LOG = logging.getLogger("OpenLab HA HealthChecker")
+
+    def refresh(self, zk_client):
+        for attr, value in zk_client.list_configuration().items():
+            if attr in self.BASE64_ENCODED_OPTIONS:
+                value = base64.b64decode(value).decode("utf-8").split('\n')[0]
+            setattr(self, attr, value)
+        self._set_log()
 
 
 class HealthChecker(object):
     def __init__(self, config_file):
-        cfg = configparser.ConfigParser()
-        cfg.read(config_file)
-        self.zk = zk.ZooKeeper(cfg)
+        zk_cfg = configparser.ConfigParser()
+        zk_cfg.read(config_file)
+        self.zk_client = zk.ZooKeeper(zk_cfg)
+        self.cluster_config = None
+
+    def _action(self):
+        if self.zk_client.client is None:
+            self.zk_client.connect()
+        self.cluster_config.refresh(self.zk_client)
+        Refresher(self.zk_client, self.cluster_config).run()
+        Fixer(self.zk_client, self.cluster_config).run()
+        Switcher(self.zk_client, self.cluster_config).run()
+        self.zk_client.disconnect()
 
     def run(self):
-        self.zk.connect()
-        cfg_cache = ConfigCache(self.zk)
-        cfg_cache.configuration(self.__class__.__name__)
-        Refresher(self.zk, cfg_cache).run()
-        Fixer(self.zk, cfg_cache).run()
-        Switcher(self.zk, cfg_cache).run()
+        self.zk_client.connect()
+        self.cluster_config = ClusterConfig(self.zk_client)
 
-        self.zk.disconnect()
+        job_scheduler = blocking.BlockingScheduler()
+        job_scheduler.add_job(self._action, 'interval', seconds=120)
+        job_scheduler.start()
 
 
 if __name__ == '__main__':
-    # ZK client config file
-    conf = "{{ zk_cli_conf }}"
-
+    # ZK client config file location.
+    conf = "/etc/openlab/openlab.conf"
     HealthChecker(conf).run()

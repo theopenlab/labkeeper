@@ -177,10 +177,10 @@ all:
           hosts: zuul02
           vars:
             apache_service_state: stopped
-        vars:
-          apache_zuul_status_ssl_page_pem_src: "{{ labkeeper_config_git_dest }}/apache/openlabtesting-org.pem"
-          apache_zuul_status_ssl_page_key_src: "{{ labkeeper_config_git_dest }}/apache/openlabtesting-org.key"
-          apache_zuul_status_ssl_page_config_src: "{{ labkeeper_config_git_dest }}/apache/zuul-web-ssl.conf.j2"
+      vars:
+        apache_zuul_status_ssl_page_pem_src: "{{ labkeeper_config_git_dest }}/apache/openlabtesting-org.pem"
+        apache_zuul_status_ssl_page_key_src: "{{ labkeeper_config_git_dest }}/apache/openlabtesting-org.key"
+        apache_zuul_status_ssl_page_config_src: "{{ labkeeper_config_git_dest }}/apache/zuul-web-ssl.conf.j2"
     ha_healthchecker:
       children:
         ha_healthchecker-zuul-master:
@@ -194,7 +194,6 @@ all:
         ha_healthchecker-zk03:
           hosts: zk03
       vars:
-        use_test_url: true
         use_test_account: true
         test_github_token: !vault |
           $ANSIBLE_VAULT;1.1;AES256

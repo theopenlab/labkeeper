@@ -22,33 +22,29 @@
         state: directory
 
     - name: Copy necessary scripts
-      template: src={{ item.src }} dest={{ item.dest }} mode=0755
-      with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py.j2", dest: '/etc/openlab/ha_healthchecker/ha_healthchecker.py' }
-      vars:
-        zk_cli_conf: "/etc/openlab/openlab.conf"
-        master_zuul_web_ip: "{{ hostvars[groups['zuul-web-master'][0]].ansible_host }}"
-        slave_zuul_web_ip: "{{ hostvars[groups['zuul-web-slave'][0]].ansible_host }}"
+      copy:
+        src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py"
+        dest: /etc/openlab/ha_healthchecker/ha_healthchecker.py
+        mode: 0755
 
     - name: install script dependency
       pip:
-        name: ['iso8601', 'requests', 'PyGithub']
+        name: ['iso8601', 'requests', 'PyGithub', 'apscheduler']
         executable: pip3
 
     - name: config ha_healthchecker
-      copy: src={{ item.src }} dest={{ item.dest }}
-      with_items:
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.timer.j2", dest: '/etc/systemd/system/ha_healthchecker.timer'}
-        - { src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service.j2", dest: '/etc/systemd/system/ha_healthchecker.service' }
+      copy:
+        src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service"
+        dest: /etc/systemd/system/ha_healthchecker.service
+        mode: 0755
 
     # As systemd ansible module bugs not fix #36585 and #48786
-    - name: Enable ha_healthchecker Timer
+    - name: Enable ha_healthchecker
       shell: |
         set -xe
-        sudo systemctl enable ha_healthchecker.service
-        sudo systemctl enable ha_healthchecker.timer
+        systemctl enable ha_healthchecker.service
       args:
         executable: /bin/bash
 
     - name: Start ha_healthchecker
-      service: name=ha_healthchecker.timer state=started
+      service: name=ha_healthchecker state=started

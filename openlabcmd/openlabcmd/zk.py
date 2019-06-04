@@ -25,7 +25,7 @@ CONFIGURATION_DICT = {
     'github_app_name': None,
     'github_repo': None,
     'github_user_name': None,
-    'github_user_passwd': None,
+    'github_user_password': None,
     'github_user_token': None,
     'heartbeat_timeout_second': 600,
     'logging_level': 'DEBUG',

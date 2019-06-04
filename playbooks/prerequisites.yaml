@@ -37,8 +37,6 @@
         - python-dev
         - python3-pip
         - python-pip
-        - python-openstackclient
-        - python3-openstackclient
 
     - name: Install pip packages
       pip:
