@@ -184,3 +184,13 @@ optional arguments:
                      /var/lib/zuul/openlab-app-key.pem
 ```
 
+### hint
+The help tool to print hints info.
+
+```
+usage: openlab hint [-h] [--type TYPE]
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --type TYPE  Specify a hint type, like 'resource', 'redundant'.
+```
