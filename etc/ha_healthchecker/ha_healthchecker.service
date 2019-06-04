@@ -2,4 +2,4 @@
 Description=OpenLab HA Healthchecker
 
 [Service]
-ExecStart=/etc/openlab/ha_healthchecker/ha_healthchecker.py
+ExecStart=/usr/local/bin/ha_healthchecker

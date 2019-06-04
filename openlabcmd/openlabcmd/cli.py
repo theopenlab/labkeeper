@@ -434,7 +434,6 @@ class OpenLabCmd(object):
             return 1
         self.args.func()
 
-
     def _initConfig(self):
         self.config = configparser.ConfigParser()
         if self.args.config:

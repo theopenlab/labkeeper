@@ -1,5 +1,4 @@
 configparser
-enum;python_version=='2.7'
 kazoo
 openstackclient
 pbr>=1.3

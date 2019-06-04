@@ -1,0 +1,5 @@
+apscheduler
+iso8601
+pbr>=1.3
+PyGithub
+requests

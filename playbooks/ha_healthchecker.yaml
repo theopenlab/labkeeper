@@ -21,18 +21,26 @@
         mode: 0755
         state: directory
 
-    - name: Copy necessary scripts
+    - name: Copy ha_healthchecker file
       copy:
-        src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.py"
-        dest: /etc/openlab/ha_healthchecker/ha_healthchecker.py
+        src: "{{ labkeeper_src_dir }}/ha_healthchecker"
+        dest: /opt/
         mode: 0755
 
-    - name: install script dependency
+    - name: Init git
+      shell: |
+        set -xe
+        cd /opt/ha_healthchecker
+        git init
+      args:
+        executable: /bin/bash
+
+    - name: Install ha_healthchecker
       pip:
-        name: ['iso8601', 'requests', 'PyGithub', 'apscheduler']
+        name: file:///opt/ha_healthchecker/
         executable: pip3
 
-    - name: config ha_healthchecker
+    - name: Config ha_healthchecker
       copy:
         src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service"
         dest: /etc/systemd/system/ha_healthchecker.service
