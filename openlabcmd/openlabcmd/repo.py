@@ -29,7 +29,7 @@ class Repo(object):
         except Exception:
             raise exceptions.ClientError(
                 "Failed to load repo list. Please check the specified"
-                " args:\n--server: %s\n--app_id: %s\n--app_key: %s\n"
+                " args:\n--server: %s\n--app-id: %s\n--app-key: %s\n"
                 "See 'openlab repo list -h' to get more info." % (
                     server, appid, appkey))
 

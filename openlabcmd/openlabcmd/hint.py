@@ -4,17 +4,17 @@ from openlabcmd import exceptions
 HINTS = {
     "resource": [
         "export OS_CLOUD=vexxhost",
-        "openstack --os-cloud $CLOUD router list -f value -c Name | grep openlab",
-        "openstack --os-cloud $CLOUD subnet list -f value -c Name | grep openlab",
-        "openstack --os-cloud $CLOUD network list -f value -c Name | grep openlab",
-        "openstack --os-cloud $CLOUD keypair list -f value -c Name | grep openlab",
-        "openstack --os-cloud $CLOUD server list -f value -c Name | grep openlab"
+        "openstack router list -f value -c Name | grep openlab",
+        "openstack subnet list -f value -c Name | grep openlab",
+        "openstack network list -f value -c Name | grep openlab",
+        "openstack keypair list -f value -c Name | grep openlab",
+        "openstack server list -f value -c Name | grep openlab"
     ],
     "redundant": [
         "export OS_CLOUD=vexxhost",
-        "echo $CLOUD':'",
-        "nodepool image-list | grep $CLOUD | awk -F'|' '{print $6}' | sed 's/ //g' > file1",
-        "openstack --os-cloud $CLOUD image list -f value -c Name | grep openlab-ubuntu > file2",
+        "echo $OS_CLOUD':'",
+        "nodepool image-list | grep $OS_CLOUD | awk -F'|' '{print $6}' | sed 's/ //g' > file1",
+        "openstack image list -f value -c Name | grep openlab-ubuntu > file2",
         "sort file1 file2 | uniq -u",
         "rm file1 file2"
     ]
