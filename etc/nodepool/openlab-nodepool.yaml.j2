@@ -63,6 +63,8 @@ providers:
           - ca-ymq-2
         networks:
           - int-net
+        security-groups:
+          - openlab-sg
         labels:
           - name: ubuntu-xenial-vexxhost
             diskimage: ubuntu-xenial
