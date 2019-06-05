@@ -1,9 +1,7 @@
 import json
 import subprocess
 import time
-from urllib import parse
 
-from html.parser import HTMLParser
 import requests
 
 from ha_healthchecker.action import base
@@ -11,39 +9,11 @@ from ha_healthchecker.action import base
 # Simpledns provider
 DOMAIN_NAME = 'openlabtesting.org'
 
-# Github app update
-GLOBAL_SESSION = requests.session()
-LOGIN_AUTH_TOKEN = None
-APP_UPDATE_AUTH_TOKEN = None
-
-
-class LoginHTMLParser(HTMLParser):
-    def handle_startendtag(self, tag, attrs):
-        global LOGIN_AUTH_TOKEN
-        if tag == 'input' and ('name', 'authenticity_token') in attrs:
-            for key, value in attrs:
-                if key == 'value':
-                    LOGIN_AUTH_TOKEN = value
-
-
-class AppUpdateHTMLParser(HTMLParser):
-    token_index = 1
-
-    def handle_startendtag(self, tag, attrs):
-        global APP_UPDATE_AUTH_TOKEN
-        if tag == 'input' and ('name', 'authenticity_token') in attrs:
-            if self.token_index == 6:
-                for key, value in attrs:
-                    if key == 'value':
-                        APP_UPDATE_AUTH_TOKEN = value
-                self.token_index += 1
-            else:
-                self.token_index += 1
-
 
 class Switcher(base.Action):
-    def __init__(self, zk, cluster_config):
+    def __init__(self, zk, cluster_config, github):
         super(Switcher, self).__init__(zk, cluster_config)
+        self.github = github
 
     def _is_need_switch(self):
         all_nodes = self.zk.list_nodes()
@@ -169,72 +139,9 @@ class Switcher(base.Action):
                 res['type'] == "A" and
                 self.cluster_config.dns_master_public_ip == res['content'])
 
-    def _get_login_page_authenticity_token(self):
-        login_page = GLOBAL_SESSION.get('https://github.com/login')
-        login_page_content = login_page.content.decode('utf-8')
-
-        login_page_parser = LoginHTMLParser()
-        login_page_parser.feed(login_page_content)
-        login_page_parser.close()
-        quoted_authenticity_token = parse.quote(LOGIN_AUTH_TOKEN)
-        return quoted_authenticity_token
-
-    def _get_github_app_page_authenticity_token(self, app_url, app_name):
-        app_page = GLOBAL_SESSION.get(app_url)
-        if app_page.status_code == 404:
-            self.LOG.error("Not Found Github App: %s" % app_name)
-            return
-        app_page_content = app_page.content.decode('utf-8')
-
-        app_page_parser = AppUpdateHTMLParser()
-        app_page_parser.feed(app_page_content)
-
-        quoted_authenticity_token = parse.quote(APP_UPDATE_AUTH_TOKEN)
-        return quoted_authenticity_token
-
-    def _update_github_app_webhook(self):
-        login_token = self._get_login_page_authenticity_token()
-        login_info = ('authenticity_token=%(token)s&login=%(username)s&'
-                      'password=%(password)s' % {
-            'token': login_token,
-            'username': self.cluster_config.github_user_name,
-            'password': self.cluster_config.github_user_password})
-        login_response = GLOBAL_SESSION.post(
-            'https://github.com/session',
-            data=login_info,
-        )
-        if (login_response.status_code == 200 and
-                GLOBAL_SESSION.cookies._cookies['.github.com']['/'][
-                    'logged_in'].value == 'yes'):
-            self.LOG.info("Github app change: Success Login")
-        else:
-            self.LOG.error("Github app change: Fail Login")
-            return
-
-        app_url = 'https://github.com/settings/apps/%s' % self.cluster_config.github_app_name
-        github_app_edit_token = self._get_github_app_page_authenticity_token(
-            app_url,
-            self.cluster_config.github_app_name)
-        if not github_app_edit_token:
-            return
-        update_response = GLOBAL_SESSION.post(
-            app_url,
-            data="_method=put&authenticity_token=" +
-                 github_app_edit_token +
-                 "&integration%5Bhook_attributes%5D%5Burl%5D=http%3A%2F%2F" +
-                 self.cluster_config.dns_slave_public_ip + "%3A" + '80' +
-                 "%2Fapi%2Fconnection%2Fgithub%2Fpayload"
-        )
-        if update_response.status_code == 200:
-            self.LOG.info(
-                "Success Update Github APP: %s" % self.cluster_config.github_app_name)
-        else:
-            self.LOG.error(
-                "Fail Update Github APP: %s" % self.cluster_config.github_app_name)
-
     def _change_dns_and_github_app_webhook(self):
         self._change_dns()
-        self._update_github_app_webhook()
+        self.github.update_github_app_webhook()
 
     def _change_dns(self):
         headers = {'Authorization': "Bearer %s" % self.cluster_config.dns_provider_token,
@@ -335,6 +242,8 @@ class Switcher(base.Action):
 
         elif self.node.role == 'slave':
             if self.node.type == 'zuul':
+                if not force_switch:
+                    self.github.create_issue(self.node, 'switch')
                 self._change_dns_and_github_app_webhook()
             self.zk.update_node(self.node.name, role='master',
                                 switch_status='end')
@@ -374,7 +283,7 @@ class Switcher(base.Action):
             # Status contains only 'start' and 'end', no 'None'.
             return True
 
-        return  False
+        return False
 
     def _not_switching(self):
         res = []
@@ -389,7 +298,7 @@ class Switcher(base.Action):
             # Status contains only 'start' and 'None', no 'end'.
             return True
 
-        return  False
+        return False
 
     def _is_end(self):
         for node in self.zk.list_nodes(with_zk=False):
@@ -429,4 +338,3 @@ class Switcher(base.Action):
                         {'status': 'start'.upper(),
                          'role': self.node.role,
                          'name': self.node.name})
-
