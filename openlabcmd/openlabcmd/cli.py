@@ -187,6 +187,14 @@ class OpenLabCmd(object):
             'switch', help='Switch Master and Slave role.')
         cmd_ha_service_get.set_defaults(func=self.ha_cluster_switch)
 
+        # openlab ha cluster check
+        cmd_ha_cluster_check = cmd_ha_cluster_subparsers.add_parser(
+            'check', help='HA deployment check.')
+        cmd_ha_cluster_check.set_defaults(func=self.ha_cluster_check)
+        cmd_ha_cluster_check.add_argument(
+            '--dry-run', help='Check the Security Group of HA deployment.',
+            action='store_true')
+
     def _add_ha_config_cmd(self, parser):
         # openlab ha cluster
         cmd_ha_config = parser.add_parser('config',
@@ -391,6 +399,14 @@ class OpenLabCmd(object):
             print("Switch success")
         except exceptions.OpenLabCmdError:
             print("Switch failed")
+    
+    @_zk_wrapper
+    def ha_cluster_check(self):
+        try:
+            self.zk.check_deployment(is_dry_run=self.args.dry_run)
+            print("Check success")
+        except exceptions.OpenLabCmdError:
+            print("Check failed")
 
     @_zk_wrapper
     def ha_config_list(self):

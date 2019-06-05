@@ -2,6 +2,7 @@ configparser
 enum;python_version=='2.7'
 kazoo
 openstackclient
+os-client-config
 pbr>=1.3
 prettytable
 pytz
