@@ -3,6 +3,7 @@ ChangeLog
 doc/build/
 # Roles installed from galaxy
 .tox/
+.idea/
 *.pyc
 
 openlab.pem

@@ -11,6 +11,7 @@ from openlabcmd import zk
 from ha_healthchecker.action import refresher
 from ha_healthchecker.action import fixer
 from ha_healthchecker.action import switcher
+from ha_healthchecker import github
 
 
 class ClusterConfig(object):
@@ -63,19 +64,26 @@ class HealthChecker(object):
         zk_cfg.read(config_file)
         self.zk_client = zk.ZooKeeper(zk_cfg)
         self.cluster_config = None
+        self.github = None
+
+    def _refresh(self):
+        self.cluster_config.refresh(self.zk_client)
+        self.github.refresh(self.cluster_config)
 
     def _action(self):
         if self.zk_client.client is None:
             self.zk_client.connect()
-        self.cluster_config.refresh(self.zk_client)
+        self._refresh()
         refresher.Refresher(self.zk_client, self.cluster_config).run()
-        fixer.Fixer(self.zk_client, self.cluster_config).run()
-        switcher.Switcher(self.zk_client, self.cluster_config).run()
+        fixer.Fixer(self.zk_client, self.cluster_config, self.github).run()
+        switcher.Switcher(self.zk_client, self.cluster_config,
+                          self.github).run()
         self.zk_client.disconnect()
 
     def run(self):
         self.zk_client.connect()
         self.cluster_config = ClusterConfig(self.zk_client)
+        self.github = github.GithubAction(self.cluster_config)
 
         job_scheduler = blocking.BlockingScheduler()
         job_scheduler.add_job(self._action, 'interval', seconds=120)
