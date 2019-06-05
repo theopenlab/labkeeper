@@ -33,16 +33,17 @@ class ClusterConfig(object):
             setattr(self, attr, value)
 
     def _set_log(self):
-        file_dir = os.path.split(self.logging_path)[0]
+        file_dir = '/var/log/ha_healthchecker'
+        log_file = '/var/log/ha_healthchecker/ha_healthchecker.log'
         if not os.path.isdir(file_dir):
             os.makedirs(file_dir)
-        if not os.path.exists(self.logging_path):
-            os.system('touch %s' % self.logging_path)
+        if not os.path.exists(log_file):
+            os.system('touch %s' % log_file)
         if not self.logging_level.upper() in ['DEBUG', 'INFO', 'ERROR']:
             # use the default level
             self.logging_level = 'DEBUG'
         rt_handler = handlers.RotatingFileHandler(
-            self.logging_path, maxBytes=10*1024*1024, backupCount=5)
+            log_file, maxBytes=10*1024*1024, backupCount=5)
         logging.basicConfig(
             format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
             datefmt='%H:%M:%S',
