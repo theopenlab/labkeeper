@@ -29,7 +29,7 @@ CONFIGURATION_DICT = {
     'github_user_token': None,
     'heartbeat_timeout_second': 600,
     'logging_level': 'DEBUG',
-    'service_count_allow_to_raise': 3,
+    'service_restart_max_times': 3,
     'unnecessary_service_switch_timeout_hour': 48,
 }
 
