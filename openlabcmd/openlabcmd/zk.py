@@ -32,6 +32,17 @@ CONFIGURATION_DICT = {
     'unnecessary_service_switch_timeout_hour': 48,
 }
 
+RSYNCD_HA_PORT = 873
+ZOOKEEPER_HA_PORTS = [2181, 2888, 3888]
+MYSQL_HA_PORT = 3306
+
+HA_PORTS = []
+for ports in [RSYNCD_HA_PORT, ZOOKEEPER_HA_PORTS, MYSQL_HA_PORT]:
+    if isinstance(ports, list):
+        HA_PORTS.extend(ports)
+    else:
+        HA_PORTS.append(ports)
+
 
 class ZooKeeper(object):
 
@@ -377,23 +388,13 @@ class ZooKeeper(object):
                 self.update_node(node.name, switch_status='start')
 
     @_client_check_wrapper
-    def check_deployment(self, is_dry_run=False):
-        """Check Current HA deployment peripheral configuration
+    def check_deployment_sg(self, is_dry_run=False):
+        """Check Current HA deployment Security Group configuration
 
         This func is called by labkeeper deploy tool. So that operators can
-        check exist deployment from zookeeper. The check will including Cloud
-        Security Group configuration for now.
+        check exist deployment from zookeeper. The function is for checking
+        Cloud Security Group configuration.
         """
-        RSYNCD_HA_PORT = 873
-        ZOOKEEPER_HA_PORTS = [2181, 2888, 3888]
-        MYSQL_HA_PORT = 3306
-
-        HA_PORTS = []
-        for ports in [RSYNCD_HA_PORT, ZOOKEEPER_HA_PORTS, MYSQL_HA_PORT]:
-            if isinstance(ports, list):
-                HA_PORTS.extend(ports)
-            else:
-                HA_PORTS.append(ports)
         deploy_map = {}
         cloud_provide_rules = {}
         unexpect_rules = {}
@@ -483,8 +484,6 @@ class ZooKeeper(object):
                                        rule['remote_ip_prefix']]) ==0:
                                 expect_rules[cloud_name].pop(
                                     rule['remote_ip_prefix'])
-                                print("POOP remove %s, %s" % (
-                                    cloud_name, rule['remote_ip_prefix']))
                         else:
                             if cloud_name not in unexpect_rules:
                                 unexpect_rules[cloud_name] = [
@@ -499,6 +498,7 @@ class ZooKeeper(object):
             # analysis expect_rules
             for cloud_name, ip_dict in expect_rules.items():
                 if not ip_dict:
+                    print("Cloud %s: PASSED" % cloud_name)
                     continue
 
                 print("Recover security group rules for cloud %s:" %
@@ -521,7 +521,15 @@ class ZooKeeper(object):
                             "port_range_min": port,
                             "port_range_max": port
                         })
-                        net_client.post('/security-group-rules', json=req)
+                        resp = net_client.post('/security-group-rules',
+                                               json=req)
+                        if resp.status_code != 201:
+                            raise exceptions.ClientError(
+                                'Failed to create security group rule on '
+                                'cloud %(cloud_name)s with summary '
+                                '%(ip)s %(port)s'
+                                % {'cloud_name': cloud_name, 'ip': ip,
+                                   'port': port})
                         print("Create new sg_rule, summary %(ip)s %(port)s" % {
                             "ip": ip,
                             "port": str(port)
@@ -535,7 +543,13 @@ class ZooKeeper(object):
                       cloud_name)
                 for ip_port_tuple in ip_port_tuple_list:
                     url = "/security-group-rules/%s" % ip_port_tuple[2]
-                    net_client.delete(url)
+                    resp = net_client.delete(url)
+                    if resp.status_code != 204:
+                        raise exceptions.ClientError(
+                            'Failed to delete security group rule '
+                            '%(rule_id)s on cloud %(cloud_name)s'
+                            % {'cloud_name': cloud_name,
+                               'rule_id': ip_port_tuple[2]})
                     print("Remove sg_rule %(rule_id)s, summary %(ip)s "
                           "%(port)s" % {
                         "rule_id": ip_port_tuple[2],
@@ -545,6 +559,7 @@ class ZooKeeper(object):
         else:
             for cloud_name, ip_dict in expect_rules.items():
                 if not ip_dict:
+                    print("Cloud %s: PASSED" % cloud_name)
                     continue
                 print("Found lack security group rules in cloud %s" %
                       cloud_name)

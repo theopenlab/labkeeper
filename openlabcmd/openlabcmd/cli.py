@@ -192,7 +192,12 @@ class OpenLabCmd(object):
             'check', help='HA deployment check.')
         cmd_ha_cluster_check.set_defaults(func=self.ha_cluster_check)
         cmd_ha_cluster_check.add_argument(
-            '--dry-run', help='Check the Security Group of HA deployment.',
+            '--security-group',
+            help='Check the Security Group of HA deployment.',
+            action='store_true', required=True)
+        cmd_ha_cluster_check.add_argument(
+            '--dry-run', help='Only report the check list of HA deployment,'
+                              ' not try to fix if there is a check error.',
             action='store_true')
 
     def _add_ha_config_cmd(self, parser):
@@ -402,11 +407,13 @@ class OpenLabCmd(object):
     
     @_zk_wrapper
     def ha_cluster_check(self):
-        try:
-            self.zk.check_deployment(is_dry_run=self.args.dry_run)
-            print("Check success")
-        except exceptions.OpenLabCmdError:
-            print("Check failed")
+        # TODO(bz) This check may support other function
+        if self.args.security_group:
+            try:
+                self.zk.check_deployment_sg(is_dry_run=self.args.dry_run)
+                print("Check success")
+            except exceptions.OpenLabCmdError:
+                print("Check failed")
 
     @_zk_wrapper
     def ha_config_list(self):
