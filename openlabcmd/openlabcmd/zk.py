@@ -29,7 +29,6 @@ CONFIGURATION_DICT = {
     'github_user_token': None,
     'heartbeat_timeout_second': 600,
     'logging_level': 'DEBUG',
-    'logging_path': '/etc/openlab/ha_healthchecker/ha_healthchecker.log',
     'unnecessary_service_switch_timeout_hour': 48,
 }
 
