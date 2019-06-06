@@ -62,7 +62,9 @@ providers:
         availability-zones:
           - ca-ymq-2
         networks:
-          - int-net
+          - openlab-net
+        security-groups:
+          - openlab-sg
         labels:
           - name: ubuntu-xenial-vexxhost
             diskimage: ubuntu-xenial
@@ -103,6 +105,9 @@ providers:
     pools:
       - name: main
         max-ram: 80000
+        max-servers: -1
+        security-groups:
+          - openlab-sg
         networks:
           - openlab-net
         labels:
@@ -137,6 +142,8 @@ providers:
     pools:
       - name: main
         max-cores: 80
+        security-groups:
+          - openlab-sg
         networks:
           - openlab-net
         labels:
@@ -171,6 +178,8 @@ providers:
     pools:
       - name: main
         max-servers: 6 # 2vm is reserved by HA deployment: slave cluster contains two nodes, each is 4c-8G
+        security-groups:
+          - openlab-sg
         networks:
           - openlab-net
         labels:
