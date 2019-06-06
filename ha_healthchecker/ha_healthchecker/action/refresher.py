@@ -18,10 +18,13 @@ class Refresher(base.Action):
         cur_status = self._get_service_status(service_obj.name)
         update_dict = {}
         if cur_status == 'up':
-            if service_obj.status != 'up':
+            if (service_obj.status != 'up' and
+                    service_obj.restarted_count <
+                    self.cluster_config.service_count_allow_to_raise):
                 update_dict['status'] = 'up'
                 update_dict['restarted'] = False
                 update_dict['alarmed'] = False
+                update_dict['restarted_account'] = 0
                 self.LOG.debug("Fix Service %(name)s status from %(orig)s to "
                                "UP.", {'name': service_obj.name,
                                        'orig': service_obj.status})
@@ -32,9 +35,18 @@ class Refresher(base.Action):
                 self.LOG.debug("Service %(name)s is Restarting.",
                                {'name': service_obj.name})
             else:
-                update_dict['status'] = 'down'
-                self.LOG.debug("Service %(name)s is Down.",
-                               {'name': service_obj.name})
+                if (service_obj.restarted_count >
+                        self.cluster_config.service_count_allow_to_raise):
+                    update_dict['status'] = 'down'
+                    self.LOG.debug("Service %(name)s is Down.",
+                                   {'name': service_obj.name})
+                else:
+                    update_dict[
+                        'restarted_account'] = service_obj.restarted_count + 1
+                    self.LOG.debug("Service %(name)s continue in Restarting, "
+                                   "tried %(count)s times",
+                                   {'name': service_obj.name,
+                                    'count': service_obj.restarted_count})
         if update_dict:
             self.zk.update_service(service_obj.name, node_obj.name,
                                    **update_dict)
