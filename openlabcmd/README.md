@@ -143,13 +143,13 @@ Manage the HA cluster action or check existing HA cluster deployment.
     -h, --help            show this help message and exit
   ```
 
-* openlab ha cluster check
+* openlab ha cluster repair
   '''
-  usage: openlab ha cluster check [-h] --security-group [--dry-run]
+  usage: openlab ha cluster repair [-h] --security-group [--dry-run]
 
   optional arguments:
     -h, --help        show this help message and exit
-    --security-group  Check the Security Group of HA deployment.
+    --security-group  Repair the Security Group of HA deployment.
     --dry-run         Only report the check list of HA deployment, not try to
                       fix if there is a check error.
 

@@ -10,6 +10,7 @@ from kazoo import exceptions as kze
 from kazoo.handlers.threading import KazooTimeoutError
 import os_client_config
 
+from openlabcmd import constants
 from openlabcmd import exceptions
 from openlabcmd import node
 from openlabcmd import service
@@ -31,17 +32,6 @@ CONFIGURATION_DICT = {
     'logging_path': '/etc/openlab/ha_healthchecker/ha_healthchecker.log',
     'unnecessary_service_switch_timeout_hour': 48,
 }
-
-RSYNCD_HA_PORT = 873
-ZOOKEEPER_HA_PORTS = [2181, 2888, 3888]
-MYSQL_HA_PORT = 3306
-
-HA_PORTS = []
-for ports in [RSYNCD_HA_PORT, ZOOKEEPER_HA_PORTS, MYSQL_HA_PORT]:
-    if isinstance(ports, list):
-        HA_PORTS.extend(ports)
-    else:
-        HA_PORTS.append(ports)
 
 
 class ZooKeeper(object):
@@ -389,25 +379,25 @@ class ZooKeeper(object):
 
     @_client_check_wrapper
     def check_deployment_sg(self, is_dry_run=False):
-        """Check Current HA deployment Security Group configuration
+        """Repair current HA deployment Security Group configuration
 
         This func is called by labkeeper deploy tool. So that operators can
-        check exist deployment from zookeeper. The function is for checking
-        Cloud Security Group configuration.
+        check and repair exist deployment from zookeeper. The function is
+        for checking Cloud Security Group configuration.
         """
         deploy_map = {}
         cloud_provide_rules = {}
         unexpect_rules = {}
         for node in self.list_nodes():
-            ha_ports_cp = copy.deepcopy(HA_PORTS)
+            ha_ports_cp = copy.deepcopy(constants.HA_PORTS)
             if node.type == 'nodepool':
-                ha_ports_cp.remove(MYSQL_HA_PORT)
+                ha_ports_cp.remove(constants.MYSQL_HA_PORT)
             elif node.type == 'zuul':
-                for p in ZOOKEEPER_HA_PORTS:
+                for p in constants.ZOOKEEPER_HA_PORTS:
                     ha_ports_cp.remove(p)
             elif node.type == 'zookeeper':
-                ha_ports_cp.remove(RSYNCD_HA_PORT)
-                ha_ports_cp.remove(MYSQL_HA_PORT)
+                ha_ports_cp.remove(constants.RSYNCD_HA_PORT)
+                ha_ports_cp.remove(constants.MYSQL_HA_PORT)
             if node.name.split("-")[0] not in deploy_map:
                 deploy_map[node.name.split("-")[0]] = {'nodes': [node]}
                 cloud_provide_rules[node.name.split("-")[0]] = {
@@ -433,16 +423,16 @@ class ZooKeeper(object):
                 for c_name in c_names:
                     for ip in cloud_provide_rules[c_name].keys():
                         if 2888 in cloud_provide_rules[c_name][ip]:
-                            zk_ha_ports = copy.deepcopy(ZOOKEEPER_HA_PORTS)
+                            zk_ha_ports = copy.deepcopy(
+                                constants.ZOOKEEPER_HA_PORTS)
                             expect_rules[cloud_name][ip] = zk_ha_ports
                         else:
                             expect_rules[cloud_name][ip] = [2181]
 
-        HA_SGs = ['openlab-ha-ports']
         for cloud_name, nodes_dict in deploy_map.items():
             net_client = os_client_config.make_rest_client(
                 'network', cloud=cloud_name)
-            for sg_name in HA_SGs:
+            for sg_name in constants.HA_SGs:
                 url = "/security-groups?name=%s" % sg_name
                 resp = net_client.get(url)
                 if resp.status_code != 200:

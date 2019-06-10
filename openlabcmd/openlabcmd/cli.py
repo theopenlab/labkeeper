@@ -187,17 +187,17 @@ class OpenLabCmd(object):
             'switch', help='Switch Master and Slave role.')
         cmd_ha_service_get.set_defaults(func=self.ha_cluster_switch)
 
-        # openlab ha cluster check
+        # openlab ha cluster repair
         cmd_ha_cluster_check = cmd_ha_cluster_subparsers.add_parser(
-            'check', help='HA deployment check.')
+            'repair', help='HA deployment check and repair.')
         cmd_ha_cluster_check.set_defaults(func=self.ha_cluster_check)
         cmd_ha_cluster_check.add_argument(
             '--security-group',
-            help='Check the Security Group of HA deployment.',
+            help='Repair the Security Group of HA deployment.',
             action='store_true', required=True)
         cmd_ha_cluster_check.add_argument(
             '--dry-run', help='Only report the check list of HA deployment,'
-                              ' not try to fix if there is a check error.',
+                              ' not try to repair if there is a check error.',
             action='store_true')
 
     def _add_ha_config_cmd(self, parser):
