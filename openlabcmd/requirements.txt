@@ -1,6 +1,7 @@
 configparser
 kazoo
 openstackclient
+os-client-config
 pbr>=1.3
 prettytable
 pytz

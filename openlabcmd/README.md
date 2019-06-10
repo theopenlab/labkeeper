@@ -133,7 +133,7 @@ Get or list the service running in cluster.
 
 #### cluster
 
-Manage the HA cluster action.
+Manage the HA cluster action or check existing HA cluster deployment.
 
 * openlab ha cluster switch
   ```
@@ -142,6 +142,18 @@ Manage the HA cluster action.
   optional arguments:
     -h, --help            show this help message and exit
   ```
+
+* openlab ha cluster repair
+  '''
+  usage: openlab ha cluster repair [-h] --security-group [--dry-run]
+
+  optional arguments:
+    -h, --help        show this help message and exit
+    --security-group  Repair the Security Group of HA deployment.
+    --dry-run         Only report the check list of HA deployment, not try to
+                      fix if there is a check error.
+
+  '''
 
 #### config
 

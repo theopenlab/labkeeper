@@ -198,6 +198,19 @@ class OpenLabCmd(object):
             'switch', help='Switch Master and Slave role.')
         cmd_ha_service_get.set_defaults(func=self.ha_cluster_switch)
 
+        # openlab ha cluster repair
+        cmd_ha_cluster_repair = cmd_ha_cluster_subparsers.add_parser(
+            'repair', help='HA deployment check and repair.')
+        cmd_ha_cluster_repair.set_defaults(func=self.ha_cluster_repair)
+        cmd_ha_cluster_repair.add_argument(
+            '--security-group',
+            help='Repair the Security Group of HA deployment.',
+            action='store_true', required=True)
+        cmd_ha_cluster_repair.add_argument(
+            '--dry-run', help='Only report the check list of HA deployment,'
+                              ' not try to repair if there is a check error.',
+            action='store_true')
+
     def _add_ha_config_cmd(self, parser):
         # openlab ha cluster
         cmd_ha_config = parser.add_parser('config',
@@ -407,6 +420,17 @@ class OpenLabCmd(object):
             print("Switch success")
         except exceptions.OpenLabCmdError:
             print("Switch failed")
+    
+    @_zk_wrapper
+    def ha_cluster_repair(self):
+        # TODO(bz) This repair may support other function
+        if self.args.security_group:
+            try:
+                self.zk.check_and_repair_deployment_sg(
+                    is_dry_run=self.args.dry_run)
+                print("Check success")
+            except exceptions.OpenLabCmdError:
+                print("Check failed")
 
     @_zk_wrapper
     def ha_config_list(self):

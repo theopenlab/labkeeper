@@ -1,4 +1,5 @@
 import configparser
+import copy
 import datetime
 import json
 import logging
@@ -7,7 +8,9 @@ import time
 from kazoo.client import KazooClient, KazooState
 from kazoo import exceptions as kze
 from kazoo.handlers.threading import KazooTimeoutError
+import os_client_config
 
+from openlabcmd import constants
 from openlabcmd import exceptions
 from openlabcmd import node
 from openlabcmd import service
@@ -376,6 +379,200 @@ class ZooKeeper(object):
         for node in self.list_nodes():
             if node.type != 'zookeeper':
                 self.update_node(node.name, switch_status='start')
+
+    @_client_check_wrapper
+    def check_and_repair_deployment_sg(self, is_dry_run=False):
+        """Check and Repair current HA deployment Security Group configuration
+
+        This func is called by labkeeper deploy tool. So that operators can
+        check and repair exist deployment from zookeeper. The function is
+        for checking Cloud Security Group configuration.
+        """
+        deploy_map = {}
+        cloud_provide_rules = {}
+        unexpect_rules = {}
+        for node in self.list_nodes():
+            ha_ports_cp = copy.deepcopy(constants.HA_PORTS)
+            if node.type == 'nodepool':
+                ha_ports_cp.remove(constants.MYSQL_HA_PORT)
+            elif node.type == 'zuul':
+                for p in constants.ZOOKEEPER_HA_PORTS:
+                    ha_ports_cp.remove(p)
+            elif node.type == 'zookeeper':
+                ha_ports_cp.remove(constants.RSYNCD_HA_PORT)
+                ha_ports_cp.remove(constants.MYSQL_HA_PORT)
+            if node.name.split("-")[0] not in deploy_map:
+                deploy_map[node.name.split("-")[0]] = {'nodes': [node]}
+                cloud_provide_rules[node.name.split("-")[0]] = {
+                    node.ip + '/32': ha_ports_cp}
+            else:
+                deploy_map[node.name.split("-")[0]]['nodes'].append(node)
+                cloud_provide_rules[node.name.split("-")[0]][
+                    node.ip + '/32'] = ha_ports_cp
+
+        # Fit current expect_rules
+        expect_rules = {}
+        sg_map = {}
+        cloud_names = list(cloud_provide_rules.keys())
+        for cloud_name, ip_dict in cloud_provide_rules.items():
+            c_names = copy.deepcopy(cloud_names)
+            c_names.remove(cloud_name)
+            expect_rules[cloud_name] = copy.deepcopy(ip_dict)
+            if len(cloud_provide_rules[cloud_name].keys()) > 1:
+                for c_name in c_names:
+                    expect_rules[cloud_name].update(
+                        copy.deepcopy(cloud_provide_rules[c_name]))
+            else:
+                for c_name in c_names:
+                    for ip in cloud_provide_rules[c_name].keys():
+                        if 2888 in cloud_provide_rules[c_name][ip]:
+                            zk_ha_ports = copy.deepcopy(
+                                constants.ZOOKEEPER_HA_PORTS)
+                            expect_rules[cloud_name][ip] = zk_ha_ports
+                        else:
+                            expect_rules[cloud_name][ip] = [2181]
+
+        for cloud_name, nodes_dict in deploy_map.items():
+            net_client = os_client_config.make_rest_client(
+                'network', cloud=cloud_name)
+            for sg_name in constants.HA_SGs:
+                url = "/security-groups?name=%s" % sg_name
+                resp = net_client.get(url)
+                if resp.status_code != 200:
+                    raise exceptions.ClientError(
+                        'Security group %(sg_name)s not found on '
+                        'cloud %(cloud_name)s.' % {'sg_name': sg_name,
+                                                   'cloud_name': cloud_name})
+                sgr_data = resp.json()['security_groups'][0]
+                if cloud_name not in sg_map:
+                    sg_map[cloud_name] = resp.json()[
+                        'security_groups'][0]['id']
+                for rule in sgr_data['security_group_rules']:
+                    if rule['direction'] != 'ingress':
+                        continue
+
+                    is_specified_1_port = (
+                            rule['port_range_min'] == rule['port_range_max'])
+                    is_ipv4 = rule['ethertype'] == 'IPv4'
+                    is_tcp = rule['protocol'] == 'tcp'
+
+                    if not expect_rules[cloud_name].get(
+                            rule['remote_ip_prefix']):
+                        if cloud_name not in unexpect_rules:
+                            unexpect_rules[cloud_name] = [
+                                (rule['remote_ip_prefix'],
+                                 rule['port_range_min'], rule['id'])]
+                        else:
+                            unexpect_rules[cloud_name].append(
+                                (rule['remote_ip_prefix'],
+                                 rule['port_range_min'], rule['id']))
+                    else:
+                        if (is_specified_1_port and is_ipv4 and is_tcp and
+                                rule['port_range_min'] in expect_rules[
+                                    cloud_name][rule['remote_ip_prefix']]):
+                            expect_rules[cloud_name][
+                                rule['remote_ip_prefix']].remove(
+                                rule['port_range_min'])
+                            if len(expect_rules[cloud_name][
+                                       rule['remote_ip_prefix']]) ==0:
+                                expect_rules[cloud_name].pop(
+                                    rule['remote_ip_prefix'])
+                        else:
+                            if cloud_name not in unexpect_rules:
+                                unexpect_rules[cloud_name] = [
+                                    (rule['remote_ip_prefix'],
+                                     rule['port_range_min'], rule['id'])]
+                            else:
+                                unexpect_rules[cloud_name].append((
+                                    rule['remote_ip_prefix'],
+                                    rule['port_range_min'], rule['id']))
+
+        if not is_dry_run:
+            # analysis expect_rules
+            for cloud_name, ip_dict in expect_rules.items():
+                if not ip_dict:
+                    print("Cloud %s: PASSED" % cloud_name)
+                    continue
+
+                print("Recover security group rules for cloud %s:" %
+                      cloud_name)
+                # Here means the sg lacks SG_rule settings
+                net_client = os_client_config.make_rest_client(
+                    'network', cloud=cloud_name)
+                for ip, ports in ip_dict.items():
+                    req = {
+                        "security_group_rule": {
+                            "direction": "ingress",
+                            "ethertype": "IPv4",
+                            "protocol": "tcp",
+                            "security_group_id": sg_map[cloud_name],
+                            "remote_ip_prefix": ip
+                        }
+                    }
+                    for port in ports:
+                        req["security_group_rule"].update({
+                            "port_range_min": port,
+                            "port_range_max": port
+                        })
+                        resp = net_client.post('/security-group-rules',
+                                               json=req)
+                        if resp.status_code != 201:
+                            raise exceptions.ClientError(
+                                'Failed to create security group rule on '
+                                'cloud %(cloud_name)s with summary '
+                                '%(ip)s %(port)s'
+                                % {'cloud_name': cloud_name, 'ip': ip,
+                                   'port': port})
+                        print("Create new sg_rule, summary %(ip)s %(port)s" % {
+                            "ip": ip,
+                            "port": str(port)
+                        })
+
+            # remove unexpect sg_rules
+            for cloud_name, ip_port_tuple_list in unexpect_rules.items():
+                net_client = os_client_config.make_rest_client(
+                    'network', cloud=cloud_name)
+                print("Unexpect security group rules clean for cloud %s:" %
+                      cloud_name)
+                for ip_port_tuple in ip_port_tuple_list:
+                    url = "/security-group-rules/%s" % ip_port_tuple[2]
+                    resp = net_client.delete(url)
+                    if resp.status_code != 204:
+                        raise exceptions.ClientError(
+                            'Failed to delete security group rule '
+                            '%(rule_id)s on cloud %(cloud_name)s'
+                            % {'cloud_name': cloud_name,
+                               'rule_id': ip_port_tuple[2]})
+                    print("Remove sg_rule %(rule_id)s, summary %(ip)s "
+                          "%(port)s" % {
+                        "rule_id": ip_port_tuple[2],
+                        "ip": ip_port_tuple[0],
+                        "port": str(ip_port_tuple[1])
+                    })
+        else:
+            for cloud_name, ip_dict in expect_rules.items():
+                if not ip_dict:
+                    print("Cloud %s: PASSED" % cloud_name)
+                    continue
+                print("Found lack security group rules in cloud %s" %
+                      cloud_name)
+                for ip, ports in ip_dict.items():
+                    print("    Need to create new rule for (ip)s (ports)s" % {
+                        "ip": ip,
+                        "ports": str(ports)
+                    })
+
+            # remove unexpect sg_rules
+            for cloud_name, ip_port_tuple_list in unexpect_rules.items():
+                print("Found unexpect security group rules clean for "
+                      "cloud %s:" % cloud_name)
+                for ip_port_tuple in ip_port_tuple_list:
+                    print("    Need to remove sg_rule %(rule_id)s, "
+                          "summary %(ip)s %(port)s" % {
+                        "rule_id": ip_port_tuple[2],
+                        "ip": ip_port_tuple[0],
+                        "port": str(ip_port_tuple[1])
+                    })
 
     def _init_ha_configuration(self):
         path = '/ha/configuration'
