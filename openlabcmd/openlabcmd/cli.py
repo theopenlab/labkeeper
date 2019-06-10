@@ -188,14 +188,14 @@ class OpenLabCmd(object):
         cmd_ha_service_get.set_defaults(func=self.ha_cluster_switch)
 
         # openlab ha cluster repair
-        cmd_ha_cluster_check = cmd_ha_cluster_subparsers.add_parser(
+        cmd_ha_cluster_repair = cmd_ha_cluster_subparsers.add_parser(
             'repair', help='HA deployment check and repair.')
-        cmd_ha_cluster_check.set_defaults(func=self.ha_cluster_check)
-        cmd_ha_cluster_check.add_argument(
+        cmd_ha_cluster_repair.set_defaults(func=self.ha_cluster_repair)
+        cmd_ha_cluster_repair.add_argument(
             '--security-group',
             help='Repair the Security Group of HA deployment.',
             action='store_true', required=True)
-        cmd_ha_cluster_check.add_argument(
+        cmd_ha_cluster_repair.add_argument(
             '--dry-run', help='Only report the check list of HA deployment,'
                               ' not try to repair if there is a check error.',
             action='store_true')
@@ -406,11 +406,12 @@ class OpenLabCmd(object):
             print("Switch failed")
     
     @_zk_wrapper
-    def ha_cluster_check(self):
-        # TODO(bz) This check may support other function
+    def ha_cluster_repair(self):
+        # TODO(bz) This repair may support other function
         if self.args.security_group:
             try:
-                self.zk.check_deployment_sg(is_dry_run=self.args.dry_run)
+                self.zk.check_and_repair_deployment_sg(
+                    is_dry_run=self.args.dry_run)
                 print("Check success")
             except exceptions.OpenLabCmdError:
                 print("Check failed")

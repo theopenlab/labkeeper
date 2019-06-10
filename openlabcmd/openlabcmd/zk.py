@@ -378,8 +378,8 @@ class ZooKeeper(object):
                 self.update_node(node.name, switch_status='start')
 
     @_client_check_wrapper
-    def check_deployment_sg(self, is_dry_run=False):
-        """Repair current HA deployment Security Group configuration
+    def check_and_repair_deployment_sg(self, is_dry_run=False):
+        """Check and Repair current HA deployment Security Group configuration
 
         This func is called by labkeeper deploy tool. So that operators can
         check and repair exist deployment from zookeeper. The function is
