@@ -53,7 +53,7 @@ class Service(object):
     def __init__(self, name, node_name, alarmed=None,
                  alarmed_at=None, restarted=None, restarted_at=None,
                  is_necessary=None, status=None, created_at=None,
-                 updated_at=None, **kwargs):
+                 updated_at=None, restarted_count=None, **kwargs):
         self.name = name
         self.node_name = node_name
         self.alarmed = alarmed or False
@@ -64,6 +64,7 @@ class Service(object):
         self.status = status or ServiceStatus.INITIALIZING
         self.created_at = created_at
         self.updated_at = updated_at
+        self.restarted_count = restarted_count or 0
 
     def to_zk_bytes(self):
         node_dict = {
@@ -74,7 +75,8 @@ class Service(object):
             'restarted': self.restarted,
             'restarted_at': self.restarted_at,
             'is_necessary': self.is_necessary,
-            'status': self.status
+            'status': self.status,
+            'restarted_account': self.restarted_count
         }
         return json.dumps(node_dict).encode('utf8')
 
