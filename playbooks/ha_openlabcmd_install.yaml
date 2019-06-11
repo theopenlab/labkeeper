@@ -33,7 +33,7 @@
   tasks:
     - name: Init HA config options
       shell: |
-        if [ {{ use_test_account }} ];then
+        if [[ {{ use_test_account }} == True ]];then
           test_github_token=`base64 <<< "{{ test_github_token }}"`
           test_github_password=`base64 <<< "{{ test_github_password }}"`
 
