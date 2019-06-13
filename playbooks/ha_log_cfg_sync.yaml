@@ -88,7 +88,7 @@
     - name: Add crontab task for sync logs between master and slave
       cron:
         name: "zuul jobs log synchronization"
-        minute: "0,30"
+        hour: "0-23/4"
         job: "/bin/bash /etc/rsync/cron_sync_zuul_jobs_log.sh > /dev/null"
 
 - name: Setup crontab job for sync zuul config files
@@ -107,7 +107,9 @@
     - name: Add crontab task for sync zuul config files
       cron:
         name: "zuul config files synchronization"
-        minute: "0,30"
+        minute: "0"
+        hour: "0"
+        weekday: "1,2,3,4,5"
         job: "/bin/bash /etc/rsync/cron_sync_zuul_cfg.sh > /dev/null"
 
 - name: Setup crontab job for sync nodepool config files
@@ -126,7 +128,9 @@
     - name: Add crontab task for sync nodepool.yaml
       cron:
         name: "nodepool.yaml synchronization"
-        minute: "0,30"
+        minute: "0"
+        hour: "0"
+        weekday: "1,2,3,4,5"
         job: "/bin/bash /etc/rsync/cron_sync_nodepool_cfg.sh > /dev/null"
 
     - name: Create script for sync clouds.yaml
@@ -138,8 +142,10 @@
           root@"{{ hostvars[groups['nodepool-launcher-slave'][0]].ansible_host }}"::openlab_clouds_cfg
         mode: 0755
 
-    - name: Add crontab task for sync nodepool.yaml
+    - name: Add crontab task for sync clouds.yaml
       cron:
         name: "clouds.yaml synchronization"
-        minute: "0,30"
+        minute: "0"
+        hour: "0"
+        weekday: "1,2,3,4,5"
         job: "/bin/bash /etc/rsync/cron_sync_clouds_cfg.sh > /dev/null"
