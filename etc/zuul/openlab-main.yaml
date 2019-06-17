@@ -73,6 +73,16 @@
               exclude-unprotected-branches: true
           - theopenlab/volcano:
               exclude-unprotected-branches: true
+          - apache/storm:
+              exclude-unprotected-branches: false
+          - theopenlab/storm:
+              exclude-unprotected-branches: true
+          - theopenlab/percona-server:
+              exclude-unprotected-branches: true
+          - theopenlab/hbase:
+              exclude-unprotected-branches: true
+          - apache/hbase:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
