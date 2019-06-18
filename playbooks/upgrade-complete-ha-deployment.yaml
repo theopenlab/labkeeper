@@ -1,0 +1,10 @@
+---
+- name: Install and config openlabcmd
+  hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave
+  become: yes
+  tasks:
+    - name: upgrade nodepool
+      shell: |
+        openlab ha node set `hostname` --maintain no
+      args:
+        executable: /bin/bash

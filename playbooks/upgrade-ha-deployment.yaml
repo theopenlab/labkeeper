@@ -1,0 +1,56 @@
+---
+- name: Upgrade nodepool nodes
+  hosts: nodepool-master, nodepool-slave
+  become: yes
+  tasks:
+    - name: upgrade nodepool services
+      shell: |
+        set -e
+        openlab ha node set `hostname` --maintain yes
+        cd /opt/src/nodepool
+        git pull
+      args:
+        executable: /bin/bash
+
+- name: Restart nodepool
+  hosts: nodepool-master
+  become: yes
+  tasks:
+    - name: restart nodepool services
+      shell: |
+        systemctl restart nodepool-builder
+        systemctl restart nodepool-launcher
+      args:
+        executable: /bin/bash
+
+- name: Upgrade zuul nodes
+  hosts: zuul-master, zuul-slave
+  become: yes
+  tasks:
+    - name: upgrade zuul services
+      shell: |
+        set -e
+        openlab ha node set `hostname` --maintain yes
+        cd /opt/src/zuul
+        git pull
+        cd web/
+        yarn install
+        sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
+        yarn build
+      args:
+        executable: /bin/bash
+
+- name: Restart zuul
+  hosts: zuul-master
+  become: yes
+  tasks:
+    - name: restart zuul services
+      shell: |
+        systemctl restart zuul-scheduler
+        systemctl restart zuul-executor
+        systemctl restart zuul-web
+        systemctl restart zuul-merger
+        systemctl restart zuul-fingergw
+        systemctl restart apache2
+      args:
+        executable: /bin/bash
