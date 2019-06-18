@@ -37,12 +37,12 @@ RECOVER_MAPS = {
     },
     Recover.NETWORK_SUBNET: {
         "recover": "openstack --os-cloud %s subnet create openlab-subnet "
-                   "--network openlab-net --subnet-range=192.168.199.0/24",
+                   "--network openlab-net --subnet-range=192.168.0.0/24",
         "reason": "- Subnet: openlab-subnet is not found.",
     },
     Recover.NETWORK_SUBNET_CIDR: {
         "recover": "openstack --os-cloud %s subnet create openlab-subnet "
-                   "--network openlab-net --subnet-range=192.168.199.0/24",
-        "reason": "- Subnet cidr: 192.168.199.0/24 is not found.",
+                   "--network openlab-net --subnet-range=192.168.0.0/24",
+        "reason": "- Subnet cidr: 192.168.0.0/24 is not found.",
     },
 }
