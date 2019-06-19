@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+import datetime
+import json
 import os
 import subprocess
 import sys
 
 import argparse
+from prettytable import PrettyTable
+import requests
 
 
 def add_cli_args():
@@ -15,7 +19,8 @@ def add_cli_args():
                         )
     parser.add_argument('--action',
                         choices=["deploy", "new-slave", "new-zookeeper",
-                                 "switch-role", "show-graph", "show-ip"],
+                                 "switch-role", "show-graph", "show-ip",
+                                 "list-change", "upgrade", "upgrade-complete"],
                         default="deploy",
                         help="The action that labkeeper supports. Default "
                              "value is 'deploy'.\n"
@@ -28,7 +33,15 @@ def add_cli_args():
                              "'show-graph': show the hosts graph of ansible "
                              "inventory. It can be used with --with-vars to "
                              "show more detail.\n"
-                             "'show-ip': show hosts ip address.\n")
+                             "'show-ip': show hosts ip address.\n"
+                             "'list-change': show zuul and nodepool code "
+                             "change during last month.\n"
+                             "'upgrade': upgrade zuul and nodepool to the "
+                             "newest master branch.\n"
+                             "'upgrade-complete: after checking upgraded "
+                             "environment, if everything works well, run this "
+                             "action to complete upgrade. Otherwise all nodes"
+                             "will keep being in maintaining status\n '")
     parser.add_argument('-u', '--user',
                         help='the Ansible remote user performing deployment, '
                              'default is "ubuntu" configured in ansible.cfg',
@@ -57,6 +70,20 @@ def add_cli_args():
     return parser
 
 
+def list_changes(project, days):
+    from_day = (datetime.date.today() - datetime.timedelta(days=days)).strftime('%Y-%m-%d')
+    response = requests.get(
+        'https://review.opendev.org/changes/?q=project:' +
+        project + '+status:merged+after:' + from_day)
+    changes = json.loads(
+        response.content.decode("utf-8")[5:].replace('\n', ''))
+    pt = PrettyTable([project, 'change_id'], caching=False)
+    pt.align = 'l'
+    for change in changes:
+        pt.add_row([change['subject'], change['change_id']])
+    print(pt.get_string(sortby=project))
+
+
 def main():
     parsed_args = add_cli_args().parse_args()
     os.environ['OL_TYPE'] = parsed_args.type
@@ -81,6 +108,15 @@ def main():
             cmd.append('--vars')
     elif parsed_args.action == 'show-ip':
         cmd = ['python', 'inventory/inventory.py', '--show-ip']
+    elif parsed_args.action == 'list-change':
+        list_changes('zuul/zuul', 31)
+        list_changes('zuul/nodepool', 31)
+    elif parsed_args.action == 'upgrade':
+        cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
+               'playbooks/upgrade-ha-deployment.yaml']
+    elif parsed_args.action == 'upgrade-complete':
+        cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
+               'playbooks/upgrade-complete-ha-deployment.yaml']
 
     if parsed_args.host_ip:
         specified_ips = dict([(d.partition('=')[::2])
@@ -96,10 +132,11 @@ def main():
 
     ol_env_msg = '\n'.join(['%s=%s' % (k, os.environ[k]) for k in os.environ
                             if k.startswith('OL_')])
-    print("OpenLab deployment ENV:\n%s" % ol_env_msg)
-    print('Ansible command:\n%s' % ' '.join(cmd))
-    print("*" * 100)
-    subprocess.call(cmd)
+    if cmd:
+        print("OpenLab deployment ENV:\n%s" % ol_env_msg)
+        print('Ansible command:\n%s' % ' '.join(cmd))
+        print("*" * 100)
+        subprocess.call(cmd)
 
     if parsed_args.action == 'new-slave':
         subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
