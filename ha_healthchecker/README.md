@@ -196,12 +196,16 @@ If you want to mange the cluster, we now provide two actions:
 
 ## Upgrade
 
-We usually upgrade OpenLab environment once a month to keep the zuul and nodepool as new as possible. The upgrade work rely one labkeeper tool. Here is the upgrade step:
+We usually upgrade OpenLab environment once a month to keep the zuul and nodepool as new as possible. The upgrade workflow relies on `labkeeper` tool. Here is the upgrade step:
 
-1. command `./deploy.py openlab-ha list-change`
-    This command will print the newly merged patches during last 31 days from zuul and nodepool community. Operator should check these changes first. If any change will break current deployment, operator should fix it by hand.
-2. Once the check is passed, command `./deploy.py openlab-ha upgrade`
+1. Execute command `./deploy.py openlab-ha list-change`
+
+    This command will print the newly merged patches during last 31 days from zuul and nodepool community. Operator should read through these changes first. If any change may break current deployment, operator should fix it by hand.
+
+2. Once the check is passed, execute command `./deploy.py openlab-ha upgrade`
+
     This command will upgrade the zuul and nodepool source code to the newest, re-generate zuul-web page and restart related services. During this action, zuul and nodepoool nodes will be set to `maintaining` status.
+
 3. Once `upgrade` action is done, operator should check the deployment to ensure every service works well. If not, operator should fix it by hand.
-4. Once all services work as expect, command `./deploy.py openlab-ha upgrade-complete`. This command will set all nodes back to `up` status.
-5. Good job. Upgrade is Done.
+
+4. Once all services work as expect, execute command `./deploy.py openlab-ha upgrade-complete`. This command will set all nodes back to `up` status. Congratulation! OpenLab environment upgrade is finished now.
