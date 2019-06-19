@@ -58,7 +58,7 @@ providers:
         config-drive: true
     pools:
       - name: main
-        max-ram: 97280 #163840-8vm(8G Ram for each) reserved, and HA zookeeper node need another 1G Ram
+        max-ram: 105472 #163840-6vm(OpenJDK)*8192-1vm(ZK HA)*1024 reserved
         availability-zones:
           - ca-ymq-2
         networks:
@@ -105,7 +105,6 @@ providers:
     pools:
       - name: main
         max-ram: 80000
-        max-servers: -1
         security-groups:
           - openlab-sg
         networks:
@@ -141,7 +140,7 @@ providers:
         config-drive: true
     pools:
       - name: main
-        max-cores: 80
+        max-cores: 88
         security-groups:
           - openlab-sg
         networks:
