@@ -7,7 +7,6 @@ from openlabcmd.plugins.recover import Recover
 class NetworkPlugin(Plugin):
     ptype = 'nodepool'
     name = 'network'
-    experimental = True
 
     def check(self):
         self.failed = False
@@ -32,7 +31,7 @@ class NetworkPlugin(Plugin):
             return
 
         # get subnet of openlab-net successfully, check subnet
-        if "openlab-subnet 192.168.199.0/24" not in res:
+        if "openlab-subnet 192.168.0.0/24" not in res:
             self.failed = True
             self.reasons.append(Recover.NETWORK_SUBNET)
             return
