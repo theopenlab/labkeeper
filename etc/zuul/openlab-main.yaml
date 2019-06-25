@@ -81,6 +81,8 @@
               exclude-unprotected-branches: true
           - apache/hbase:
               exclude-unprotected-branches: true
+          - theopenlab/spark:
+              exclude-unprotected-branches: true  
       openstack-git:
         untrusted-projects:
           - include: []
