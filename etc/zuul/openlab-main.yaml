@@ -80,6 +80,8 @@
           - theopenlab/hbase:
               exclude-unprotected-branches: true
           - apache/hbase:
+              exclude-unprotected-branches: false
+          - apache/hive:
               exclude-unprotected-branches: true
           - theopenlab/spark:
               exclude-unprotected-branches: true  
