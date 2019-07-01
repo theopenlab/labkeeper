@@ -51,3 +51,6 @@ zuul_file_zuul_executor_service_config_src: zuul/etc/systemd/system/zuul-executo
 zuul_file_zuul_merger_service_config_src: zuul/etc/systemd/system/zuul-merger.service.d/override.conf.j2
 zuul_file_zuul_scheduler_service_config_src: zuul/etc/systemd/system/zuul-scheduler.service.d/override.conf.j2
 zuul_file_zuul_web_service_config_src: zuul/etc/systemd/system/zuul-web.service.d/override.conf.j2
+
+zuul_status_host: "https://status.openlabtesting.org"
+zuul_status_url: "{{ zuul_status_host }}/builds?project={change.project}&change={change.number},{change.patchset}&pipeline={pipeline.name}"

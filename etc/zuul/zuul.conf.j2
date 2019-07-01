@@ -43,7 +43,7 @@ zuul_url = {{ local_zuul_address.stdout }}
 log_config = /etc/zuul/web-logging.conf
 listen_address=0.0.0.0
 sql_connection_name=mysql
-status_url=http://{{ zuul_public_ip }}/
+status_url={{ zuul_status_url }}
 
 [zookeeper]
 {% if 'zookeeper' in groups %}
