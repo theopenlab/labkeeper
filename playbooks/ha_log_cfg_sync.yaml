@@ -88,7 +88,8 @@
     - name: Add crontab task for sync logs between master and slave
       cron:
         name: "zuul jobs log synchronization"
-        hour: "0-23/4"
+        minute: "0"
+        hour: "14"
         job: "/bin/bash /etc/rsync/cron_sync_zuul_jobs_log.sh > /dev/null"
 
 - name: Setup crontab job for sync zuul config files
