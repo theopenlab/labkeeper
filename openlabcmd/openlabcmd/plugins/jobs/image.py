@@ -4,9 +4,11 @@ from openlabcmd.plugins.base import Plugin
 
 
 class ImagePlugin(Plugin):
-
     ptype = 'jobs'
     name = 'image'
+
+    def __init__(self, cloud, config):
+        super(ImagePlugin, self).__init__(cloud, config)
 
     def check(self):
         self.failed = False

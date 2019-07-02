@@ -26,28 +26,22 @@ class PluginMount(type):
     def register_plugin(cls, plugin):
         """Add the plugin to the plugin list and perform any registration logic"""
 
-        # create a plugin instance and store it
-        # optionally you could just store the plugin class and lazily instantiate
-        instance = plugin()
-
-        # save the plugin reference
-        cls.plugins.append(instance)
-
-        # apply plugin logic - in this case connect the plugin to blinker signals
-        # this must be defined in the derived class
-        instance.register_signals()
+        # save the plugin class
+        cls.plugins.append(plugin)
 
 
 @six.add_metaclass(PluginMount)
 class Plugin(object):
     """A plugin which must provide a register_signals() method"""
-    cloud = 'all'
-    ptype = 'Base'
-    name = 'Base Check'
-    failed = False
-    reasons = []
-    nocolor = False
+    ptype = None
+    name = None
     experimental = False
+
+    def __init__(self, cloud, config):
+        self.cloud = cloud
+        self.config = config
+        self.failed = False
+        self.reasons = []
 
     def register_signals(self):
         # print("%s has been loaded." % self.__class__.__name__)

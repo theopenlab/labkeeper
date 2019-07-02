@@ -8,6 +8,9 @@ class NetworkPlugin(Plugin):
     ptype = 'nodepool'
     name = 'network'
 
+    def __init__(self, cloud, config):
+        super(NetworkPlugin, self).__init__(cloud, config)
+
     def check(self):
         self.failed = False
         self.reasons = []

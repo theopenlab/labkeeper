@@ -272,7 +272,7 @@ class OpenLabCmd(object):
             raise exceptions.ClientError(
                 "Error: Cloud %(cloud)s is not found. Please use the cloud "
                 "in %(clouds_list)s or just use 'all'." % {
-                    'cloud': cloud, 'clouds_list':clouds_list})
+                    'cloud': cloud, 'clouds_list': clouds_list})
 
         clouds_list = clouds_list if cloud == 'all' else [cloud]
         return clouds_list
@@ -310,11 +310,11 @@ class OpenLabCmd(object):
 
         cnt = len(cloud_list)
         exit_flag = False
-        for i, c in enumerate(cloud_list):
-            header = "%s/%s. %s cloud check" % (i + 1, cnt, c)
+        for index, cloud in enumerate(cloud_list):
+            header = "%s/%s. %s cloud check" % (index + 1, cnt, cloud)
             self._header_print(header)
-            for plugin in plugins:
-                plugin.cloud = c
+            for plugin_class in plugins:
+                plugin = plugin_class(cloud, self.config)
                 plugin.check_begin()
                 plugin.check()
                 plugin.check_end()
