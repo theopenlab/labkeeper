@@ -67,6 +67,8 @@
               exclude-unprotected-branches: true
           - containerd/containerd:
               exclude-unprotected-branches: false
+          - theopenlab/envoy:
+              exclude-unprotected-branches: true
           - envoyproxy/envoy:
               exclude-unprotected-branches: true
           - theopenlab/volcano:
