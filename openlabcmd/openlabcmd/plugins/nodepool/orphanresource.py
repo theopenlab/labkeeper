@@ -1,10 +1,17 @@
-import copy
+import datetime
+import iso8601
+import json
+import requests
 import subprocess
+import yaml
 
 from openlabcmd.plugins.base import Plugin
 
 SERVER_WHITE_LIST = [
     '%s-openlab-zuul', '%s-openlab-nodepool', '%s-openlab-zookeeper']
+OPENSTACK_CLOUD_CFG_PATH = '/etc/openstack/clouds.yaml'
+# DAYs
+RESOURCE_TIMEOUT = 1
 
 
 class OrphanResourcePlugin(Plugin):
@@ -13,32 +20,156 @@ class OrphanResourcePlugin(Plugin):
     ptype = 'nodepool'
     name = 'OrphanResource'
 
+    def _get_endpoint_and_token(self):
+        ccf = yaml.load(open(OPENSTACK_CLOUD_CFG_PATH))
+        auth_dict = ccf['clouds'][self.cloud]['auth']
+        keystone_version = ccf['clouds'][self.cloud]['identity_api_version']
+        cinder_version = ccf['clouds'][self.cloud]['volume_api_version']
+        neutron_version = ccf['clouds'][self.cloud]['network_api_version']
+        auth_url = auth_dict['auth_url']
+
+        if '2' not in keystone_version and (
+                '/v%s' % keystone_version in auth_url or '/v%s.0' %
+                keystone_version in
+                auth_url):
+            url = auth_url + '/auth/tokens'
+        elif '2' in keystone_version:
+            if ('/v%s' % keystone_version in auth_url or '/v%s.0' %
+                    keystone_version in
+                    auth_url):
+                url = auth_url + '/tokens'
+            else:
+                url = auth_url + '/v%s' % \
+                      keystone_version + '/tokens'
+        else:
+            url = auth_url + '/v%s' % \
+                  keystone_version + '/auth/tokens'
+
+        headers = {'Content-Type': 'application/json'}
+        user_domain = {}
+        if auth_dict.get('user_domain_name'):
+            user_domain["name"] = auth_dict.get(
+                'user_domain_name')
+        elif auth_dict.get('user_domain_id'):
+            user_domain['id'] = auth_dict.get(
+                'user_domain_id')
+
+        project_domain = {}
+        if auth_dict.get('project_domain_name'):
+            project_domain['name'] = auth_dict.get(
+                'project_domain_name')
+        elif auth_dict.get('project_domain_id'):
+            project_domain['id'] = auth_dict.get(
+                'project_domain_id')
+        if '2' not in keystone_version:
+            data = {
+                "auth": {
+                    "identity": {
+                        "methods": ["password"],
+                        "password": {
+                            "user": {
+                                "name": auth_dict['username'],
+                                "domain": user_domain,
+                                "password": auth_dict['password']
+                            }
+                        }
+                    },
+                    "scope": {
+                        "project": {
+                            "name": auth_dict['project_name'],
+                            "domain": project_domain
+                        }
+                    }
+                }
+            }
+        else:
+            data = {
+                "auth": {
+                    "tenantName": auth_dict['project_name'],
+                    "passwordCredentials": {
+                        "username": auth_dict['username'],
+                        "password": auth_dict['password']
+                    }
+                }
+            }
+        json_data = json.dumps(data).encode('utf8')
+        resp = requests.post(url=url, data=json_data, headers=headers)
+        body = json.loads(resp.text)
+        need_info = {}
+        if '2' not in keystone_version:
+            token = resp.headers['X-Subject-Token']
+            for endpoints in body['token']['catalog']:
+                if endpoints['name'] in ['cinderv%s' % cinder_version,
+                                         'neutron', 'nova']:
+                    for endpoint in endpoints['endpoints']:
+                        if endpoint['interface'] == 'public' and endpoint[
+                            'region'] == ccf['clouds'][self.cloud][
+                            'region_name']:
+                            public_url = endpoint['url']
+                            break
+                    if 'cinderv%s' % cinder_version == endpoints['name']:
+                        need_info['cinder'] = public_url
+                    elif 'neutron' == endpoints['name']:
+                        need_info['neutron'] = public_url + '/v%s' % ccf[
+                            'clouds'][self.cloud]['network_api_version']
+                    elif 'nova' == endpoints['name']:
+                        need_info['nova'] = public_url
+        else:
+            token = body["access"]["token"]["id"]
+
+            for endpoints in body["access"]["serviceCatalog"]:
+                if endpoints['name'] in ['cinderv%s' % cinder_version,
+                                         'neutron', 'nova']:
+                    for endpoint in endpoints['endpoints']:
+                        public_url = endpoint['publicURL']
+                    if 'cinderv%s' % cinder_version == endpoints['name']:
+                        need_info['cinder'] = public_url
+                    elif 'neutron' == endpoints['name']:
+                        need_info['neutron'] = public_url + '/v%s' % ccf[
+                            'clouds'][self.cloud]['network_api_version']
+                    elif 'nova' == endpoints['name']:
+                        need_info['nova'] = public_url
+        need_info['token'] = token
+        return need_info
+
+    def _send_request(self, api_info, req_url):
+        token = api_info['token']
+        headers = {'Accept': 'application/json',
+                   'X-Auth-Token': token}
+        resp = requests.get(req_url, headers=headers)
+        body = json.loads(resp.text)
+        return body
+
+    def _get_fip_res(self, api_info):
+        req_url = api_info['neutron'] + '/floatingips'
+        body = self._send_request(api_info, req_url)
+        return body['floatingips']
+
+    def _get_volume_res(self, api_info):
+        req_url = api_info['cinder'] + '/volumes/detail'
+        body = self._send_request(api_info, req_url)
+        return body['volumes']
+
+    def _get_server_res(self, api_info):
+        req_url = api_info['nova'] + '/servers/detail'
+        body = self._send_request(api_info, req_url)
+        return body['servers']
+
+    def _is_check_heart_beat_overtime(self, timestamp):
+        if not timestamp:
+            return True
+        timeout = RESOURCE_TIMEOUT
+        over_time = iso8601.parse_date(
+            timestamp) + datetime.timedelta(days=timeout)
+        current_time = datetime.datetime.utcnow().replace(tzinfo=iso8601.UTC)
+        return current_time > over_time
+
     def check(self):
         self.failed = False
-        if self.reasons:
-            self.reasons.pop()
         server_white_list = [elemnt % self.cloud
-                             for elemnt in copy.deepcopy(SERVER_WHITE_LIST)]
+                             for elemnt in SERVER_WHITE_LIST]
 
-        # For floatingip, we will check whether a fip didn't associated with a
-        # neutron port.
-        get_fip_cmd = ("openstack --os-cloud %s floating ip list "
-                       "-c 'ID' -c 'Floating IP Address' -c 'Port' | "
-                       "egrep '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-"
-                       "[a-z0-9]{4}-[a-z0-9]{12}' | awk '{print $2, $4, $6}' "
-                       "| grep None | awk '{print $1}'")
-        # For volume, we just check the available status volumes, as we cannot
-        # know whether a in-use volume is used for any purpose.
-        get_volume_cmd = (
-            "openstack --os-cloud %s volume list -c 'ID' -c 'Status' | "
-            "egrep '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-"
-            "[a-z0-9]{12}' | grep available | awk '{print $2}'")
-        # For servers, we will get all servers for a provider, and skip the
-        # online openlab env servers.
-        get_server_cmd = (
-            "openstack --os-cloud %s server list -c 'ID' -c 'Name' | "
-            "egrep '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-"
-            "[a-z0-9]{12}' | awk '{print $2, $4}'")
+        api_info = self._get_endpoint_and_token()
         # Get the full map servers from nodepool, we will detemine whether a
         # server is orphan based on this data.
         get_nodepool_map_cmd = (
@@ -51,16 +182,9 @@ class OrphanResourcePlugin(Plugin):
             elements = line.split(' ')
             if elements[1] not in mapping:
                 mapping[elements[1]] = {
-                    'nodepool_compute_mapping':
-                        [{'nodepool_id': elements[0],
-                          'compute_id': elements[2],
-                          'floatingip': elements[3]}],
                     'compute_ids': [elements[2]],
                     'floatingips': [elements[3]]}
             else:
-                mapping[elements[1]]['nodepool_compute_mapping'].append(
-                    {'nodepool_id': elements[0], 'compute_id': elements[2],
-                     'floatingip': elements[3]})
                 mapping[elements[1]]['compute_ids'].append(elements[2])
                 mapping[elements[1]]['floatingips'].append(elements[3])
 
@@ -68,22 +192,31 @@ class OrphanResourcePlugin(Plugin):
             # That means we disable the cloud provider in nodepool
             return
 
-        ret, res = subprocess.getstatusoutput(get_server_cmd % self.cloud)
+        servers = self._get_server_res(api_info)
+        real_servers = [(s['id'], s['name'], s['created']) for s in servers
+                        if s['name'] not in server_white_list] if servers else []
         real_compute_ids = []
-        real_compute_id_name_tuples = res.split('\n') if res else []
-        for real_compute_id_name in real_compute_id_name_tuples:
-            compute_id, name = real_compute_id_name.split(' ')
-            if name in server_white_list:
-                continue
-            real_compute_ids.append(compute_id)
+        for server in real_servers:
+            if self._is_check_heart_beat_overtime(server[2]):
+                real_compute_ids.append(server[0])
         orphan_servers = set(real_compute_ids) - set(
             mapping[self.cloud+'-openlab']['compute_ids'])
 
-        ret, res = subprocess.getstatusoutput(get_volume_cmd % self.cloud)
-        orphan_volumes = res.split('\n') if res else []
+        volumes = self._get_volume_res(api_info)
+        real_volumes = [(v['id'], v['name'], v['created_at']) for v in volumes
+                        if v['status'] == 'available'] if volumes else []
+        orphan_volumes = []
+        for v in real_volumes:
+            if self._is_check_heart_beat_overtime(v[2]):
+                orphan_volumes.append(v[0])
 
-        ret, res = subprocess.getstatusoutput(get_fip_cmd % self.cloud)
-        orphan_fips = res.split('\n') if res else []
+        fips = self._get_fip_res(api_info)
+        real_fips = [(f['id'], f['floating_ip_address'], f.get('created_at'))
+                     for f in fips if not f['port_id']] if fips else []
+        orphan_fips = []
+        for f in real_fips:
+            if self._is_check_heart_beat_overtime(f[2]):
+                orphan_fips.append(f[0])
 
         if orphan_servers or orphan_volumes or orphan_fips:
             self.failed = True

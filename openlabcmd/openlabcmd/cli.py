@@ -315,7 +315,7 @@ class OpenLabCmd(object):
             self._header_print(header)
             for plugin in plugins:
                 plugin.cloud = c
-                plugin.check_begin()
+                plugin = plugin.check_begin()
                 plugin.check()
                 plugin.check_end()
                 # the failed flag would be record when do check()
