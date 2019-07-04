@@ -106,7 +106,7 @@ all:
         #github_zuul_ssh_key_name: "pub key for openlaballinone"
         zuul_tenant_name: openlaballinone
         openlab_zuul_jobs_key_src: "{{ labkeeper_config_git_dest }}/zuul/allinone-openlab-zuul-jobs.pem"
-        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liu-sheng/openlab-zuul-jobs/0.pem"
+        openlab_zuul_jobs_key_dest: "/var/lib/zuul/keys/secrets/project/github/liusheng/openlab-zuul-jobs/0.pem"
     gear:
       children:
         gear-master:
