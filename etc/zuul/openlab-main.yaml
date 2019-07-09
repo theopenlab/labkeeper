@@ -27,11 +27,7 @@
               exclude-unprotected-branches: true
           - dtantsur/rust-openstack:
               exclude-unprotected-branches: false
-          - kubernetes/cloud-provider-openstack:
-              exclude-unprotected-branches: true
           - huaweicloud/huaweicloud-service-broker:
-              exclude-unprotected-branches: true
-          - apache/spark:
               exclude-unprotected-branches: true
           - manageiq/manageiq-providers-openstack:
               exclude-unprotected-branches: true
@@ -39,8 +35,6 @@
               exclude-unprotected-branches: true
           - terraform-providers/terraform-provider-huaweicloud:
               exclude-unprotected-branches: false
-          - kubernetes-sigs/cluster-api-provider-openstack:
-              exclude-unprotected-branches: true
           - docker/machine:
               exclude-unprotected-branches: true
           - hashicorp/packer:
@@ -57,19 +51,26 @@
               exclude-unprotected-branches: true
           - cloudfoundry/bosh-openstack-cpi-release:
               exclude-unprotected-branches: true
+          # The CNCF projects
+          - kubernetes-sigs/cluster-api-provider-openstack:
+              exclude-unprotected-branches: true
+          - kubernetes/cloud-provider-openstack:
+              exclude-unprotected-branches: true
           - helm/charts:
               exclude-unprotected-branches: true
           - kubernetes-sigs/kind:
               exclude-unprotected-branches: true
-          - moo-ai/moo-ai.github.io:
-              exclude-unprotected-branches: true
-          - theopenlab/labkeeper:
-              exclude-unprotected-branches: true
           - containerd/containerd:
               exclude-unprotected-branches: false
-          - theopenlab/envoy:
-              exclude-unprotected-branches: true
           - envoyproxy/envoy:
+              exclude-unprotected-branches: true
+          # The AI projects
+          - moo-ai/moo-ai.github.io:
+              exclude-unprotected-branches: true
+          # The openlab projects
+          - theopenlab/labkeeper:
+              exclude-unprotected-branches: true
+          - theopenlab/envoy:
               exclude-unprotected-branches: true
           - theopenlab/volcano:
               exclude-unprotected-branches: true
@@ -81,14 +82,17 @@
               exclude-unprotected-branches: true 
           - theopenlab/hbase:
               exclude-unprotected-branches: true
+          - theopenlab/spark:
+              exclude-unprotected-branches: true  
+          # The apache projects
           - apache/hbase:
               exclude-unprotected-branches: false
           - apache/hive:
               exclude-unprotected-branches: true
           - apache/hadoop:
               exclude-unprotected-branches: true 
-          - theopenlab/spark:
-              exclude-unprotected-branches: true  
+          - apache/spark:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
