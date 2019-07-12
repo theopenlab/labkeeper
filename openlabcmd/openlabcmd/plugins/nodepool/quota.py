@@ -4,9 +4,11 @@ from openlabcmd.plugins.base import Plugin
 
 
 class QuotaPlugin(Plugin):
-
     ptype = 'nodepool'
     name = 'quota'
+
+    def __init__(self, cloud, config):
+        super(QuotaPlugin, self).__init__(cloud, config)
 
     def check(self):
         self.failed = False

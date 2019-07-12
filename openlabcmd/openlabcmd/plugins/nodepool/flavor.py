@@ -9,6 +9,9 @@ class FlavorPlugin(Plugin):
     ptype = 'nodepool'
     name = 'flavor'
 
+    def __init__(self, cloud, config):
+        super(FlavorPlugin, self).__init__(cloud, config)
+
     def check(self):
         self.failed = False
         self.reasons = []

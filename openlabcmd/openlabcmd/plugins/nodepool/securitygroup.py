@@ -5,9 +5,11 @@ from openlabcmd.plugins.recover import Recover
 
 
 class SecurityGroupPlugin(Plugin):
-
     ptype = 'nodepool'
     name = 'securitygroup'
+
+    def __init__(self, cloud, config):
+        super(SecurityGroupPlugin, self).__init__(cloud, config)
 
     def check(self):
         self.failed = False
