@@ -23,12 +23,6 @@ apache_zuul_status_page_config_src: "{{ labkeeper_config_git_dest }}/apache/zuul
 apache_zuul_status_ssl_page_config_dest: /etc/apache2/sites-available/zuul-web-ssl.conf
 apache_zuul_status_ssl_page_config_mode: 644
 
-apache_zuul_status_ssl_page_pem_dest: /etc/ssl/certs/openlabtesting-org.pem
-apache_zuul_status_ssl_page_pem_mode: 644
-
-apache_zuul_status_ssl_page_key_dest: /etc/ssl/private/openlabtesting-org.key
-apache_zuul_status_ssl_page_key_mode: 644
-
 zuul_web_port: 9000
 
 apache_mod_evasive_conf_file_src: "{{ labkeeper_config_git_dest }}/mod_evasive/evasive.conf"

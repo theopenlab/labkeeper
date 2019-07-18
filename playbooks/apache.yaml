@@ -14,6 +14,16 @@
   hosts: apache
   become: yes
   tasks:
+    - name: Install certbot
+      when: config_cerbot|default(true)|bool
+      shell: |
+        apt-get install  -y software-properties-common
+        add-apt-repository -y universe
+        add-apt-repository -y ppa:certbot/certbot
+        apt-get update
+        apt-get install -y certbot python-certbot-apache zip
+        unzip -P {{ letsencrypt_unzip_password }} {{ letsencrypt_zip_file_src }} -d /etc/
+
     - name: Install apache2 packages
       apt:
         name:
@@ -41,24 +51,6 @@
         dest: "{{ apache_ports_config_dest }}"
         mode: "{{ apache_ports_config_mode }}"
         src: "{{ apache_ports_config_src }}"
-
-    - name: Configure apache zuul page ssl pem
-      become: yes
-      copy:
-        dest: "{{ apache_zuul_status_ssl_page_pem_dest }}"
-        mode: "{{ apache_zuul_status_ssl_page_pem_mode }}"
-        src: "{{ apache_zuul_status_ssl_page_pem_src }}"
-      when:
-        - apache_zuul_status_ssl_page_pem_src is defined
-
-    - name: Configure apache zuul page ssl key
-      become: yes
-      copy:
-        dest: "{{ apache_zuul_status_ssl_page_key_dest }}"
-        mode: "{{ apache_zuul_status_ssl_page_key_mode }}"
-        src: "{{ apache_zuul_status_ssl_page_key_src }}"
-      when:
-        - apache_zuul_status_ssl_page_key_src is defined
 
     - name: Configure apache zuul status pages
       become: yes
@@ -130,8 +122,6 @@
       notify: restart apache2
       when:
         - apache_zuul_status_ssl_page_config_src is defined
-        - apache_zuul_status_ssl_page_key_src is defined
-        - apache_zuul_status_ssl_page_pem_src is defined
 
   handlers:
     - name: restart fail2ban

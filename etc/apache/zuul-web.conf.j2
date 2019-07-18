@@ -15,12 +15,47 @@
   RewriteCond %{REQUEST_URI} !^(/logs/|/icons/)
   RewriteRule ^/(.*)$ http://localhost:9000/$1 [P]
 
-  # <Location "/grafana">
-  #   ProxyPass http://127.0.0.1:3000
-  # </Location>
-  # ProxyPassReverse /grafana http://127.0.0.1:3000
+  <IfModule mod_cache.c>
+    CacheDefaultExpire 5
+    <IfModule mod_mem_cache.c>
+      CacheEnable mem /status.json
+      # 12MByte total cache size.
+      MCacheSize 12288
+      MCacheMaxObjectCount 10
+      MCacheMinObjectSize 1
+      # 8MByte max size per cache entry
+      MCacheMaxObjectSize 8388608
+      MCacheMaxStreamingBuffer 8388608
+    </IfModule>
+    <IfModule mod_cache_disk.c>
+      CacheEnable disk /status.json
+      CacheRoot /var/cache/apache2/mod_cache_disk
+    </IfModule>
+  </IfModule>
+</VirtualHost>
 
-  # ScriptAlias /graphite /usr/share/graphite-web/graphite.wsgi
+<VirtualHost *:80>
+  ServerName logs.openlabtesting.org
+  ServerAdmin root@logs.openlabtesting.org
+
+  LogLevel warn
+  ErrorLog ${APACHE_LOG_DIR}/logserver-web_error.log
+  CustomLog ${APACHE_LOG_DIR}/logserver-web_access.log combined
+
+  RewriteEngine on
+
+  Alias /ircmeetings /home/ubuntu/openlab-ircbot/meetings/
+  <Directory /home/ubuntu/openlab-ircbot/meetings/>
+      <IfVersion >= 2.4>
+          Require all granted
+      </IfVersion>
+      <IfVersion < 2.4>
+          Order deny,allow
+          Allow from all
+      </IfVersion>
+      Options Indexes FollowSymLinks
+      DirectoryIndex index.html index.html.gz
+  </Directory>
 
   Alias /logs /srv/static/logs/
   <Directory /srv/static/logs/>

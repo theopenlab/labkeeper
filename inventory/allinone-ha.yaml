@@ -155,6 +155,8 @@ all:
           hosts: allinone02
           vars:
             apache_service_state: stopped
+      vars:
+        config_cerbot: false
 
     # TODO(bzhaoopenstack): For forbid pollute online ENV, we use a test account
     # to test post issue and change the github app webhook.
