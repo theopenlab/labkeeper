@@ -29,7 +29,7 @@ class OrphanResourcePlugin(Plugin):
 
         self.fip_white_list = self.config.get(
             'check', 'fip_white_list', fallback='').replace(' ', '').split(',')
-        self.resource_timeout = int(self.confg.get(
+        self.resource_timeout = int(self.config.get(
             'check', 'resource_timeout_hour', fallback='24'))
 
     def _is_overtime(self, timestamp):
