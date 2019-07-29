@@ -25,6 +25,9 @@ labels:
   - name: ubuntu-xenial-vexxhost
     min-ready: 4
     max-ready-age: 14400
+  - name: ubuntu-xenial-citynetwork
+    min-ready: 4
+    max-ready-age: 14400
   - name: ubuntu-xenial-huaweicloud
     min-ready: 0
     max-ready-age: 14400
@@ -158,6 +161,9 @@ providers:
           - name: ubuntu-xenial-tf
             diskimage: ubuntu-xenial
             flavor-name: '8C-8GB-100GB'
+          - name: ubuntu-xenial-citynetwork
+            diskimage: ubuntu-xenial
+            flavor-name: '8C-8GB-200GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
