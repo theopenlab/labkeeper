@@ -5,3 +5,4 @@ from openlabcmd.plugins.nodepool import network
 from openlabcmd.plugins.nodepool import flavor
 from openlabcmd.plugins.nodepool import quota
 from openlabcmd.plugins.nodepool import orphanresource
+from openlabcmd.plugins.nodepool import router

@@ -3,6 +3,7 @@ import six
 
 from openlabcmd.plugins.recover import RECOVER_MAPS
 from openlabcmd.utils import _color
+from openlabcmd.plugins import constants
 
 
 
@@ -42,6 +43,7 @@ class Plugin(object):
         self.config = config
         self.failed = False
         self.reasons = []
+        self.special_case_codes = []
 
     def register_signals(self):
         # print("%s has been loaded." % self.__class__.__name__)
@@ -91,7 +93,12 @@ class Plugin(object):
         print("Recover:")
         for r_code in self.reasons:
             if r_code in RECOVER_MAPS:
-                recover_cmd = RECOVER_MAPS[r_code]['recover'] % self.cloud
+                if (r_code in constants.SPECIAL_CASES and
+                        self.special_case_codes):
+                    recover_cmd = self.special_process(
+                        RECOVER_MAPS[r_code]['recover'])
+                else:
+                    recover_cmd = RECOVER_MAPS[r_code]['recover'] % self.cloud
                 ret, res = subprocess.getstatusoutput(recover_cmd)
                 if not ret:
                     self._print_recover_line(True, recover_cmd)
@@ -101,3 +108,6 @@ class Plugin(object):
         print("Recheck:")
         self.check()
         self.check_end(recheck=True)
+
+    def special_process(self, recover_cmd):
+        raise NotImplementedError

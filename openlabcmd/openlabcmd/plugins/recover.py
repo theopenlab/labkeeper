@@ -9,6 +9,9 @@ class Recover(Enum):
     NETWORK = 5
     NETWORK_SUBNET = 6
     NETWORK_SUBNET_CIDR = 7
+    ROUTER = 8
+    ROUTER_SUBNET_INTERFACE = 9
+    ROUTER_EXTERNAL_GW = 10
 
 
 RECOVER_MAPS = {
@@ -44,5 +47,22 @@ RECOVER_MAPS = {
         "recover": "openstack --os-cloud %s subnet create openlab-subnet "
                    "--network openlab-net --subnet-range=192.168.0.0/24",
         "reason": "- Subnet cidr: 192.168.0.0/24 is not found.",
+    },
+    Recover.ROUTER: {
+        "recover": "openstack --os-cloud %s router create openlab-router "
+                   "--ha --enable",
+        "reason": "- Router: openlab-router is not found.",
+    },
+    Recover.ROUTER_SUBNET_INTERFACE: {
+        "recover": "openstack --os-cloud %s router add subnet openlab-router "
+                   "openlab-subnet",
+        "reason": "- Router subnet interface: openlab-subnet doesn't attach "
+                  "on openlab-router.",
+    },
+    Recover.ROUTER_EXTERNAL_GW: {
+        "recover": "openstack --os-cloud %s openstack router set "
+                   "openlab-router --external-gateway %s ",
+        "reason": "- Router external gateway: openlab-subnet doesn't attach "
+                  "on openlab-router.",
     },
 }
