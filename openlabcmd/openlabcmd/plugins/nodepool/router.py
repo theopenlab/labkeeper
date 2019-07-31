@@ -7,6 +7,7 @@ from openlabcmd.plugins.recover import Recover
 class RouterPlugin(Plugin):
     ptype = 'nodepool'
     name = 'router'
+    experimental = True
 
     def __init__(self, cloud, config):
         super(RouterPlugin, self).__init__(cloud, config)
