@@ -1,4 +1,16 @@
 clouds:
+  citynetwork-fra:
+    auth:
+      auth_url: https://fra1.citycloud.com:5000/v3/
+      password: '{{ citynetwork-fra_password }}'
+      project_domain_name: CCP_Domain_32924
+      project_name: Default Project 32924
+      user_domain_name: CCP_Domain_32924
+      username: '{{ citynetwork-fra_username }}'
+    identity_api_version: '3'
+    network_api_version: '2.0'
+    region_name: Fra1
+    volume_api_version: '2'
   citynetwork:
     auth:
       auth_url: https://lon1.citycloud.com:5000/v3/

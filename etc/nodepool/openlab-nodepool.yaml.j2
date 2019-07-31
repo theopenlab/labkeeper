@@ -19,10 +19,19 @@ labels:
   - name: ubuntu-trusty
     min-ready: 2
     max-ready-age: 14400
+  - name: ubuntu-xenial-fra
+    min-ready: 2
+    max-ready-age: 14400
+  - name: ubuntu-trusty-fra
+    min-ready: 2
+    max-ready-age: 14400
   - name: ubuntu-xenial-ut
     min-ready: 3
     max-ready-age: 14400
   - name: ubuntu-xenial-vexxhost
+    min-ready: 4
+    max-ready-age: 14400
+  - name: ubuntu-xenial-citynetwork
     min-ready: 4
     max-ready-age: 14400
   - name: ubuntu-xenial-huaweicloud
@@ -158,6 +167,46 @@ providers:
           - name: ubuntu-xenial-tf
             diskimage: ubuntu-xenial
             flavor-name: '8C-8GB-100GB'
+          - name: ubuntu-xenial-citynetwork
+            diskimage: ubuntu-xenial
+            flavor-name: '8C-8GB-200GB'
+
+  - name: citynetwork-openlab-fra
+    cloud: citynetwork-fra
+    driver: openstack
+    image-name-format: 'openlab-{image_name}-{timestamp}'
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 5
+    diskimages:
+      - name: ubuntu-xenial
+        config-drive: true
+      - name: ubuntu-trusty
+        config-drive: true
+    pools:
+      - name: main
+        max-cores: 88
+        security-groups:
+          - openlab-sg
+        networks:
+          - openlab-net
+        labels:
+          - name: ubuntu-xenial-fra
+            diskimage: ubuntu-xenial
+            flavor-name: '4C-8GB-100GB'
+          - name: ubuntu-trusty-fra
+            diskimage: ubuntu-trusty
+            flavor-name: '4C-8GB-100GB'
+#          - name: ubuntu-xenial-ut
+#            diskimage: ubuntu-xenial
+#            flavor-name: '1C-2GB-50GB'
+#          - name: ubuntu-xenial-tf
+#            diskimage: ubuntu-xenial
+#            flavor-name: '8C-8GB-100GB'
+#          - name: ubuntu-xenial-citynetwork
+#            diskimage: ubuntu-xenial
+#            flavor-name: '8C-8GB-200GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
