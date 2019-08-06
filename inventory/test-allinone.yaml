@@ -47,3 +47,5 @@ all:
       hosts: aio_test
     apache:
       hosts: aio_test
+      vars:
+        config_cerbot: false

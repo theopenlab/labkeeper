@@ -66,3 +66,5 @@ all:
       hosts: allinone
     apache:
       hosts: allinone
+      vars:
+        config_cerbot: false
