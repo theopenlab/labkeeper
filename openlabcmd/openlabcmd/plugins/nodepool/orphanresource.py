@@ -63,9 +63,17 @@ class OrphanResourcePlugin(Plugin):
             return
 
         servers = self.openstack_client.list_servers()
-        real_servers = ([(s['id'], s['name'], s['created']) for s in servers
-                        if s['name'] not in self.vm_white_list]
-                        if servers else [])
+
+        real_servers = []
+        for s in servers:
+            skip = False
+            # if the vm name startswith the name in white list, will skip.
+            for w in self.vm_white_list:
+                if s['name'].startswith(w):
+                    skip = True
+            if not skip:
+                real_servers.append((s['id'], s['name'], s['created']))
+
         orphan_servers = []
         for server in real_servers:
             if server[0] not in mapping[self.cloud+'-openlab']['compute_ids']:
