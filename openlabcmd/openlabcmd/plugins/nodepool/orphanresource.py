@@ -71,6 +71,7 @@ class OrphanResourcePlugin(Plugin):
             for w in self.vm_white_list:
                 if s['name'].startswith(w):
                     skip = True
+                    break
             if not skip:
                 real_servers.append((s['id'], s['name'], s['created']))
 
