@@ -105,6 +105,8 @@ class ZooKeeper(object):
         if not timeout:
             timeout = self.config.get('ha', 'zookeeper_connect_timeout',
                                       fallback=5)
+        retry_limit = self.config.get('ha', 'zookeeper_connect_retry_limit',
+                                      fallback=5)
         try:
             timeout = int(timeout)
         except ValueError:
@@ -119,12 +121,18 @@ class ZooKeeper(object):
                                       read_only=read_only)
             self.client.add_listener(self._connection_listener)
             # Manually retry initial connection attempt
-            while True:
+            tried_times = 0
+            while tried_times < retry_limit:
                 try:
                     self.client.start(1)
                     break
-                except KazooTimeoutError:
+                except Exception:
                     self.logConnectionRetryEvent()
+                tried_times += 1
+                if tried_times == retry_limit:
+                    raise exceptions.ClientError(
+                        "Tried %s times, failed connecting "
+                        "zookeeper." % retry_limit)
 
     def disconnect(self):
         if self.client is not None and self.client.connected:
