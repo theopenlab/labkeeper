@@ -6,6 +6,7 @@ from openlabcmd.plugins.base import Plugin
 class ImagePlugin(Plugin):
     ptype = 'jobs'
     name = 'image'
+    experimental = True
 
     def __init__(self, cloud, config):
         super(ImagePlugin, self).__init__(cloud, config)

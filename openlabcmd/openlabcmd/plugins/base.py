@@ -1,3 +1,4 @@
+import copy
 import subprocess
 import six
 
@@ -42,6 +43,14 @@ class Plugin(object):
         self.config = config
         self.failed = False
         self.reasons = []
+        # {Recover.code: args_list}
+        # The reasons for this:
+        # 1. Different cloud provider owns different external network name
+        # 2. We don't have the priority to change the name.
+        # 3. For the different name, we cannot hard code into GLOBAL
+        # RECOVER_MAPS.
+        # So we introduce this new value to fit this case.
+        self.internal_recover_args_map = {}
 
     def register_signals(self):
         # print("%s has been loaded." % self.__class__.__name__)
@@ -91,7 +100,15 @@ class Plugin(object):
         print("Recover:")
         for r_code in self.reasons:
             if r_code in RECOVER_MAPS:
-                recover_cmd = RECOVER_MAPS[r_code]['recover'] % self.cloud
+                recover_args = copy.deepcopy(
+                    RECOVER_MAPS[r_code]['recover_args'])
+                recover_args.insert(0, self.cloud)
+                if (self.internal_recover_args_map and
+                        self.internal_recover_args_map.get(r_code)):
+                    recover_args.extend(
+                        self.internal_recover_args_map[r_code])
+                recover_cmd = RECOVER_MAPS[r_code]['recover'].format(
+                    *recover_args)
                 ret, res = subprocess.getstatusoutput(recover_cmd)
                 if not ret:
                     self._print_recover_line(True, recover_cmd)
