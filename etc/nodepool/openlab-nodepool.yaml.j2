@@ -22,8 +22,8 @@ labels:
   - name: ubuntu-xenial-ut
     min-ready: 3
     max-ready-age: 14400
-  - name: ubuntu-xenial-vexxhost
-    min-ready: 4
+  - name: ubuntu-xenial-vexxhost-lb
+    min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-citynetwork
     min-ready: 4
@@ -32,7 +32,7 @@ labels:
     min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-arm64
-    min-ready: 1
+    min-ready: 4
     max-ready-age: 14400
   - name: ubuntu-xenial-gpu
     min-ready: 0
@@ -53,7 +53,7 @@ providers:
     max-concurrency: 5
     cloud-images:
       - name: ubuntu-xenial-arm64
-        image-name: openlab-ubuntu-xenial-arm64-bazel-0.28.1
+        image-name: openlab-ubuntu-xenial-arm64-bazel-0.28.1+0.24.1
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
@@ -69,26 +69,26 @@ providers:
         security-groups:
           - openlab-sg
         labels:
-          - name: ubuntu-xenial-vexxhost
+          - name: ubuntu-xenial-vexxhost-lb
             diskimage: ubuntu-xenial
             # 8C-8G-200G
             flavor-name: 'v1-standard-8'
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 8C-8G-200G
-            flavor-name: 'v1-standard-8'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 8C-8G-200G
-            flavor-name: 'v1-standard-8'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 2C-2G-0G
-            flavor-name: 'v2-highcpu-2'
+#          - name: ubuntu-xenial
+#            diskimage: ubuntu-xenial
+#            # 8C-8G-200G
+#            flavor-name: 'v1-standard-8'
+#          - name: ubuntu-trusty
+#            diskimage: ubuntu-trusty
+#            # 8C-8G-200G
+#            flavor-name: 'v1-standard-8'
+#          - name: ubuntu-xenial-ut
+#            diskimage: ubuntu-xenial
+#            # 2C-2G-0G
+#            flavor-name: 'v2-highcpu-2'
           - name: ubuntu-xenial-arm64
             cloud-image: ubuntu-xenial-arm64
-            # 8C-8G-80G NOTE: have to use v2 flavor to boot ARM instance
-            flavor-name: 'v2-highcpu-8'
+            # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
+            flavor-name: 'v2-highcpu-16'
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
