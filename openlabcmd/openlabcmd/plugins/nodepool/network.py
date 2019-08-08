@@ -81,6 +81,6 @@ class NetworkPlugin(Plugin):
         if ret != 0:
             self.failed = True
             self.reasons.append(Recover.ROUTER_EXTERNAL_GW)
-            Recover.RECOVER_MAPS[Recover.ROUTER_EXTERNAL_GW][
-                'recover_args'].append(ext_net_id)
+            self.internal_recover_args_map[Recover.ROUTER_EXTERNAL_GW] = [
+                ext_net_id]
             return

@@ -69,7 +69,7 @@ RECOVER_MAPS = {
         "recover_args": [],
     },
     Recover.ROUTER_EXTERNAL_GW: {
-        "recover": "openstack --os-cloud {} openstack router set "
+        "recover": "openstack --os-cloud {} router set "
                    "openlab-router --external-gateway {} ",
         "reason": "- Router external gateway: openlab-router doesn't connect "
                   "external network.",
