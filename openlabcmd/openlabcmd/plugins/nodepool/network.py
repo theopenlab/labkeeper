@@ -78,7 +78,11 @@ class NetworkPlugin(Plugin):
         if ret != 0:
             self.failed = True
             self.reasons.append(Recover.ROUTER_SUBNET_INTERFACE)
-            if ext_net_id not in res:
+            router_ext_check = 'openstack --os-cloud %s router show ' \
+                               'openlab-router | grep %s' % (
+                                self.cloud, ext_net_id)
+            re_ret, re_res = subprocess.getstatusoutput(router_ext_check)
+            if re_ret != 0:
                 self.reasons.append(Recover.ROUTER_EXTERNAL_GW)
                 self.internal_recover_args_map[Recover.ROUTER_EXTERNAL_GW] = [
                     ext_net_id]
