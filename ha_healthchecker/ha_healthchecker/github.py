@@ -106,9 +106,7 @@ class GithubAction(object):
             issuer_node, issue_type, affect_node=affect_node,
             affect_services=affect_services)
         self.repo.create_issue(
-            title=title % (
-                datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
-            body=body)
+            title=title, body=body)
 
     def _get_login_page_authenticity_token(self, session):
         login_page = session.get('https://github.com/login')
