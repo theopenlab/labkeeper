@@ -39,15 +39,29 @@ class NetworkPlugin(Plugin):
             self.reasons.append(Recover.NETWORK_SUBNET)
             return
 
-        net = 'openstack --os-cloud %s router show openlab-router' % self.cloud
-        ret, res = subprocess.getstatusoutput(net)
+        external_net = 'openstack --os-cloud %s network list --external ' \
+                       '-f value -c ID' % self.cloud
+        ret, res = subprocess.getstatusoutput(external_net)
         if ret != 0:
             self.failed = True
-            if "More than one Openlab router exists" in res:
+            self.reasons.append('Failed to get a external network.')
+            return
+
+        ext_net_id = res
+
+        router = 'openstack --os-cloud %s router show ' \
+                 'openlab-router' % self.cloud
+        ret, res = subprocess.getstatusoutput(router)
+        if ret != 0:
+            self.failed = True
+            if "More than one Router exists" in res:
                 self.reasons.append(res)
             else:
                 self.reasons.append(Recover.ROUTER)
                 self.reasons.append(Recover.ROUTER_SUBNET_INTERFACE)
+                self.reasons.append(Recover.ROUTER_EXTERNAL_GW)
+                self.internal_recover_args_map[Recover.ROUTER_EXTERNAL_GW] = [
+                    ext_net_id]
             return
 
         subnet_id = 'openstack --os-cloud %s subnet show openlab-subnet -f ' \
@@ -64,17 +78,12 @@ class NetworkPlugin(Plugin):
         if ret != 0:
             self.failed = True
             self.reasons.append(Recover.ROUTER_SUBNET_INTERFACE)
+            if ext_net_id not in res:
+                self.reasons.append(Recover.ROUTER_EXTERNAL_GW)
+                self.internal_recover_args_map[Recover.ROUTER_EXTERNAL_GW] = [
+                    ext_net_id]
             return
 
-        external_net = 'openstack --os-cloud %s network list --external ' \
-                       '-f value -c ID' % self.cloud
-        ret, res = subprocess.getstatusoutput(external_net)
-        if ret != 0:
-            self.failed = True
-            self.reasons.append('Failed to get a external network.')
-            return
-
-        ext_net_id = res
         router_gw = 'openstack --os-cloud %s router show ' \
                     'openlab-router | grep %s' % (self.cloud, res)
         ret, res = subprocess.getstatusoutput(router_gw)
