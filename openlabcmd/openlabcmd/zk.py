@@ -130,6 +130,7 @@ class ZooKeeper(object):
                     self.logConnectionRetryEvent()
                 tried_times += 1
                 if tried_times == retry_limit:
+                    self.client = None
                     raise exceptions.ClientError(
                         "Tried %s times, failed connecting "
                         "zookeeper." % retry_limit)
