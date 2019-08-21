@@ -57,4 +57,15 @@ clouds:
     network_api_version: '2.0'
     region_name: ap-southeast-1
     volume_api_version: '2'
-
+  linaro:
+    auth:
+      auth_url: https://uk.linaro.cloud:5000/v3
+      password: '{{ linaro_password }}'
+      project_domain_name: Default
+      project_name: openlab-testing
+      user_domain_name: Default
+      username: '{{ linaro_username }}'
+    identity_api_version: '3'
+    network_api_version: '2.0'
+    region_name: London
+    volume_api_version: '2'

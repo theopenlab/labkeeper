@@ -41,6 +41,31 @@ labels:
     min-ready: 0
 
 providers:
+  # Linaro
+  # limits: -1 vms, 128 Core, 132000 M Ram
+  - name: linaro-openlab
+    cloud: linaro
+    driver: openstack
+    launch-timeout: 900
+    boot-timeout: 600
+    max-concurrency: 10
+    cloud-images:
+      - name: ubuntu-xenial-arm64
+        image-name: 6e49d02c-b158-4dad-8f3b-a2d85b839b5f
+    pools:
+      - name: ubuntu-xenial-linaro
+        max-ram: 163840
+        networks:
+          - openlab-net
+        security-groups:
+          - openlab-sg
+        labels:
+          - name: ubuntu-xenial-arm64
+            pause: true
+            cloud-image: ubuntu-xenial-arm64
+            # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
+            flavor-name: 'siddhesh.large'
+
   #VEXXHOST
   # limits: -1 vms, -1 Cores, 163840 M Ram
   - name: vexxhost-openlab
