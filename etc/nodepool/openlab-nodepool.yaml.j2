@@ -90,6 +90,32 @@ providers:
             # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
             flavor-name: 'v2-highcpu-16'
 
+  #LinaroCloud
+  # limits: 10 vms, 128 Cores, 132000 M Ram
+  # For flavor limits, linaro can only create 8 vms at most.
+  # But there is a internal test ARM instance in allinone, so there will be 7 ARM instances providered by linaro for online env.
+  - name: linaro-openlab
+    cloud: linaro
+    driver: openstack
+    launch-timeout: 1200
+    boot-timeout: 1200
+    max-concurrency: 10
+    cloud-images:
+      - name: ubuntu-xenial-arm64
+        image-name: 8baccba3-fa02-45e4-bf49-328763e5671e
+    pools:
+      - name: ubuntu-xenial-linaro
+        max-ram: 163840
+        networks:
+          - openlab-net
+        security-groups:
+          - openlab-sg
+        labels:
+          - name: ubuntu-xenial-arm64
+            cloud-image: ubuntu-xenial-arm64
+            # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
+            flavor-name: 'openlab.medium' #'m1.large.4C8G' #'siddhesh.large'
+
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
   - name: chameleon-openlab
