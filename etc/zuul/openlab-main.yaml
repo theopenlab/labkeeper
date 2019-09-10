@@ -64,6 +64,8 @@
               exclude-unprotected-branches: false
           - envoyproxy/envoy:
               exclude-unprotected-branches: true
+          - virtual-kubelet/openstack-zun:
+              exclude-unprotected-branches: true
           # The AI projects
           - moo-ai/moo-ai.github.io:
               exclude-unprotected-branches: true
