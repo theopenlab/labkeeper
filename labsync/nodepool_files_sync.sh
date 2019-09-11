@@ -56,6 +56,18 @@ do
     echo "$key: `cat  $secrets_file | shyaml get-value $key | ansible-vault decrypt`" >> old_secrets_decrypted.yaml
 done
 
+do_clean_up()
+{
+  ERROR_CODE="$?"
+  echo "Cleaning up temporary files before exiting, the exit code is ${ERROR_CODE}..."
+  rm -f old_secrets_decrypted.yaml vault-password.txt nodepool_temp.yaml secrets_temp.yaml clouds_temp.yaml
+  hub checkout master
+  hub branch -D ${branch_name}
+  echo "Cleaning up done."
+  exit ${ERROR_CODE}
+}
+trap "do_clean_up" EXIT
+
 python /home/ubuntu/modify_files.py
 
 # delete the lines from 'labels:' to end for template
@@ -65,10 +77,6 @@ sed -n '/^labels/,$p' nodepool_temp.yaml >> $nodepool_file
 
 mv clouds_temp.yaml $clouds_file
 mv secrets_temp.yaml $secrets_file
-# rm the temp files
-rm old_secrets_decrypted.yaml
-rm vault-password.txt
-rm nodepool_temp.yaml
 
 if [[ `hub status |grep modified` ]];then
     hub add $clouds_file
@@ -83,6 +91,3 @@ if [[ `hub status |grep modified` ]];then
     hub pull-request -m "${message}"
     echo "Create pull request to theopenlab/labkeeper success!"
 fi
-
-hub checkout master
-hub branch -D ${branch_name}
