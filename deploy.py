@@ -112,9 +112,15 @@ def main():
         list_changes('zuul/zuul', 31)
         list_changes('zuul/nodepool', 31)
     elif parsed_args.action == 'upgrade':
+        if parsed_args.type != 'openlab-ha':
+            print("upgrade action only support openlab-ha deployment.")
+            exit(1)
         cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
                'playbooks/upgrade-ha-deployment.yaml']
     elif parsed_args.action == 'upgrade-complete':
+        if parsed_args.type != 'openlab-ha':
+            print("upgrade-complete action only support openlab-ha deployment.")
+            exit(1)
         cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
                'playbooks/upgrade-complete-ha-deployment.yaml']
 
