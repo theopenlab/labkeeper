@@ -9,6 +9,7 @@
         openlab ha node set `hostname` --maintain yes
         cd /opt/src/nodepool
         git pull
+        pip3 install -r requirements.txt
       args:
         executable: /bin/bash
 
@@ -33,6 +34,7 @@
         openlab ha node set `hostname` --maintain yes
         cd /opt/src/zuul
         git pull
+        pip3 install -r requirements.txt
         cd web/
         yarn install
         sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
