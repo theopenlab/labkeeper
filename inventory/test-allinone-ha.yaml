@@ -94,6 +94,7 @@ all:
       vars:
         github_app_id: 0000
         github_webhook_token: "test"
+        smtp_password: "test"
         zuul_tenant_name: aio_test
         zuul_public_ip: ""
         config_host_ecdsa_key: false
