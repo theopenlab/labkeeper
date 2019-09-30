@@ -67,3 +67,11 @@ baseurl=https://opendev.org/
 [connection mysql]
 driver=sql
 dburi=mysql+pymysql://zuul:zuul@127.0.0.1/zuul
+
+[connection smtp]
+driver=smtp
+server=smtp.gmail.com
+port=587
+user=info@openlabtesting.org
+password={{ smtp_password }}
+use_starttls=true
