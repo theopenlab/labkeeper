@@ -99,6 +99,8 @@
               exclude-unprotected-branches: true
           - apache/flink:
               exclude-unprotected-branches: true
+          - apache/servicecomb-service-center:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
