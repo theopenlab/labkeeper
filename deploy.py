@@ -97,7 +97,7 @@ def main():
                'playbooks/site.yaml', '-l', '*-slave']
     elif parsed_args.action == 'new-zookeeper':
         cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
-               'playbooks/site.yaml', '-l', 'zk-03']
+               'playbooks/conf-new-zookeeper.yaml']
     elif parsed_args.action == 'switch-role':
         os.environ['OL_SWITCH_MASTER_SLAVE'] = True
         cmd = ['ansible-playbook', '-i', 'inventory/inventory.py',
@@ -143,13 +143,11 @@ def main():
         print('Ansible command:\n%s' % ' '.join(cmd))
         print("*" * 100)
         subprocess.call(cmd)
-
+        if parsed_args.action == 'new-slave':
+            print("Don't forget to restart zuul and nodepool by hand.")
     if parsed_args.action == 'new-slave':
         subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
                          'playbooks/conf-cluster.yaml'])
-    elif parsed_args.action == 'new-zookeeper':
-        subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',
-                         'playbooks/conf-new-zookeeper.yaml'])
 
 
 if __name__ == '__main__':
