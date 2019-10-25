@@ -11,16 +11,43 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
-
-- name: Config zookeeper for HA deployment
+- name: Install zookeeper
   become: yes
-  hosts: zk-master, zk-slave, zk-03
+  hosts: zk-03
   tasks:
+    - name: Setup openstack.zookeeper role
+      include_role:
+        name: openstack.zookeeper
+
+    - name: Force to enable nodepool services
+      shell: |
+        set -xe
+        systemctl enable zookeeper.service || true
+      args:
+        executable: /bin/bash
+
     - name: Config zookeeper myid
       shell: echo {{ zk_myid }} > /var/lib/zookeeper/myid
       args:
         executable: /bin/bash
 
+    - name: Install openlabcmd
+      pip:
+        name: openlabcmd
+        executable: pip3
+
+    - name: Ensures openlabcmd config dir exists
+      file: path=/etc/openlab state=directory
+
+    - name: Config openlabcmd
+      template:
+        src: "{{ labkeeper_config_git_dest }}/openlabcmd/openlab.conf.j2"
+        dest: /etc/openlab/openlab.conf
+
+- name: Config zookeeper for HA deployment
+  become: yes
+  hosts: zk-master, zk-slave, zk-03
+  tasks:
     - name: Get local interface IP for binding zookeeper
       shell: ip route | grep default | sed -nr 's/.*dev ([^\ ]+).*/\1/p' | xargs ifconfig | grep "inet addr" | sed -nr 's/\s*inet addr:(([0-9]+\.){3}[0-9]+)\s+(.*)/\1/p'
       register: local_zk_ip
@@ -58,6 +85,23 @@
     - name: Restart zookeeper services
       service: name=zookeeper state=restarted
 
+- name: Init HA node
+  become: yes
+  hosts: zk-03
+  tasks:
+    - name: Init HA node
+      shell: |
+        for node in `openlab ha node list --role '{{ node_role }}' --type  '{{ node_type }}' | awk '{print $2}' | grep -`; do
+          openlab ha node delete $node
+        done
+
+        openlab ha node init --role '{{ node_role }}' --type  '{{ node_type }}' \
+        --ip '{{ hostvars[inventory_hostname]['ansible_host'] }}' $(hostname)
+
+        openlab ha node set $(hostname) --maintain yes
+      args:
+        executable: /bin/bash
+
 - name: Update zookeeper config for zuul
   become: yes
   hosts: nodepool-builder-master, nodepool-builder-slave
@@ -85,7 +129,7 @@
 
 - name: Update zookeeper config for openlabcmd
   become: yes
-  hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave, zk03
+  hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave
   tasks:
     - name: modify openlab.conf to use new zookeeper servers
       ini_file:
