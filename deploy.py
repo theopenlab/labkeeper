@@ -143,7 +143,8 @@ def main():
         print('Ansible command:\n%s' % ' '.join(cmd))
         print("*" * 100)
         subprocess.call(cmd)
-        if parsed_args.action == 'new-slave':
+        if (parsed_args.action == 'new-slave' or
+                parsed_args.action == 'new-zookeeper'):
             print("Don't forget to restart zuul and nodepool by hand.")
     if parsed_args.action == 'new-slave':
         subprocess.call(['ansible-playbook', '-i', 'inventory/inventory.py',

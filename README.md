@@ -40,7 +40,7 @@ modified for specific [OpenLab](https://github.com/theopenlab) CI system deploym
       you can run following command to deploy a new *slave* part of a OpenLab environment:
 
      ```bash
-     $ ./deploy.py openlab-ha --new-slave --new-ip zuul02=192.168.5.5 --new-ip nodepool02=192.168.6.6
+     $ ./deploy.py openlab-ha --action new-slave --new-ip zuul02=192.168.5.5 --new-ip nodepool02=192.168.6.6
      ```
 
 2. Check and modify the configuration yaml files base one the mode you choose.

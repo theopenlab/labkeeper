@@ -11,6 +11,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 ---
+- import_playbook: bastion.yaml
+
 - name: Install zookeeper
   become: yes
   hosts: zk-03
@@ -85,11 +87,11 @@
     - name: Restart zookeeper services
       service: name=zookeeper state=restarted
 
-- name: Init HA node
+- name: Config zookeeper node
   become: yes
   hosts: zk-03
   tasks:
-    - name: Init HA node
+    - name: Init zookeeper node
       shell: |
         for node in `openlab ha node list --role '{{ node_role }}' --type  '{{ node_type }}' | awk '{print $2}' | grep -`; do
           openlab ha node delete $node
@@ -101,6 +103,48 @@
         openlab ha node set $(hostname) --maintain yes
       args:
         executable: /bin/bash
+
+    - name: New a ha_healthchecker directory
+      file:
+        path: /etc/openlab/ha_healthchecker/
+        mode: 0755
+        state: directory
+
+    - name: Copy ha_healthchecker file
+      copy:
+        src: "{{ labkeeper_src_dir }}/ha_healthchecker"
+        dest: /opt/
+        mode: 0755
+
+    - name: Init git
+      shell: |
+        set -xe
+        cd /opt/ha_healthchecker
+        git init
+      args:
+        executable: /bin/bash
+
+    - name: Install ha_healthchecker
+      pip:
+        name: file:///opt/ha_healthchecker/
+        executable: pip3
+
+    - name: Config ha_healthchecker
+      copy:
+        src: "{{ labkeeper_config_git_dest }}/ha_healthchecker/ha_healthchecker.service"
+        dest: /etc/systemd/system/ha_healthchecker.service
+        mode: 0755
+
+    # As systemd ansible module bugs not fix #36585 and #48786
+    - name: Enable ha_healthchecker
+      shell: |
+        set -xe
+        systemctl enable ha_healthchecker.service
+      args:
+        executable: /bin/bash
+
+    - name: Start ha_healthchecker
+      service: name=ha_healthchecker state=started
 
 - name: Update zookeeper config for zuul
   become: yes
