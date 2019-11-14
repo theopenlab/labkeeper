@@ -36,6 +36,8 @@ labels:
     max-ready-age: 14400
   - name: ubuntu-xenial-tf
     min-ready: 0
+  - name: flink-static-unit-test
+  - name: aws-static-node
 
 providers:
   #LinaroCloud
@@ -233,6 +235,25 @@ providers:
             boot-from-volume: true
             volume-size: 100
 
+  - name: flink-static-unit-test
+    driver: static
+    pools:
+      - name: main
+        nodes:
+          - name: 121.36.14.146
+            labels: flink-static-unit-test
+            host-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIErqJLGIBWBkcMYxlLHkze9E6r1kGKUra/FzuzyKlTii"
+            username: zuul
+
+  - name: aws-static-node
+    driver: static
+    pools:
+      - name: main
+        nodes:
+          - name: 54.65.178.82
+            labels: aws-static-node
+            host-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJPZkWCQOqVx7pvD00ZBGLAyqePyIhHL4C1iJotb5m2S"
+            username: zuul
 diskimages:
   - name: ubuntu-xenial
     rebuild-age: 172800 # 2 days
