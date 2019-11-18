@@ -37,7 +37,7 @@ labels:
   - name: ubuntu-xenial-tf
     min-ready: 0
   - name: flink-static-unit-test
-  - name: aws-static-node
+  - name: flink-static-e2e-test
 
 providers:
   #LinaroCloud
@@ -245,14 +245,14 @@ providers:
             host-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIErqJLGIBWBkcMYxlLHkze9E6r1kGKUra/FzuzyKlTii"
             username: zuul
 
-  - name: aws-static-node
+  - name: flink-static-e2e-test
     driver: static
     pools:
       - name: main
         nodes:
-          - name: 54.65.178.82
-            labels: aws-static-node
-            host-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJPZkWCQOqVx7pvD00ZBGLAyqePyIhHL4C1iJotb5m2S"
+          - name: 121.36.11.16
+            labels: flink-static-e2e-test
+            host-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOUaqwosQBTmf6WW60ocz+G6EyQjWzXR5efeyzQpe98f"
             username: zuul
 diskimages:
   - name: ubuntu-xenial
