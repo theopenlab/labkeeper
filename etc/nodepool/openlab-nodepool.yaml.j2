@@ -31,6 +31,9 @@ labels:
   - name: ubuntu-xenial-arm64
     min-ready: 5
     max-ready-age: 14400
+  - name: ubuntu-xenial-arm64-huaweicloud
+    min-ready: 0
+    max-ready-age: 14400
   - name: ubuntu-xenial-gpu
     min-ready: 0
     max-ready-age: 14400
@@ -65,6 +68,28 @@ providers:
             cloud-image: ubuntu-xenial-arm64
             # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
             flavor-name: 'openlab.medium' #'m1.large.4C8G' #'siddhesh.large'
+
+  - name: huaweicloud-arm
+    cloud: huaweicloud-arm
+    driver: openstack
+    launch-timeout: 1200
+    boot-timeout: 1200
+    max-concurrency: 10
+    cloud-images:
+      - name: ubuntu-1604
+        image-name: 9be00d3f-248c-4dd0-b0da-8cf564cfd412
+    pools:
+      - name: ubuntu-xenial-huaweicloud-arm
+        max-ram: 163840
+        networks:
+          - 114ad5b6-3825-4ddb-860d-8d1299522af7
+        security-groups:
+          - openlab-sg
+        labels:
+          - name: ubuntu-xenial-arm64-huaweicloud
+            cloud-image: ubuntu-1604
+            # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
+            flavor-name: 'kc1.xlarge.2' #'m1.large.4C8G' #'siddhesh.large'
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
