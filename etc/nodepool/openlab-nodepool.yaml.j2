@@ -32,7 +32,7 @@ labels:
     min-ready: 5
     max-ready-age: 14400
   - name: ubuntu-xenial-arm64-huaweicloud
-    min-ready: 4
+    min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-gpu
     min-ready: 0
@@ -78,6 +78,8 @@ providers:
         image-name: 9be00d3f-248c-4dd0-b0da-8cf564cfd412
     pools:
       - name: ubuntu-xenial-huaweicloud-arm
+        availability-zones:
+          - ap-southeast-3b
         networks:
           - openlab-net
         security-groups:
