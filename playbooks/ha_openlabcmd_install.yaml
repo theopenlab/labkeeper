@@ -3,6 +3,9 @@
   hosts: nodepool-master, nodepool-slave, zuul-master, zuul-slave, zk03
   become: yes
   tasks:
+    - name: Install requirements
+      shell: apt install -y libffi-dev python-dev libevent-dev libssl-dev
+
     - name: Install openlabcmd
       pip:
         name: openlabcmd
