@@ -14,7 +14,10 @@ zookeeper-servers:
 
 labels:
   - name: ubuntu-xenial
-    min-ready: 15
+    min-ready: 10
+    max-ready-age: 14400
+  - name: ubuntu-bionic
+    min-ready: 5
     max-ready-age: 14400
   - name: ubuntu-trusty
     min-ready: 1
@@ -56,7 +59,7 @@ providers:
         image-name: 8baccba3-fa02-45e4-bf49-328763e5671e
     pools:
       - name: ubuntu-xenial-linaro
-        max-ram: 163840
+        max-ram: 81920
         networks:
           - openlab-net
         security-groups:
@@ -65,7 +68,7 @@ providers:
           - name: ubuntu-xenial-arm64
             cloud-image: ubuntu-xenial-arm64
             # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
-            flavor-name: 'openlab.medium' #'m1.large.4C8G' #'siddhesh.large'
+            flavor-name: 'openlab.medium'
 
   - name: huaweicloud-arm
     cloud: huaweicloud-arm
@@ -92,39 +95,46 @@ providers:
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
-#  - name: chameleon-openlab
-#    cloud: chameleon
-#    driver: openstack
-#    image-name-format: 'openlab-{image_name}-{timestamp}'
-#    launch-timeout: 300
-#    launch-retries: 1
-#    boot-timeout: 60
-#    max-concurrency: 1
-#    diskimages:
-#      - name: ubuntu-xenial
-#        config-drive: true
-#      - name: ubuntu-trusty
-#        config-drive: true
-#    pools:
-#      - name: main
-#        max-ram: 80000
-#        security-groups:
-#          - openlab-sg
-#        networks:
-#          - openlab-net
-#        labels:
-#          - name: ubuntu-xenial
-#            diskimage: ubuntu-xenial
-#            # 4C-8G-80G
-#            flavor-name: 'm1.large'
-#          - name: ubuntu-trusty
-#            diskimage: ubuntu-trusty
-#            # 4C-8G-80G
-#            flavor-name: 'm1.large'
-#          - name: ubuntu-xenial-ut
-#            diskimage: ubuntu-xenial
-#            # 1C-2G-20G
-#            flavor-name: 'm1.small'
+  - name: chameleon-openlab
+    cloud: chameleon
+    driver: openstack
+    image-name-format: 'openlab-{image_name}-{timestamp}'
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 1
+    diskimages:
+      - name: ubuntu-xenial
+        config-drive: true
+      - name: ubuntu-trusty
+        config-drive: true
+      - name: ubuntu-bionic
+        config-drive: true
+    pools:
+      - name: main
+        max-ram: 80000
+        security-groups:
+          - openlab-sg
+        networks:
+          - openlab-net
+        labels:
+          - name: ubuntu-xenial
+            diskimage: ubuntu-xenial
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
+          - name: ubuntu-trusty
+            diskimage: ubuntu-trusty
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            # 1C-2G-20G
+            flavor-name: 'm1.small'
+          - name: ubuntu-bionic
+            diskimage: ubuntu-bionic
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
+
 
   #CityNetwork
   # limits: 50 vms, 100 Cores, 256000 M Ram
@@ -140,6 +150,8 @@ providers:
       - name: ubuntu-xenial
         config-drive: true
       - name: ubuntu-trusty
+        config-drive: true
+      - name: ubuntu-bionic
         config-drive: true
     pools:
       - name: main
@@ -164,6 +176,9 @@ providers:
           - name: ubuntu-xenial-citynetwork
             diskimage: ubuntu-xenial
             flavor-name: '8C-8GB-200GB'
+          - name: ubuntu-bionic
+            diskimage: ubuntu-bionic
+            flavor-name: '4C-8GB-100GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
@@ -179,6 +194,8 @@ providers:
       - name: ubuntu-xenial
         config-drive: true
       - name: ubuntu-trusty
+        config-drive: true
+      - name: ubuntu-bionic
         config-drive: true
     pools:
       - name: main
@@ -200,6 +217,10 @@ providers:
             diskimage: ubuntu-xenial
             # 1C-2G-20G
             flavor-name: 'm1.small'
+          - name: ubuntu-bionic
+            diskimage: ubuntu-bionic
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
 
   #Huaweicloud
   # limits: 500 vms, 4000 Cores, 8192000 M Ram
@@ -260,6 +281,34 @@ providers:
             volume-size: 100
 
 diskimages:
+  - name: ubuntu-bionic
+    rebuild-age: 172800 # 2 days
+    pause: true
+    elements:
+      - ubuntu
+      - vm
+      - simple-init
+      - nodepool-base
+      - cache-devstack
+      - initialize-urandom
+      - growroot
+      - infra-package-needs
+    release: bionic
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_GRUB_TIMEOUT: '0'
+      DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
+      DIB_DEV_USER_PWDLESS_SUDO: '1'
+      DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
+      GIT_HTTP_LOW_SPEED_TIME: '300'
+      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
+      ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
+
   - name: ubuntu-xenial
     rebuild-age: 172800 # 2 days
     pause: true
