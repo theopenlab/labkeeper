@@ -95,45 +95,45 @@ providers:
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
-  - name: chameleon-openlab
-    cloud: chameleon
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 1
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-      - name: ubuntu-trusty
-        config-drive: true
-      - name: ubuntu-bionic
-        config-drive: true
-    pools:
-      - name: main
-        max-ram: 80000
-        security-groups:
-          - openlab-sg
-        networks:
-          - openlab-net
-        labels:
-          - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 1C-2G-20G
-            flavor-name: 'm1.small'
-          - name: ubuntu-bionic
-            diskimage: ubuntu-bionic
-            # 4C-8G-80G
-            flavor-name: 'm1.large'
+#  - name: chameleon-openlab
+#    cloud: chameleon
+#    driver: openstack
+#    image-name-format: 'openlab-{image_name}-{timestamp}'
+#    launch-timeout: 300
+#    launch-retries: 1
+#    boot-timeout: 60
+#    max-concurrency: 1
+#    diskimages:
+#      - name: ubuntu-xenial
+#        config-drive: true
+#      - name: ubuntu-trusty
+#        config-drive: true
+#      - name: ubuntu-bionic
+#        config-drive: true
+#    pools:
+#      - name: main
+#        max-ram: 80000
+#        security-groups:
+#          - openlab-sg
+#        networks:
+#          - openlab-net
+#        labels:
+#          - name: ubuntu-xenial
+#            diskimage: ubuntu-xenial
+#            # 4C-8G-80G
+#            flavor-name: 'm1.large'
+#          - name: ubuntu-trusty
+#            diskimage: ubuntu-trusty
+#            # 4C-8G-80G
+#            flavor-name: 'm1.large'
+#          - name: ubuntu-xenial-ut
+#            diskimage: ubuntu-xenial
+#            # 1C-2G-20G
+#            flavor-name: 'm1.small'
+#          - name: ubuntu-bionic
+#            diskimage: ubuntu-bionic
+#            # 4C-8G-80G
+#            flavor-name: 'm1.large'
 
 
   #CityNetwork
