@@ -27,6 +27,10 @@
               exclude-unprotected-branches: true
           - dtantsur/rust-openstack:
               exclude-unprotected-branches: false
+          - dtantsur/rust-osproto:
+              exclude-unprotected-branches: false
+          - dtantsur/rust-osauth:
+              exclude-unprotected-branches: false
           - huaweicloud/huaweicloud-service-broker:
               exclude-unprotected-branches: true
           - manageiq/manageiq-providers-openstack:
