@@ -41,8 +41,8 @@
               exclude-unprotected-branches: false
           - docker/machine:
               exclude-unprotected-branches: true
-          - hashicorp/packer:
-              exclude-unprotected-branches: true
+#          - hashicorp/packer:
+#              exclude-unprotected-branches: true
           - ansible/ansible:
               exclude-unprotected-branches: true
           - openservicebrokerapi/osb-checker:
