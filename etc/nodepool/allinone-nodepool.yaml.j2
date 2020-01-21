@@ -17,8 +17,6 @@ labels:
     min-ready: 0
   - name: ubuntu-xenial-gpu
     min-ready: 0
-  - name: ubuntu-trusty
-    min-ready: 0
 
 providers:
   #CityNetwork
@@ -33,8 +31,6 @@ providers:
     diskimages:
       - name: ubuntu-xenial
         config-drive: true
-      - name: ubuntu-trusty
-        config-drive: true
     pools:
       - name: ubuntu-xenial
         max-cores: 12
@@ -43,9 +39,6 @@ providers:
         labels:
           - name: ubuntu-xenial
             diskimage: ubuntu-xenial
-            flavor-name: '4C-8GB-100GB'
-          - name: ubuntu-trusty
-            diskimage: ubuntu-trusty
             flavor-name: '4C-8GB-100GB'
 
 diskimages:
@@ -61,32 +54,6 @@ diskimages:
       - growroot
       - infra-package-needs
     release: xenial
-    env-vars:
-      TMPDIR: /opt/dib_tmp
-      DIB_CHECKSUM: '1'
-      DIB_IMAGE_CACHE: /opt/dib_cache
-      DIB_APT_LOCAL_CACHE: '0'
-      DIB_DISABLE_APT_CLEANUP: '1'
-      DIB_GRUB_TIMEOUT: '0'
-      DIB_DEBIAN_COMPONENTS: 'main,universe'
-      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
-      DIB_DEV_USER_PWDLESS_SUDO: '1'
-      DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
-      GIT_HTTP_LOW_SPEED_TIME: '300'
-      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
-      ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
-
-  - name: ubuntu-trusty
-    pause: true
-    elements:
-      - ubuntu
-      - vm
-      - simple-init
-      - nodepool-base
-      - cache-devstack
-      - growroot
-      - infra-package-needs
-    release: trusty
     env-vars:
       TMPDIR: /opt/dib_tmp
       DIB_CHECKSUM: '1'
