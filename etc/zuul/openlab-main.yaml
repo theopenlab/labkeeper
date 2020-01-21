@@ -86,20 +86,10 @@
               exclude-unprotected-branches: true
           - theopenlab/flink:
               exclude-unprotected-branches: true 
-          - theopenlab/hbase:
-              exclude-unprotected-branches: true
-          - theopenlab/spark:
-              exclude-unprotected-branches: true  
           - theopenlab/frocksdb:
               exclude-unprotected-branches: true
           # The apache projects
-          - apache/hbase:
-              exclude-unprotected-branches: false
           - apache/hive:
-              exclude-unprotected-branches: true
-          - apache/hadoop:
-              exclude-unprotected-branches: true 
-          - apache/spark:
               exclude-unprotected-branches: true
           - apache/flink:
               exclude-unprotected-branches: true
