@@ -19,6 +19,9 @@ labels:
   - name: ubuntu-bionic
     min-ready: 5
     max-ready-age: 14400
+  - name: ubuntu-bionic-large
+    min-ready: 1
+    max-ready-age: 14400
   - name: ubuntu-xenial-ut
     min-ready: 1
     max-ready-age: 14400
@@ -165,6 +168,9 @@ providers:
           - name: ubuntu-bionic
             diskimage: ubuntu-bionic
             flavor-name: '4C-8GB-100GB'
+          - name: ubuntu-bionic-large
+            diskimage: ubuntu-bionic
+            flavor-name: '8C-16GB-100GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
