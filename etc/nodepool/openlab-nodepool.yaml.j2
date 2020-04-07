@@ -20,7 +20,7 @@ labels:
     min-ready: 2
     max-ready-age: 14400
   - name: ubuntu-bionic-large
-    min-ready: 2
+    min-ready: 1
     max-ready-age: 14400
   - name: ubuntu-xenial-ut
     min-ready: 1
@@ -38,6 +38,9 @@ labels:
     min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-bionic-arm64-huaweicloud
+    min-ready: 0
+    max-ready-age: 14400
+  - name: ubuntu-bionic-arm64-huaweicloud-official
     min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-gpu
@@ -84,6 +87,8 @@ providers:
         image-name: 9be00d3f-248c-4dd0-b0da-8cf564cfd412
       - name: ubuntu-bionic-arm
         image-name: 6ae78fff-e57c-43f4-8ed7-9c4681a47d1b
+      - name: ubuntu-bionic-arm-official
+        image-name: 1fb2a08e-2dfc-45af-9048-28c22b2c64ae
     pools:
       - name: ubuntu-xenial-huaweicloud-arm
         availability-zones:
@@ -100,6 +105,11 @@ providers:
           - name: ubuntu-bionic-arm64-huaweicloud
             cloud-image: ubuntu-bionic-arm
             flavor-name: 'kc1.xlarge.2'
+          - name: ubuntu-bionic-arm64-huaweicloud-official
+            cloud-image: ubuntu-bionic-arm-official
+            flavor-name: 'kc1.xlarge.2'
+            boot-from-volume: true
+            volume-size: 100
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
@@ -178,7 +188,7 @@ providers:
             flavor-name: '4C-8GB-100GB'
           - name: ubuntu-bionic-large
             diskimage: ubuntu-bionic
-            flavor-name: '8C-16GB-100GB'
+            flavor-name: '16C-32GB-100GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
