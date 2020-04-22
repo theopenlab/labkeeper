@@ -47,14 +47,14 @@ clouds:
     network_api_version: '2.0'
     region_name: London
     volume_api_version: '2'
-  huaweicloud-arm:
+  huaweicloud-arm-sg:
     auth:
       auth_url: https://iam.ap-southeast-3.myhuaweicloud.com/v3
-      password: '{{ huaweicloud-arm_password }}'
+      password: '{{ huaweicloud-arm-sg_password }}'
       project_domain_name: OpenStackUpstream
       project_name: ap-southeast-3
       user_domain_name: OpenStackUpstream
-      username: '{{ huaweicloud-arm_username }}'
+      username: '{{ huaweicloud-arm-sg_username }}'
     identity_api_version: '3'
     network_api_version: '2.0'
     region_name: ap-southeast-3

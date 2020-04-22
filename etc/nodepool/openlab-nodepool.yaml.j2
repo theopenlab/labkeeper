@@ -79,8 +79,8 @@ providers:
             # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
             flavor-name: 'openlab.medium'
 
-  - name: huaweicloud-arm
-    cloud: huaweicloud-arm
+  - name: huaweicloud-arm-sg
+    cloud: huaweicloud-arm-sg
     driver: openstack
     launch-timeout: 1200
     boot-timeout: 1200
@@ -93,7 +93,7 @@ providers:
       - name: ubuntu-bionic-arm-official
         image-name: 1fb2a08e-2dfc-45af-9048-28c22b2c64ae
     pools:
-      - name: ubuntu-xenial-huaweicloud-arm
+      - name: ubuntu-huaweicloud-arm-sg
         availability-zones:
           - ap-southeast-3b
         networks:
@@ -103,8 +103,7 @@ providers:
         labels:
           - name: ubuntu-xenial-arm64-huaweicloud
             cloud-image: ubuntu-1604
-            # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
-            flavor-name: 'kc1.xlarge.2' #'m1.large.4C8G' #'siddhesh.large'
+            flavor-name: 'kc1.xlarge.2'
           - name: ubuntu-xenial-arm64-huaweicloud-large
             cloud-image: ubuntu-1604
             flavor-name: 'kc1.xlarge.4'
