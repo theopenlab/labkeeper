@@ -84,10 +84,6 @@
               exclude-unprotected-branches: true
           - theopenlab/percona-server:
               exclude-unprotected-branches: true
-          - theopenlab/flink:
-              exclude-unprotected-branches: true 
-          - theopenlab/frocksdb:
-              exclude-unprotected-branches: true
           # The apache projects
           - apache/hive:
               exclude-unprotected-branches: true
