@@ -44,6 +44,9 @@ labels:
   - name: ubuntu-bionic-arm64-huaweicloud-official
     min-ready: 0
     max-ready-age: 14400
+  - name: ubuntu-bionic-arm64-huaweicloud-8u16g
+    min-ready: 0
+    max-ready-age: 14400
   - name: ubuntu-bionic-arm64-huaweicloud-16u32g
     min-ready: 0
     max-ready-age: 14400
@@ -111,6 +114,9 @@ providers:
           - name: ubuntu-bionic-arm64-huaweicloud
             cloud-image: ubuntu-bionic-arm
             flavor-name: 'kc1.xlarge.2'
+          - name: ubuntu-bionic-arm64-huaweicloud-8u16g
+            cloud-image: ubuntu-bionic-arm
+            flavor-name: "kc1.2xlarge.2"
           - name: ubuntu-bionic-arm64-huaweicloud-official
             cloud-image: ubuntu-bionic-arm-official
             flavor-name: 'kc1.xlarge.2'
@@ -119,6 +125,8 @@ providers:
           - name: ubuntu-bionic-arm64-huaweicloud-16u32g
             cloud-image: ubuntu-bionic-arm
             flavor-name: 'kc1.4xlarge.2'
+            boot-from-volume: true
+            volume-size: 300
 
   #ChameleonCloud
   # limits: 15 vms, 80 Cores, 80000 M Ram
