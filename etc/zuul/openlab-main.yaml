@@ -73,6 +73,10 @@
           # The AI projects
           - moo-ai/moo-ai.github.io:
               exclude-unprotected-branches: true
+          - pytorch/pytorch:
+              exclude-unprotected-branches: true 
+          - tensorflow/tensorflow:
+              exclude-unprotected-branches: true
           # The openlab projects
           - theopenlab/labkeeper:
               exclude-unprotected-branches: true
