@@ -99,6 +99,9 @@
               exclude-unprotected-branches: true
           - greenplum-db/gpdb:
               exclude-unprotected-branches: true
+          # community support for personal repo
+          - remche/terraform-openstack-rke:
+              exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
           - include: []
