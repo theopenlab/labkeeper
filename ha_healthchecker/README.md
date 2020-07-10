@@ -2,6 +2,11 @@
 
 OpenLab HA HealthChecker(ha_healthchecker) is a daemon service which is used for monitor and control OpenLab CI environment.
 
+## Structure
+
+This picture shows how the OpenLab HA deployment is designed.
+![Structure](./HA_SPEC.jpg)
+
 ## Concept
 
 First of all, let's introduce some concepts.
