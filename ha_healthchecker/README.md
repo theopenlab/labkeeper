@@ -166,7 +166,7 @@ There are some configurations that used by `ha_healthchecker`. print `openlab ha
 | dns_provider_api_url | https://api.dnsimple.com/v2/ | The dns server API url for login. |
 | dns_provider_token | None | The dns server token for login. |
 | dns_slave_public_ip | None | The IP of the slave node that runs zuul-web.  |
-| dns_status_domain | test-status.openlabtesting.org' | The zuul status web domain name. Usually it's `status.openlabtesting.org`. |
+| dns_status_domain | status.openlabtesting.org | The zuul status web domain name. Usually it's `status.openlabtesting.org`. |
 | github_app_name | None | The github app that used by openlab CI, Usually it's `theopenlab-ci`. |
 | github_repo | None | The github repo that used by openlab CI, Usually it's `theopenlab/openlab`. |
 | github_user_name | None | The user name used to login github. |
