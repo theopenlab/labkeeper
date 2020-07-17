@@ -15,9 +15,9 @@ def get_badge():
     project = request.args.get('project', '')
     job_name = request.args.get('job_name', '')
     if not project and not job_name:
-       return Response("Invaild Request")
+        return Response("Invaild Request")
     if '/' in project:
-       project = project.replace('/', '%2F')
+        project = project.replace('/', '%2F')
     success = True
     if project:
         url = "http://status.openlabtesting.org/api/builds?project=%s" % project
@@ -26,18 +26,18 @@ def get_badge():
         status_response = requests.get(url)
 
         if job_name:
-           status = json.loads(status_response.text)[0]['result']
-           success = True if status == 'SUCCESS' else False
+            status = json.loads(status_response.text)[0]['result']
+            success = True if status == 'SUCCESS' else False
         else:
-           date_time = None
-           for each in json.loads(status_response.text):
-               if not date_time:
-                   date_time = each['start_time'].split('T')[0]
-               else:
-                   if data_time != each['start_time'].split('T')[0]:
-                       break
-               if each['result'] != 'SUCCESS':
-                   success = False
+            date_time = None
+            for each in json.loads(status_response.text):
+                if not date_time:
+                    date_time = each['start_time'].split('T')[0]
+                else:
+                    if data_time != each['start_time'].split('T')[0]:
+                        break
+                if each['result'] != 'SUCCESS':
+                    success = False
     if success:
         body = """<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
