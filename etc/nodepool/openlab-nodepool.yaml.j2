@@ -134,7 +134,7 @@ providers:
 #    cloud: chameleon
 #    driver: openstack
 #    image-name-format: 'openlab-{image_name}-{timestamp}'
-#    launch-timeout: 300
+#    launch-timeout: 600
 #    launch-retries: 1
 #    boot-timeout: 60
 #    max-concurrency: 1
@@ -209,39 +209,39 @@ providers:
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
-#  - name: switch-openlab
-#    cloud: switch
-#    driver: openstack
-#    image-name-format: 'openlab-{image_name}-{timestamp}'
-#    launch-timeout: 300
-#    launch-retries: 1
-#    boot-timeout: 60
-#    max-concurrency: 5
-#    diskimages:
-#      - name: ubuntu-xenial
-#        config-drive: true
-#      - name: ubuntu-bionic
-#        config-drive: true
-#    pools:
-#      - name: main
-#        max-servers: 6 # 2vm is reserved by HA deployment: slave cluster contains two nodes, each is 4c-8G
-#        security-groups:
-#          - openlab-sg
-#        networks:
-#          - openlab-net
-#        labels:
-#          - name: ubuntu-xenial
-#            diskimage: ubuntu-xenial
-#            # 4C-8G-80G
-#            flavor-name: 'm1.large'
-#          - name: ubuntu-xenial-ut
-#            diskimage: ubuntu-xenial
-#            # 1C-2G-20G
-#            flavor-name: 'm1.small'
-#          - name: ubuntu-bionic
-#            diskimage: ubuntu-bionic
-#            # 4C-8G-80G
-#            flavor-name: 'm1.large'
+  - name: switch-openlab
+    cloud: switch
+    driver: openstack
+    image-name-format: 'openlab-{image_name}-{timestamp}'
+    launch-timeout: 300
+    launch-retries: 1
+    boot-timeout: 60
+    max-concurrency: 5
+    diskimages:
+      - name: ubuntu-xenial
+        config-drive: true
+      - name: ubuntu-bionic
+        config-drive: true
+    pools:
+      - name: main
+        max-servers: 6 # 2vm is reserved by HA deployment: slave cluster contains two nodes, each is 4c-8G
+        security-groups:
+          - openlab-sg
+        networks:
+          - openlab-net
+        labels:
+          - name: ubuntu-xenial
+            diskimage: ubuntu-xenial
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
+          - name: ubuntu-xenial-ut
+            diskimage: ubuntu-xenial
+            # 1C-2G-20G
+            flavor-name: 'm1.small'
+          - name: ubuntu-bionic
+            diskimage: ubuntu-bionic
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
 
   #Huaweicloud
   # limits: 500 vms, 4000 Cores, 8192000 M Ram
