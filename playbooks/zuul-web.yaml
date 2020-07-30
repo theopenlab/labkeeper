@@ -45,6 +45,7 @@
     - name: Config zuul web javascript
       shell: |
         ./tools/install-js-tools.sh
+        cd web/
         npm install
         if [[ ! -f zuul/web/static/status.html ]]
         then
@@ -53,6 +54,7 @@
                 yarn install
                 sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
                 yarn build
+                cp -rf build/* ../zuul/web/static/
             popd
         fi
       args:

@@ -1,0 +1,98 @@
+<VirtualHost *:80>
+#  ServerName status.openlabtesting.org
+#  ServerAdmin root@status.openlabtesting.org
+
+  LogLevel warn
+  ErrorLog ${APACHE_LOG_DIR}/zuul-web_error.log
+  CustomLog ${APACHE_LOG_DIR}/zuul-web_access.log combined
+
+  RewriteEngine on
+
+  RewriteRule api/connection/(.*)$ http://localhost:9000/api/connection/$1 [P,L]
+  RewriteRule api/console-stream ws://localhost:9000/api/tenant/openlaballinone/console-stream [P,L]
+  RewriteRule api/(.*)$ http://localhost:9000/api/tenant/openlaballinone/$1 [P,L]
+
+  RewriteCond %{REQUEST_URI} !^(/logs/|/icons/)
+  RewriteRule ^/(.*)$ http://localhost:9000/$1 [P]
+
+  Alias /logs /srv/static/logs/
+  <Directory /srv/static/logs/>
+      <IfVersion >= 2.4>
+          Require all granted
+      </IfVersion>
+      <IfVersion < 2.4>
+          Order deny,allow
+          Allow from all
+      </IfVersion>
+
+      Options Indexes FollowSymLinks
+      DirectoryIndex index.html index.html.gz
+
+    <IfModule mod_headers.c>
+      RewriteEngine On
+      # Serve gzip compressed files if they exist
+      # and the client accepts gzip.
+      RewriteCond "%{HTTP:Accept-Encoding}" "gzip"
+      RewriteCond "%{REQUEST_FILENAME}\.gz" -s
+      RewriteRule "^(.*(index.html|\.json|\.css|\.js|\.svg|\.eot|\.woff|\.woff2|\.ttf|\.txt))$" "$1\.gz" [PT,QSA]
+
+      # Serve gzip compressed uuid html files if they exist
+      # and the client accepts gzip.
+      RewriteCond "%{HTTP:Accept-Encoding}" "gzip"
+      RewriteCond "%{REQUEST_FILENAME}\.gz" -s
+      RewriteRule "^(.*[a-z\d]{8}(-[a-z\d]{4}){3}-[a-z\d]{12}\.html)$" "$1\.gz" [PT,QSA]
+
+      # Serve correct content types, and prevent mod_deflate double gzip.
+      RewriteRule "\.css\.gz$" "-" [T=text/css,E=no-gzip:1]
+      RewriteRule "\.js\.gz$" "-" [T=text/javascript,E=no-gzip:1]
+      RewriteRule "\.svg\.gz$" "-" [T=image/svg+xml,E=no-gzip:1]
+      RewriteRule "\.eot\.gz$" "-" [T=application/vnd.ms-fontobject,E=no-gzip:1]
+      RewriteRule "\.woff\.gz$" "-" [T=application/x-font-woff,E=no-gzip:1]
+      RewriteRule "\.woff2\.gz$" "-" [T=application/x-font-woff2,E=no-gzip:1]
+      RewriteRule "\.ttf\.gz$" "-" [T=application/x-font-ttf,E=no-gzip:1]
+      RewriteRule "\.json\.gz$" "-" [T=application/json,E=no-gzip:1]
+
+      <FilesMatch "(\.json\.gz|\.js\.gz|\.css\.gz|\.svg\.gz|\.eot\.gz|\.woff\.gz|\.woff2\.gz|\.ttf\.gz|\.txt\.gz)$">
+        # Serve correct encoding type.
+        Header append Content-Encoding gzip
+
+        # Force proxies to cache gzipped &
+        # non-gzipped css/js files separately.
+        Header append Vary Accept-Encoding
+      </FilesMatch>
+    </IfModule>
+
+  </Directory>
+  <IfModule mod_mime.c>
+    AddCharset utf-8 .html
+    AddCharset utf-8 .json
+    AddEncoding gzip .gz
+  </IfModule>
+  <FilesMatch "(\.html|\.html\.gz)$">
+    ForceType text/html
+  </FilesMatch>
+  <FilesMatch "(\.txt|\.txt\.gz)$">
+    ForceType text/javascript
+  </FilesMatch>
+  <FilesMatch "(\.json|\.json\.gz)$">
+    ForceType application/json
+  </FilesMatch>
+
+  <IfModule mod_cache.c>
+    CacheDefaultExpire 5
+    <IfModule mod_mem_cache.c>
+      CacheEnable mem /status.json
+      # 12MByte total cache size.
+      MCacheSize 12288
+      MCacheMaxObjectCount 10
+      MCacheMinObjectSize 1
+      # 8MByte max size per cache entry
+      MCacheMaxObjectSize 8388608
+      MCacheMaxStreamingBuffer 8388608
+    </IfModule>
+    <IfModule mod_cache_disk.c>
+      CacheEnable disk /status.json
+      CacheRoot /var/cache/apache2/mod_cache_disk
+    </IfModule>
+  </IfModule>
+</VirtualHost>
