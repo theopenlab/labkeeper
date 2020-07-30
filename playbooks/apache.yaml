@@ -32,6 +32,7 @@
           - libapache2-mod-evasive
           - libapache2-modsecurity
           - fail2ban
+          #- libapache2-mod-security2
         update_cache: yes
         state: latest
 
@@ -51,6 +52,15 @@
         dest: "{{ apache_ports_config_dest }}"
         mode: "{{ apache_ports_config_mode }}"
         src: "{{ apache_ports_config_src }}"
+      when: zuul_tenant_name != 'openlaballinone'
+
+    - name: Configure apache listening ports for allinone
+      become: yes
+      copy:
+        dest: "{{ apache_ports_config_dest }}"
+        mode: "{{ apache_ports_config_mode }}"
+        src: "{{ apache_ports_config_src_for_allinone }}"
+      when: zuul_tenant_name == 'openlaballinone'
 
     - name: Configure apache zuul status pages
       become: yes
@@ -58,6 +68,15 @@
         dest: "{{ apache_zuul_status_page_config_dest }}"
         mode: "{{ apache_zuul_status_page_config_mode }}"
         src: "{{ apache_zuul_status_page_config_src }}"
+      when: zuul_tenant_name != 'openlaballinone'
+
+    - name: Configure apache zuul status pages for allinone
+      become: yes
+      template:
+        dest: "{{ apache_zuul_status_page_config_dest }}"
+        mode: "{{ apache_zuul_status_page_config_mode }}"
+        src: "{{ apache_zuul_status_page_config_src_for_allinone }}"
+      when: zuul_tenant_name == 'openlaballinone'
 
     - name: Configure apache zuul ssl status pages
       become: yes
