@@ -19,57 +19,21 @@
           # protected branches
           - gophercloud/gophercloud:
               exclude-unprotected-branches: false
-          - terraform-providers/terraform-provider-openstack:
-              exclude-unprotected-branches: false
-          - flystack/misty:
-              exclude-unprotected-branches: false
-          - fog/fog-openstack:
-              exclude-unprotected-branches: true
           - dtantsur/rust-openstack:
               exclude-unprotected-branches: false
           - dtantsur/rust-osproto:
               exclude-unprotected-branches: false
           - dtantsur/rust-osauth:
               exclude-unprotected-branches: false
-          - huaweicloud/huaweicloud-service-broker:
-              exclude-unprotected-branches: true
-          - manageiq/manageiq-providers-openstack:
-              exclude-unprotected-branches: true
-          - cloudfoundry-incubator/bosh-huaweicloud-cpi-release:
-              exclude-unprotected-branches: true
-          - terraform-providers/terraform-provider-huaweicloud:
-              exclude-unprotected-branches: false
-          - docker/machine:
-              exclude-unprotected-branches: true
-#          - hashicorp/packer:
-#              exclude-unprotected-branches: true
-          - ansible/ansible:
-              exclude-unprotected-branches: true
-          - openservicebrokerapi/osb-checker:
-              exclude-unprotected-branches: true
-          - zhongjun2/cf-huaweicloud-validator:
-              exclude-unprotected-branches: true
-          - zhongjun2/bosh-huaweicloud-cpi-release:
-              exclude-unprotected-branches: false
-          - cloudfoundry/bosh-acceptance-tests:
-              exclude-unprotected-branches: true
-          - cloudfoundry/bosh-openstack-cpi-release:
+          - wangxiyuan/flink:
               exclude-unprotected-branches: true
           # The CNCF projects
           - kubernetes-sigs/cluster-api-provider-openstack:
               exclude-unprotected-branches: true
           - kubernetes/cloud-provider-openstack:
               exclude-unprotected-branches: true
-          - helm/charts:
-              exclude-unprotected-branches: true
-          - kubernetes-sigs/kind:
-              exclude-unprotected-branches: true
           - containerd/containerd:
               exclude-unprotected-branches: false
-          - envoyproxy/envoy:
-              exclude-unprotected-branches: true
-          - virtual-kubelet/openstack-zun:
-              exclude-unprotected-branches: true
           # The AI projects
           - moo-ai/moo-ai.github.io:
               exclude-unprotected-branches: true
@@ -80,27 +44,12 @@
           # The openlab projects
           - theopenlab/labkeeper:
               exclude-unprotected-branches: true
-          - theopenlab/envoy:
-              exclude-unprotected-branches: true
-          - theopenlab/volcano:
-              exclude-unprotected-branches: true
-          - theopenlab/storm:
-              exclude-unprotected-branches: true
-          - theopenlab/percona-server:
-              exclude-unprotected-branches: true
           # The apache projects
-          - apache/hive:
-              exclude-unprotected-branches: true
           - apache/flink:
               exclude-unprotected-branches: true
           - apache/kudu:
               exclude-unprotected-branches: false
-          - apache/servicecomb-service-center:
-              exclude-unprotected-branches: true
           - greenplum-db/gpdb:
-              exclude-unprotected-branches: true
-          # community support for personal repo
-          - remche/terraform-openstack-rke:
               exclude-unprotected-branches: true
       openstack-git:
         untrusted-projects:
