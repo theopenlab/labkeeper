@@ -28,34 +28,27 @@ labels:
   - name: ubuntu-xenial-citynetwork
     min-ready: 1
     max-ready-age: 14400
-  - name: ubuntu-xenial-arm64-openlab
-    min-ready: 0
-    max-ready-age: 14400
   - name: ubuntu-xenial-huaweicloud
     min-ready: 0
     max-ready-age: 14400
-  - name: ubuntu-xenial-arm64
+  # #########---ARM--- #############
+  - name: ubuntu-xenial-arm64  # Linaro
     min-ready: 5
-    max-ready-age: 14400
-  - name: ubuntu-xenial-arm64-flink-docker
-    min-ready: 0
-  - name: ubuntu-xenial-arm64-huaweicloud
-    min-ready: 0
-  - name: ubuntu-xenial-arm64-huaweicloud-large
-    min-ready: 0
-  - name: ubuntu-bionic-arm64-huaweicloud
+  - name: ubuntu-xenial-arm64-openlab  # HuaweiCloud containerd
     min-ready: 0
     max-ready-age: 14400
-  - name: ubuntu-bionic-arm64-huaweicloud-official
+  - name: ubuntu-xenial-arm64-flink-docker  #HuaweiCloud flink
+    min-ready: 0
+  - name: ubuntu-bionic-arm64-huaweicloud-official  #gpdb
     min-ready: 0
     max-ready-age: 14400
-  - name: ubuntu-bionic-arm64-huaweicloud-8u16g
+  - name: ubuntu-bionic-arm64-huaweicloud-8u16g  #pytorch/tensorflow
     min-ready: 0
     max-ready-age: 14400
-  - name: ubuntu-bionic-arm64-huaweicloud-16u32g
+  - name: ubuntu-bionic-arm64-huaweicloud-16u32g  #kudu
     min-ready: 0
     max-ready-age: 14400
-  - name: ubuntu-xenial-gpu
+  - name: ubuntu-xenial-gpu   # Moo
     min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-tf
@@ -74,7 +67,7 @@ providers:
     max-concurrency: 10
     cloud-images:
       - name: ubuntu-xenial-arm64
-        image-name: 8baccba3-fa02-45e4-bf49-328763e5671e
+        image-name: c394b90b-2b16-448c-91db-7f451eefda0c
     pools:
       - name: ubuntu-xenial-linaro
         max-ram: 81920
@@ -97,8 +90,8 @@ providers:
     cloud-images:
       - name: ubuntu-1604-flink
         image-name: 7fa05763-2b32-4e4b-9c6f-7f7152452766
-      - name: ubuntu-1604
-        image-name: 9be00d3f-248c-4dd0-b0da-8cf564cfd412
+      - name: ubuntu-1604-arm-openlab
+        image-name: 39e16a9c-85fa-4259-a3b1-26a5743b6887
       - name: ubuntu-bionic-arm
         image-name: 6ae78fff-e57c-43f4-8ed7-9c4681a47d1b
       - name: ubuntu-bionic-arm-official
@@ -116,16 +109,7 @@ providers:
             cloud-image: ubuntu-1604-flink
             flavor-name: 'kc1.xlarge.4'
           - name: ubuntu-xenial-arm64-openlab
-            cloud-image: ubuntu-1604
-            flavor-name: 'kc1.xlarge.2'
-          - name: ubuntu-xenial-arm64-huaweicloud
-            cloud-image: ubuntu-1604
-            flavor-name: 'kc1.xlarge.2'
-          - name: ubuntu-xenial-arm64-huaweicloud-large
-            cloud-image: ubuntu-1604
-            flavor-name: 'kc1.xlarge.4'
-          - name: ubuntu-bionic-arm64-huaweicloud
-            cloud-image: ubuntu-bionic-arm
+            cloud-image: ubuntu-1604-arm-openlab
             flavor-name: 'kc1.xlarge.2'
           - name: ubuntu-bionic-arm64-huaweicloud-8u16g
             cloud-image: ubuntu-bionic-arm
