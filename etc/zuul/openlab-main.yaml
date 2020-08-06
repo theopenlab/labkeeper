@@ -51,9 +51,3 @@
               exclude-unprotected-branches: false
           - greenplum-db/gpdb:
               exclude-unprotected-branches: true
-      openstack-git:
-        untrusted-projects:
-          - include: []
-            projects:
-              - openstack/openstacksdk
-              - openstack/shade
