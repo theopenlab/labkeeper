@@ -17,6 +17,8 @@
           # Offical
           # NOTE gophercloud and terraform master are not
           # protected branches
+          - terraform-providers/terraform-provider-openstack:
+              exclude-unprotected-branches: false
           - gophercloud/gophercloud:
               exclude-unprotected-branches: false
           - dtantsur/rust-openstack:
@@ -51,9 +53,3 @@
               exclude-unprotected-branches: false
           - greenplum-db/gpdb:
               exclude-unprotected-branches: true
-      openstack-git:
-        untrusted-projects:
-          - include: []
-            projects:
-              - openstack/openstacksdk
-              - openstack/shade
