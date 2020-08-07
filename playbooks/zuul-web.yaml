@@ -47,6 +47,7 @@
         ./tools/install-js-tools.sh
         cd web/
         npm install
+        cd ..
         if [[ ! -f zuul/web/static/status.html ]]
         then
             mkdir -p zuul/web/static
