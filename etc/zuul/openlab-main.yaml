@@ -29,6 +29,8 @@
               exclude-unprotected-branches: false
           - wangxiyuan/flink:
               exclude-unprotected-branches: true
+          - wangxiyuan/flink:
+              exclude-unprotected-branches: false 
           # The CNCF projects
           - kubernetes-sigs/cluster-api-provider-openstack:
               exclude-unprotected-branches: true
