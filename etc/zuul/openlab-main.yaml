@@ -53,5 +53,9 @@
               exclude-unprotected-branches: true
           - apache/kudu:
               exclude-unprotected-branches: false
+          # The DB projects
           - greenplum-db/gpdb:
               exclude-unprotected-branches: true
+          - mysql/mysql-server:
+              exclude-unprotected-branches: false
+
