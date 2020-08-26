@@ -48,6 +48,9 @@ labels:
   - name: ubuntu-bionic-arm64-huaweicloud-16u32g  #kudu
     min-ready: 0
     max-ready-age: 14400
+  - name: ubuntu-bionic-arm64-huaweicloud-impala  #impala
+    min-ready: 0
+    max-ready-age: 14400
   - name: ubuntu-xenial-gpu   # Moo
     min-ready: 0
     max-ready-age: 14400
@@ -96,6 +99,9 @@ providers:
         image-name: 6ae78fff-e57c-43f4-8ed7-9c4681a47d1b
       - name: ubuntu-bionic-arm-official
         image-name: 1fb2a08e-2dfc-45af-9048-28c22b2c64ae
+      - name: ubuntu-bionic-arm64-impala
+        image-name: 57fd28a5-2638-4251-8e3b-7bb9cf68ee3b
+
     pools:
       - name: ubuntu-huaweicloud-arm-sg
         availability-zones:
@@ -121,6 +127,11 @@ providers:
             volume-size: 100
           - name: ubuntu-bionic-arm64-huaweicloud-16u32g
             cloud-image: ubuntu-bionic-arm
+            flavor-name: 'kc1.4xlarge.2'
+            boot-from-volume: true
+            volume-size: 300
+          - name: ubuntu-bionic-arm64-huaweicloud-impala
+            cloud-image: ubuntu-bionic-arm64-impala
             flavor-name: 'kc1.4xlarge.2'
             boot-from-volume: true
             volume-size: 300
