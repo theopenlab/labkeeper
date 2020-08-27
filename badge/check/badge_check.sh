@@ -15,13 +15,16 @@ function post_issue()
 
     cd ~/badge_check/openlab/
     if [ -f ~/badge_check/badge_check.issue ];then
-        exit 0
+        if [ -z `find ~/badge_check/badge_check.issue -mtime +1` ];then
+            rm ~/badge_check/badge_check.issue
+        else
+            exit 0
+        fi
     fi
     issue_header="[Labcheck] "`date +%Y%m%d%H%M`" OpenLab Badge Check Failed"
     issue_content="Check report as below:\n\`\`\`"
     echo -e $issue_header"\n\n"$issue_content > ~/badge_check/badge_check.issue
-    echo -e "OpenLab Badge Service can not be recovered after tried. Please go to check the env manually." \
-    >> ~/badge_check/badge_check.issue
+    echo -e "OpenLab Badge Service can not be recovered after tried. Please go to check the env manually." >> ~/badge_check/badge_check.issue
     echo -e "\`\`\`\n\ncc: @bzhaoopenstack">> ~/badge_check/badge_check.issue
     export GITHUB_TOKEN=${github_token}
     hub issue create -F ~/badge_check/badge_check.issue
@@ -29,8 +32,7 @@ function post_issue()
 
 function try_to_recover()
 {
-    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PasswordAuthentication=no -i $login_key \
-    zuul@$target_ip "cd; ./setup-openlab-badge.sh &"
+    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PasswordAuthentication=no -i $login_key zuul@$target_ip "cd; ./setup-openlab-badge.sh &"
     if [ $? -eq 0 ]; then
             echo "======== RECOVER SUCCESS ========"
             break;
@@ -44,6 +46,7 @@ function try_to_recover()
 try_count=1
 max_try_count=6
 echo "======== Health Check START  ========"
+echo "======== "`date +%Y%m%d-%r`" ========"
 while [ 0 -eq 0 ]
 do
   if [ $try_count -gt $max_try_count ]; then
@@ -51,7 +54,7 @@ do
           try_to_recover
           break;
   fi
-  echo "======== Try ${try_count} ========"
+  echo "=========== Try ${try_count} ==========="
   ans=`curl http://openlabtesting.org:15000/badge-health`
 
   if [ $ans == "Alive" ]; then
