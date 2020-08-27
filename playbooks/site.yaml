@@ -36,6 +36,8 @@
   when: labsync_enabled|default(false)|bool
 - import_playbook: check-nodepool-periodic.yaml
   when: labcheck_enabled|default(false)|bool
+- import_playbook: check-web-badge-periodic.yaml
+  when: labcheck_enabled|default(false)|bool
 - import_playbook: force-to-enable-services.yaml
 - import_playbook: ha_mysql_configure.yaml
 - import_playbook: ha_log_cfg_sync.yaml

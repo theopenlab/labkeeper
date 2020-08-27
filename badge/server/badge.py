@@ -140,6 +140,7 @@ def get_badge():
     response.add_etag()
     return response
 
+
 @app.route('/badge-health')
 def health_report_to_external():
     projects, job_names = get_args(request.args)
