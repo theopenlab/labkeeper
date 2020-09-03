@@ -33,7 +33,7 @@ labels:
     max-ready-age: 14400
   # #########---ARM--- #############
   - name: ubuntu-xenial-arm64  # Linaro
-    min-ready: 5
+    min-ready: 3
   - name: ubuntu-xenial-arm64-openlab  # HuaweiCloud containerd
     min-ready: 0
     max-ready-age: 14400
@@ -92,7 +92,7 @@ providers:
     max-concurrency: 10
     cloud-images:
       - name: ubuntu-1604-flink
-        image-name: 7fa05763-2b32-4e4b-9c6f-7f7152452766
+        image-name: 2fd0b750-1d6b-4f70-a647-1eeacc296dc6
       - name: ubuntu-1604-arm-openlab
         image-name: 39e16a9c-85fa-4259-a3b1-26a5743b6887
       - name: ubuntu-bionic-arm
@@ -135,43 +135,6 @@ providers:
             flavor-name: 'kc1.4xlarge.2'
             boot-from-volume: true
             volume-size: 300
-
-  #ChameleonCloud
-  # limits: 15 vms, 80 Cores, 80000 M Ram
-#  - name: chameleon-openlab
-#    cloud: chameleon
-#    driver: openstack
-#    image-name-format: 'openlab-{image_name}-{timestamp}'
-#    launch-timeout: 600
-#    launch-retries: 1
-#    boot-timeout: 60
-#    max-concurrency: 1
-#    diskimages:
-#      - name: ubuntu-xenial
-#        config-drive: true
-#      - name: ubuntu-bionic
-#        config-drive: true
-#    pools:
-#      - name: main
-#        max-ram: 80000
-#        security-groups:
-#          - openlab-sg
-#        networks:
-#          - openlab-net
-#        labels:
-#          - name: ubuntu-xenial
-#            diskimage: ubuntu-xenial
-#            # 4C-8G-80G
-#            flavor-name: 'm1.large'
-#          - name: ubuntu-xenial-ut
-#            diskimage: ubuntu-xenial
-#            # 1C-2G-20G
-#            flavor-name: 'm1.small'
-##          - name: ubuntu-bionic
-##            diskimage: ubuntu-bionic
-#            # 4C-8G-80G
-#            flavor-name: 'm1.large'
-
 
   #CityNetwork
   # limits: 50 vms, 100 Cores, 256000 M Ram
