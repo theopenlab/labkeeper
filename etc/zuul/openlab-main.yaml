@@ -17,7 +17,7 @@
           # Offical
           # NOTE gophercloud and terraform master are not
           # protected branches
-          - terraform-providers/terraform-provider-openstack:
+          - terraform-provider-openstack/terraform-provider-openstack:
               exclude-unprotected-branches: false
           - gophercloud/gophercloud:
               exclude-unprotected-branches: false
