@@ -34,10 +34,9 @@
         openlab ha node set `hostname` --maintain yes
         cd /opt/src/zuul
         git pull
-        pip3 install -r requirements.txt
+        pip3 install -e .
         cd web/
         yarn install
-        sed -e 's#"homepage": "/"#"homepage": "/zuul/"#' -i package.json
         yarn build
       args:
         executable: /bin/bash
