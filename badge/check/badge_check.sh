@@ -32,7 +32,9 @@ function post_issue()
 
 function try_to_recover()
 {
-    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PasswordAuthentication=no -i $login_key zuul@$target_ip "cd; ./setup-openlab-badge.sh &"
+    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PasswordAuthentication=no -i $login_key zuul@$target_ip "sudo systemctl restart web-badge-flask"
+    check_res=`ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PasswordAuthentication=no -i $login_key zuul@$target_ip "sudo systemctl status web-badge-flask"`
+    echo $check_res | grep "Active: active (running)"
     if [ $? -eq 0 ]; then
             echo "======== RECOVER SUCCESS ========"
             break;
