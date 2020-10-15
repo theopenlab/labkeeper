@@ -28,9 +28,6 @@ labels:
   - name: ubuntu-xenial-citynetwork
     min-ready: 1
     max-ready-age: 14400
-  - name: ubuntu-xenial-huaweicloud
-    min-ready: 0
-    max-ready-age: 14400
   # #########---ARM--- #############
   - name: ubuntu-xenial-arm64  # Linaro
     min-ready: 3
@@ -213,56 +210,6 @@ providers:
             diskimage: ubuntu-bionic
             # 4C-8G-80G
             flavor-name: 'm1.large'
-
-  #Huaweicloud
-  # limits: 500 vms, 4000 Cores, 8192000 M Ram
-  - name: huaweicloud-openlab
-    cloud: huaweicloud
-    driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
-    launch-timeout: 300
-    launch-retries: 1
-    boot-timeout: 60
-    max-concurrency: 1
-    cloud-images:
-      - name: ubuntu-xenial-gpu-v100
-        image-name: 'openlab-ubuntu-xenial-gpu-v100'
-        config-drive: true
-    diskimages:
-      - name: ubuntu-xenial
-        config-drive: true
-    pools:
-      - name: main
-        max-servers: -1
-        networks:
-          - openlab-net
-        security-groups:
-          - openlab-sg
-        labels:
-#          - name: ubuntu-xenial
-#            diskimage: ubuntu-xenial
-#            # 4C-8G-100G
-#            flavor-name: 's3.xlarge.2'
-#            boot-from-volume: true
-#            volume-size: 100
-#          - name: ubuntu-xenial-ut
-#            diskimage: ubuntu-xenial
-#            # 1C-2G-40G
-#            flavor-name: 's3.medium.2'
-#            boot-from-volume: true
-#            volume-size: 40
-          - name: ubuntu-xenial-huaweicloud
-            diskimage: ubuntu-xenial
-            # 4C-8G-100G
-            flavor-name: 's3.xlarge.2'
-            boot-from-volume: true
-            volume-size: 100
-          - name: ubuntu-xenial-gpu
-            cloud-image: ubuntu-xenial-gpu-v100
-            # 8C-64G-100G
-            flavor-name: 'p2v.2xlarge.8'
-            boot-from-volume: true
-            volume-size: 100
 
 diskimages:
   - name: ubuntu-bionic
