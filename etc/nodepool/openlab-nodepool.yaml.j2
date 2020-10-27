@@ -28,6 +28,12 @@ labels:
   - name: ubuntu-xenial-citynetwork
     min-ready: 1
     max-ready-age: 14400
+  - name: ubuntu-xenial-switch
+    min-ready: 1
+    max-ready-age: 14400
+  - name: ubuntu-bionic-switch
+    min-ready: 1
+    max-ready-age: 14400
   # #########---ARM--- #############
   - name: ubuntu-xenial-arm64  # Linaro
     min-ready: 3
@@ -202,10 +208,6 @@ providers:
             diskimage: ubuntu-xenial
             # 4C-8G-80G
             flavor-name: 'm1.large'
-          - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
-            # 1C-2G-20G
-            flavor-name: 'm1.small'
           - name: ubuntu-bionic
             diskimage: ubuntu-bionic
             # 4C-8G-80G
