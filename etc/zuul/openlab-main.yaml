@@ -57,6 +57,8 @@
               exclude-unprotected-branches: false
           - apache/storm:
               exclude-unprotected-branches: false
+          - kunpengcompute/hadoop:
+              exclude-unprotected-branches: false
           # The DB projects
           - greenplum-db/gpdb:
               exclude-unprotected-branches: true
