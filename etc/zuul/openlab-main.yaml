@@ -64,4 +64,5 @@
               exclude-unprotected-branches: true
           - mysql/mysql-server:
               exclude-unprotected-branches: false
-
+          - apache/kafka:
+              exclude-unprotected-branches: false
