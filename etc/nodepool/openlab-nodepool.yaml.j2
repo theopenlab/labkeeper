@@ -19,6 +19,9 @@ labels:
   - name: ubuntu-bionic
     min-ready: 1
     max-ready-age: 14400
+  - name: ubuntu-focal
+    min-ready: 1
+    max-ready-age: 14400
   - name: ubuntu-bionic-large
     min-ready: 1
     max-ready-age: 14400
@@ -26,6 +29,12 @@ labels:
     min-ready: 1
     max-ready-age: 14400
   - name: ubuntu-xenial-citynetwork
+    min-ready: 1
+    max-ready-age: 14400
+  - name: ubuntu-bionic-citynetwork
+    min-ready: 1
+    max-ready-age: 14400
+  - name: ubuntu-focal-citynetwork
     min-ready: 1
     max-ready-age: 14400
   # #########---ARM--- #############
@@ -148,6 +157,8 @@ providers:
         config-drive: true
       - name: ubuntu-bionic
         config-drive: true
+      - name: ubuntu-focal
+        config-drive: true
     pools:
       - name: main
         max-cores: 88
@@ -174,6 +185,15 @@ providers:
           - name: ubuntu-bionic-large
             diskimage: ubuntu-bionic
             flavor-name: '16C-32GB-100GB'
+          - name: ubuntu-bionic-citynetwork
+            diskimage: ubuntu-bionic
+            flavor-name: '8C-8GB-200GB'
+          - name: ubuntu-focal
+            diskimage: ubuntu-focal
+            flavor-name: '4C-8GB-100GB'
+          - name: ubuntu-focal-citynetwork
+            diskimage: ubuntu-focal
+            flavor-name: '8C-8GB-200GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
@@ -189,6 +209,8 @@ providers:
       - name: ubuntu-xenial
         config-drive: true
       - name: ubuntu-bionic
+        config-drive: true
+      - name: ubuntu-focal
         config-drive: true
     pools:
       - name: main
@@ -210,10 +232,43 @@ providers:
             diskimage: ubuntu-bionic
             # 4C-8G-80G
             flavor-name: 'm1.large'
+          - name: ubuntu-focal
+            diskimage: ubuntu-focal
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
 
 diskimages:
+  - name: ubuntu-focal
+#    rebuild-age: 172800 # 2 days
+    pause: true
+    elements:
+      - ubuntu
+      - vm
+      - simple-init
+      - nodepool-base
+      - cache-devstack
+      - initialize-urandom
+      - growroot
+      - infra-package-needs
+    release: focal
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_GRUB_TIMEOUT: '0'
+      DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
+      DIB_DEV_USER_PWDLESS_SUDO: '1'
+      DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
+      GIT_HTTP_LOW_SPEED_TIME: '300'
+      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
+      ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
+
   - name: ubuntu-bionic
     rebuild-age: 172800 # 2 days
+    # Pauss the 1804 build for the upcomming 2004 build
     pause: true
     elements:
       - ubuntu
@@ -242,6 +297,7 @@ diskimages:
 
   - name: ubuntu-xenial
     rebuild-age: 172800 # 2 days
+    # Pauss the 1604 build for the upcomming 2004 build
     pause: true
     elements:
       - ubuntu
