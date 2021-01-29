@@ -19,14 +19,26 @@ labels:
   - name: ubuntu-bionic
     min-ready: 1
     max-ready-age: 14400
+  - name: ubuntu-focal
+    min-ready: 1
+    max-ready-age: 14400
   - name: ubuntu-bionic-large
     min-ready: 1
+    max-ready-age: 14400
+  - name: ubuntu-focal-large
+    min-ready: 0
     max-ready-age: 14400
   - name: ubuntu-xenial-ut
     min-ready: 1
     max-ready-age: 14400
   - name: ubuntu-xenial-citynetwork
     min-ready: 1
+    max-ready-age: 14400
+  - name: ubuntu-bionic-citynetwork
+    min-ready: 1
+    max-ready-age: 14400
+  - name: ubuntu-focal-citynetwork
+    min-ready: 0
     max-ready-age: 14400
   # #########---ARM--- #############
   - name: ubuntu-xenial-arm64  # Linaro
@@ -138,16 +150,22 @@ providers:
   - name: citynetwork-openlab
     cloud: citynetwork
     driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
+#    image-name-format: 'openlab-{image_name}-{timestamp}'
     launch-timeout: 300
     launch-retries: 1
     boot-timeout: 60
     max-concurrency: 5
-    diskimages:
+#    diskimages:
+    cloud-images:
       - name: ubuntu-xenial
-        config-drive: true
+        image-name: 36ae887b-ddef-4d27-9f7d-8994f85356a7
+        # config-drive: true
       - name: ubuntu-bionic
-        config-drive: true
+        image-name: 8f305186-7f2e-4ec3-bf85-6a5e5af36b95
+        # config-drive: true
+      - name: ubuntu-focal
+        image-name: 40220170-e5bc-48af-a709-0122c31c2bfb
+      #  config-drive: true
     pools:
       - name: main
         max-cores: 88
@@ -157,39 +175,66 @@ providers:
           - openlab-net
         labels:
           - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
+            cloud-image: ubuntu-xenial
+            # diskimage: ubuntu-xenial
             flavor-name: '4C-8GB-100GB'
           - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
+            cloud-image: ubuntu-xenial
+            # diskimage: ubuntu-xenial
             flavor-name: '1C-2GB-50GB'
           - name: ubuntu-xenial-tf
-            diskimage: ubuntu-xenial
+            cloud-image: ubuntu-xenial
+            # diskimage: ubuntu-xenial
             flavor-name: '8C-8GB-100GB'
           - name: ubuntu-xenial-citynetwork
-            diskimage: ubuntu-xenial
+            cloud-image: ubuntu-xenial
+            # diskimage: ubuntu-xenial
             flavor-name: '8C-8GB-200GB'
           - name: ubuntu-bionic
-            diskimage: ubuntu-bionic
+            cloud-image: ubuntu-bionic
+            # diskimage: ubuntu-bionic
             flavor-name: '4C-8GB-100GB'
           - name: ubuntu-bionic-large
-            diskimage: ubuntu-bionic
+            cloud-image: ubuntu-bionic
+            # diskimage: ubuntu-bionic
             flavor-name: '16C-32GB-100GB'
+          - name: ubuntu-bionic-citynetwork
+            cloud-image: ubuntu-bionic
+            # diskimage: ubuntu-bionic
+            flavor-name: '8C-8GB-200GB'
+          - name: ubuntu-focal
+            cloud-image: ubuntu-focal
+            # diskimage: ubuntu-focal
+            flavor-name: '4C-8GB-100GB'
+          - name: ubuntu-focal-large
+            cloud-image: ubuntu-focal
+            flavor-name: '16C-32GB-100GB'
+          - name: ubuntu-focal-citynetwork
+            cloud-image: ubuntu-focal
+            # diskimage: ubuntu-focal
+            flavor-name: '8C-8GB-200GB'
 
   #SWITCH
   # limits: 8 vms, 40 Cores, 81920 M Ram
   - name: switch-openlab
     cloud: switch
     driver: openstack
-    image-name-format: 'openlab-{image_name}-{timestamp}'
+#    image-name-format: 'openlab-{image_name}-{timestamp}'
     launch-timeout: 300
     launch-retries: 1
     boot-timeout: 60
     max-concurrency: 5
-    diskimages:
+#    diskimages:
+    cloud-images:
       - name: ubuntu-xenial
-        config-drive: true
+        image-name: dac4e6cd-e2cc-4811-ae37-ad19e07f238e
+        # config-drive: true
       - name: ubuntu-bionic
-        config-drive: true
+        image-name: 43800eb8-d816-41c2-9334-bbafef1a331d
+        # config-drive: true
+      - name: ubuntu-focal
+        image-name: 42478465-cbe7-4036-a50f-b739c136e550
+        # config-drive: true
     pools:
       - name: main
         max-servers: 6 # 2vm is reserved by HA deployment: slave cluster contains two nodes, each is 4c-8G
@@ -199,21 +244,58 @@ providers:
           - openlab-net
         labels:
           - name: ubuntu-xenial
-            diskimage: ubuntu-xenial
+            cloud-image: ubuntu-xenial
+            # diskimage: ubuntu-xenial
             # 4C-8G-80G
             flavor-name: 'm1.large'
           - name: ubuntu-xenial-ut
-            diskimage: ubuntu-xenial
+            cloud-image: ubuntu-xenial
+            # diskimage: ubuntu-xenial
             # 1C-2G-20G
             flavor-name: 'm1.small'
           - name: ubuntu-bionic
-            diskimage: ubuntu-bionic
+            cloud-image: ubuntu-bionic
+            # diskimage: ubuntu-bionic
+            # 4C-8G-80G
+            flavor-name: 'm1.large'
+          - name: ubuntu-focal
+            cloud-image: ubuntu-focal
+          #  diskimage: ubuntu-focal
             # 4C-8G-80G
             flavor-name: 'm1.large'
 
 diskimages:
+  - name: ubuntu-focal
+    rebuild-age: 172800 # 2 days
+    pause: true
+    elements:
+      - ubuntu
+      - vm
+      - simple-init
+      - nodepool-base
+      - cache-devstack
+      - initialize-urandom
+      - growroot
+      - infra-package-needs
+    release: focal
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_GRUB_TIMEOUT: '0'
+      DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_CUSTOM_PROJECTS_LIST_URL: 'file:///etc/nodepool/repos.yaml'
+      DIB_DEV_USER_PWDLESS_SUDO: '1'
+      DIB_CLOUD_INIT_DATASOURCES: 'ConfigDrive, OpenStack'
+      GIT_HTTP_LOW_SPEED_TIME: '300'
+      GIT_HTTP_LOW_SPEED_LIMIT: '1000'
+      ZUUL_USER_SSH_PUBLIC_KEY: '/var/lib/nodepool/.ssh/id_rsa.pub'
+
   - name: ubuntu-bionic
     rebuild-age: 172800 # 2 days
+    # Pauss the 1804 build for the upcomming 2004 build
     pause: true
     elements:
       - ubuntu
@@ -242,6 +324,7 @@ diskimages:
 
   - name: ubuntu-xenial
     rebuild-age: 172800 # 2 days
+    # Pauss the 1604 build for the upcomming 2004 build
     pause: true
     elements:
       - ubuntu
@@ -302,3 +385,4 @@ diskimages:
 webapp:
   port: 8005
   listen_address: '0.0.0.0'
+
