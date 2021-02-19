@@ -34,7 +34,10 @@ class NetworkPlugin(Plugin):
             return
 
         # get subnet of openlab-net successfully, check subnet
-        if "openlab-subnet 192.168.0.0/24" not in res:
+        # For some reasons, the constants ip-range 192.168.0.0/24 is allocated by the existing environment,
+        # can not change any more, due to there are already such resources use them, so we can not force to
+        # check the constant ip-range, only check the name should be OK.
+        if "openlab-subnet" not in res:
             self.failed = True
             self.reasons.append(Recover.NETWORK_SUBNET)
             return
