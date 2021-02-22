@@ -16,6 +16,13 @@
   hosts: nodepool-launcher
 
   tasks:
+    - name: Fix PyYAML
+      shell: |
+        set -ex
+        pip3 install --ignore-installed PyYAML
+      args:
+        executable: /bin/bash
+
     - name: Enable nodepool launcher service
       include_role:
         name: openstack.nodepool
