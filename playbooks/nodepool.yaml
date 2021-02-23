@@ -59,6 +59,13 @@
         - id_rsa
         - id_rsa.pub
 
+    - name: Fix PyYAML
+      shell: |
+        set -ex
+        pip3 install --ignore-installed PyYAML
+      args:
+        executable: /bin/bash
+
     - name: Install and config nodepool packages
       include_role:
         name: openstack.nodepool
