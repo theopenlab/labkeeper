@@ -32,8 +32,6 @@
           - wangxiyuan/frocksdb:
               exclude-unprotected-branches: false 
           # The CNCF projects
-          - kubernetes-sigs/cluster-api-provider-openstack:
-              exclude-unprotected-branches: true
           - kubernetes/cloud-provider-openstack:
               exclude-unprotected-branches: true
           - containerd/containerd:
