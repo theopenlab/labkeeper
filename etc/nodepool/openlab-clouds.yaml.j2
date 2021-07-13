@@ -25,15 +25,16 @@ clouds:
     volume_api_version: '2'
   linaro:
     auth:
-      auth_url: https://uk.linaro.cloud:5000/v3
+      auth_url: https://uk2.linaro.cloud:5000
       password: '{{ linaro_password }}'
-      project_domain_name: Default
-      project_name: openlab-testing
+      project_domain_name: 5bdd5b3e0e6943e1bcc33a5b203bf72a
+      project_domain_id: default
+      project_name: openlab-test
       user_domain_name: Default
       username: '{{ linaro_username }}'
     identity_api_version: '3'
     network_api_version: '2.0'
-    region_name: London
+    region_name: Cambridge
     volume_api_version: '2'
   huaweicloud-arm-sg:
     auth:
