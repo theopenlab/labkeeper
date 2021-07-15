@@ -79,7 +79,7 @@ providers:
     max-concurrency: 10
     cloud-images:
       - name: ubuntu-xenial-arm64
-        image-name: c394b90b-2b16-448c-91db-7f451eefda0c
+        image-name: 467daf82-c7c2-4d85-b79e-4ff6ab8ca812
     pools:
       - name: ubuntu-xenial-linaro
         max-ram: 81920
@@ -90,8 +90,8 @@ providers:
         labels:
           - name: ubuntu-xenial-arm64
             cloud-image: ubuntu-xenial-arm64
-            # 16C-16G-80G NOTE: have to use v2 flavor to boot ARM instance
-            flavor-name: 'openlab.medium'
+            # 8C-16G-120G NOTE: have to use v2 flavor to boot ARM instance
+            flavor-name: 'vm.large'
 
   - name: huaweicloud-arm-sg
     cloud: huaweicloud-arm-sg
@@ -125,7 +125,7 @@ providers:
             flavor-name: 'kc1.xlarge.4'
           - name: ubuntu-xenial-arm64-openlab
             cloud-image: ubuntu-1604-arm-openlab
-            flavor-name: 'kc1.xlarge.2'
+            flavor-name: 'kc1.large.4'
           - name: ubuntu-bionic-arm64-huaweicloud-8u16g
             cloud-image: ubuntu-bionic-arm
             flavor-name: "kc1.2xlarge.2"
