@@ -27,25 +27,25 @@
               exclude-unprotected-branches: false
           - dtantsur/rust-osauth:
               exclude-unprotected-branches: false
-          #- wangxiyuan/flink:
-          #    exclude-unprotected-branches: true
-          #- wangxiyuan/frocksdb:
-          #    exclude-unprotected-branches: false 
+          - wangxiyuan/flink:
+              exclude-unprotected-branches: true
+          - wangxiyuan/frocksdb:
+              exclude-unprotected-branches: false 
           # The CNCF projects
           - kubernetes/cloud-provider-openstack:
               exclude-unprotected-branches: true
           - containerd/containerd:
               exclude-unprotected-branches: false
           # The AI projects
-          #- moo-ai/moo-ai.github.io:
-          #   exclude-unprotected-branches: true
+          - moo-ai/moo-ai.github.io:
+             exclude-unprotected-branches: true
           - pytorch/pytorch:
               exclude-unprotected-branches: true 
-          - tensorflow/tensorflow:
-              exclude-unprotected-branches: true
           # The openlab projects
           - theopenlab/labkeeper:
               exclude-unprotected-branches: true
+          - bzhaoopenstack/openlab-health-check:
+              exclude-unprotected-branches: false
           # The apache projects
           - apache/flink:
               exclude-unprotected-branches: true
@@ -62,8 +62,4 @@
           # The DB projects
           - greenplum-db/gpdb:
               exclude-unprotected-branches: true
-          - mysql/mysql-server:
-              exclude-unprotected-branches: false
-          - bzhaoopenstack/bucardo:
-              exclude-unprotected-branches: false
 
